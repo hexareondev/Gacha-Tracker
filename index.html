@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ежедневные награды · Zenless Zone Zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08080b;
+  --panel:#101015;
+  --panel-2:#16161d;
+  --raise:#1c1c24;
+  --edge:rgba(255,255,255,.08);
+  --edge-soft:rgba(255,255,255,.045);
+  --text:#eceae5;
+  --muted:#8b8894;
+  --dim:#5e5c68;
+  --gold:#f0c264;
+  --gold-hot:#ffdf95;
+  --gold-deep:#7e6226;
+  --steel:#8794a1;
+  --crimson:#e0576f;
+  --crimson-deep:#7d2b3c;
+  --steel-deep:#39424c;
+  --r:12px;
+  --rs:8px;
+  --display:"Space Grotesk","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;max-width:100%}
+html{overflow-x:clip}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding:0 20px 90px;
+  background-image:radial-gradient(1000px 640px at 88% -18%,rgba(240,194,100,.1),rgba(240,194,100,.03) 42%,rgba(240,194,100,0) 78%);
+  background-repeat:no-repeat;
+  background-attachment:fixed;
+}
+.wrap{max-width:1000px;margin:0 auto}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums;letter-spacing:-0.015em}
+
+/* ── шапка ── */
+header{
+  position:sticky;top:0;z-index:12;
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;
+  padding:18px 0 14px;margin-bottom:6px;
+}
+header::before{
+  content:"";position:absolute;left:50%;transform:translateX(-50%);
+  width:100vw;top:0;bottom:-18px;z-index:-1;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(8,8,11,.93),rgba(8,8,11,.78) 52%,rgba(8,8,11,0));
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  -webkit-mask-image:linear-gradient(to bottom,#000 54%,transparent);
+  mask-image:linear-gradient(to bottom,#000 54%,transparent);
+}
+h1{font-family:var(--display);font-size:20px;font-weight:600;margin:0;letter-spacing:-0.02em}
+h1 span{display:block;font-family:"Inter",sans-serif;font-size:12px;font-weight:400;color:var(--dim);margin-top:2px}
+.nav{display:flex;align-items:center;gap:8px}
+.navgroup{
+  display:flex;align-items:center;gap:2px;padding:3px;
+  background:var(--panel);border:1px solid var(--edge-soft);border-radius:999px;
+}
+.navgroup .arrow{width:32px;height:32px;padding:0;border:none;background:none;border-radius:50%;font-size:17px;line-height:1}
+.navgroup .arrow:hover{background:rgba(255,255,255,.08)}
+.month{
+  min-width:170px;height:32px;padding:0 12px;text-align:center;
+  font-family:var(--display);font-size:15px;font-weight:500;
+  background:none;border:none;border-radius:999px;
+}
+.pill{height:38px;padding:0 17px;border-radius:999px}
+#menuBtn{width:38px;height:38px;padding:0;border-radius:50%;font-size:16px;letter-spacing:.5px;line-height:1}
+.mpick-head .arrow{width:32px;height:32px;padding:0;border-radius:50%;font-size:16px;line-height:1}
+button{
+  font:inherit;color:inherit;background:rgba(255,255,255,.045);
+  border:1px solid var(--edge-soft);border-radius:var(--rs);
+  padding:8px 13px;cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,color .15s ease,transform .1s ease;
+}
+button:hover{background:rgba(255,255,255,.085);border-color:var(--edge)}
+button:active{transform:translateY(1px)}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.arrow{width:36px;padding:8px 0;line-height:1;color:var(--muted)}
+.arrow:hover{color:var(--text)}
+.ghost{background:transparent}
+.ghost:hover{background:rgba(255,255,255,.06)}
+
+/* ── сегодня ── */
+.today{
+  display:flex;flex-wrap:wrap;align-items:center;gap:16px;
+  margin:10px 0 28px;padding:18px 20px;border-radius:var(--r);
+  background:
+    radial-gradient(460px 200px at 0% 0%,rgba(240,194,100,.13),rgba(240,194,100,0) 76%),
+    linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--edge-soft);
+}
+.today .d{font-size:13px;color:var(--muted)}
+.today .d b{display:block;font-family:var(--display);color:var(--text);font-size:19px;font-weight:600;letter-spacing:-0.02em;margin-bottom:2px}
+.today .status{margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mark{
+  background:linear-gradient(180deg,var(--gold-hot),var(--gold));
+  color:#1a1305;border-color:transparent;font-weight:600;padding:11px 20px;border-radius:999px;
+  box-shadow:0 6px 20px -10px rgba(240,194,100,.9);
+}
+.mark:hover{background:linear-gradient(180deg,#ffe9b4,var(--gold-hot));border-color:transparent}
+.got{font-family:var(--display);color:var(--gold);font-weight:600;font-size:18px;letter-spacing:-0.01em}
+.got.denny{color:var(--steel)}
+.got.master{color:var(--crimson)}
+
+/* ── сетка дней ── */
+.grid-head,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.grid-head{margin-bottom:8px}
+.grid-head div{font-size:11px;color:var(--dim);text-align:center;letter-spacing:.03em}
+.grid-head div:nth-child(n+6){color:#4b4955}
+.cell{
+  position:relative;aspect-ratio:1/.88;min-height:60px;padding:8px 9px;
+  background:var(--panel);border:1px solid var(--edge-soft);border-radius:var(--r);
+  display:flex;flex-direction:column;justify-content:space-between;
+  cursor:pointer;text-align:left;overflow:hidden;
+}
+.cell:hover{background:var(--panel-2);border-color:var(--edge);transform:translateY(-1px)}
+.cell.blank{background:none;border:none;cursor:default;pointer-events:none}
+.cell .dn{font-family:var(--display);font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.cell .val{font-family:var(--display);font-size:17px;font-weight:600;line-height:1.05;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+.cell .sub{font-size:10px;color:var(--dim);line-height:1.2;letter-spacing:.02em}
+.cell.future{opacity:.28;cursor:default}
+.cell.future:hover{transform:none;background:var(--panel);border-color:var(--edge-soft)}
+.cell.today-c{border-color:rgba(255,255,255,.2)}
+.cell.today-c .dn{color:var(--text)}
+
+/* незаполненный гарантированный день — точка в углу */
+.cell.guar:not(.p):not(.d)::after{
+  content:"";position:absolute;top:9px;right:9px;width:5px;height:5px;border-radius:50%;
+  background:var(--gold-deep);box-shadow:0 0 0 3px rgba(240,194,100,.07);
+}
+.cell.guar:not(.p):not(.d) .dn{color:#9a7a30}
+
+/* денни */
+.cell.d .val{color:var(--steel);font-size:15px}
+.cell.d{box-shadow:inset 2px 0 0 var(--steel-deep)}
+/* полихромы: чем крупнее награда, тем теплее и ярче ячейка */
+.cell.p .val{color:var(--gold)}
+.cell.p1{background:linear-gradient(150deg,rgba(240,194,100,.07),rgba(240,194,100,.015));box-shadow:inset 2px 0 0 rgba(240,194,100,.42)}
+.cell.p2{background:linear-gradient(150deg,rgba(240,194,100,.13),rgba(240,194,100,.02));box-shadow:inset 2px 0 0 rgba(240,194,100,.62)}
+.cell.p3{background:linear-gradient(150deg,rgba(240,194,100,.2),rgba(240,194,100,.03));box-shadow:inset 2px 0 0 var(--gold);border-color:rgba(240,194,100,.22)}
+.cell.p4{
+  background:linear-gradient(150deg,rgba(255,223,149,.3),rgba(240,194,100,.05));
+  border-color:rgba(240,194,100,.5);
+  box-shadow:inset 2px 0 0 var(--gold-hot),0 8px 26px -14px rgba(240,194,100,.95);
+}
+.cell.p4 .val{color:var(--gold-hot);font-size:19px}
+.cell.m{background:linear-gradient(150deg,rgba(224,87,111,.12),rgba(224,87,111,.02));box-shadow:inset 2px 0 0 var(--crimson);border-color:rgba(224,87,111,.2)}
+.cell.m .val{color:var(--crimson)}
+.cell.m .dn{color:#a3596a}
+.cell.m .sub{color:#7d4a55}
+.cell.p .dn{color:#a08243}
+.cell.p .sub{color:#7b6531}
+
+/* ── итоги ── */
+.totals{display:grid;grid-template-columns:1.25fr 2fr;gap:8px;margin:30px 0 0}
+.tot{padding:16px 18px;background:var(--panel);border:1px solid var(--edge-soft);border-radius:var(--r)}
+.tot .k{font-size:12px;color:var(--muted);margin-bottom:6px}
+.tot .v{font-family:var(--display);font-size:27px;font-weight:600;letter-spacing:-0.035em;line-height:1.05;font-variant-numeric:tabular-nums}
+.hero{
+  display:flex;flex-direction:column;justify-content:space-between;
+  background:
+    radial-gradient(360px 190px at 100% 0%,rgba(240,194,100,.14),rgba(240,194,100,0) 76%),
+    linear-gradient(180deg,var(--panel-2),var(--panel));
+  border-color:rgba(240,194,100,.16);
+}
+.hero .v{font-size:44px;color:var(--gold-hot);margin:2px 0 4px}
+.hero .delta{font-size:12px;color:var(--muted);min-height:18px}
+.bar{height:3px;border-radius:2px;background:rgba(255,255,255,.07);margin-top:14px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-deep),var(--gold));border-radius:2px;transition:width .4s ease}
+.subs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.subs .v{font-size:23px}
+.subs .tot.gold .v{color:var(--gold)}
+.subs .tot.st .v{color:var(--steel)}
+.hint{font-size:12.5px;color:var(--dim);margin:12px 0 0}
+
+section{margin-top:46px}
+h2{font-family:var(--display);font-size:16px;font-weight:600;margin:0 0 4px;letter-spacing:-0.015em}
+section .hint{margin:0 0 14px}
+.card{background:var(--panel);border:1px solid var(--edge-soft);border-radius:var(--r);padding:18px 18px 12px}
+svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:18px;font-size:11.5px;color:var(--dim);padding:6px 2px 6px}
+.legend i{display:inline-block;width:8px;height:8px;margin-right:7px;vertical-align:-1px;border-radius:2px}
+.bar-h{transition:opacity .15s ease,filter .15s ease}
+svg:hover .bar-h{opacity:.4}
+svg .bar-h:hover{opacity:1;filter:brightness(1.15) saturate(1.05)}
+
+/* ── рекорды ── */
+.sechead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:nowrap}
+.sechead > div{min-width:0}
+.sechead > button{flex:0 0 auto;white-space:nowrap;margin-top:2px}
+.sechead .hint{margin:0 0 14px}
+.seg{display:flex;gap:2px;padding:3px;background:var(--panel);border:1px solid var(--edge-soft);border-radius:999px}
+.seg button{border:none;background:none;padding:6px 12px;border-radius:999px;font-size:12.5px;color:var(--muted)}
+.seg button:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.seg button.on{background:rgba(240,194,100,.14);color:var(--gold-hot)}
+.seg:empty{display:none}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:12px 4px 8px;font-size:12.5px;color:var(--muted)}
+.pager:empty{display:none}
+.pager button{padding:6px 12px;border-radius:999px}
+.pager button[disabled]{opacity:.35;cursor:default}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:11.5px;font-weight:400;color:var(--dim);text-align:right;padding:0 12px 10px}
+th:first-child,td:first-child{text-align:left}
+td{padding:11px 12px;border-top:1px solid var(--edge-soft);text-align:right;font-variant-numeric:tabular-nums}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover td{background:rgba(255,255,255,.03)}
+.rank{color:var(--dim);width:32px;text-align:right !important;padding-right:0;font-family:var(--display)}
+tr.top1 .rank{color:var(--gold-hot)}
+tr.top2 .rank,tr.top3 .rank{color:#a08243}
+td.poly{font-family:var(--display);color:var(--gold);font-weight:600}
+td.denny{color:var(--steel)}
+td.master{color:var(--crimson)}
+.empty{padding:26px 4px;color:var(--muted);font-size:13.5px;border-top:none}
+
+/* ── вкладки ── */
+.hidden{display:none !important}
+.tabs{display:flex;gap:3px;padding:3px;margin:2px 0 4px;width:max-content;
+  background:var(--panel);border:1px solid var(--edge-soft);border-radius:999px}
+.tab{border:none;background:none;padding:8px 18px;border-radius:999px;font-size:14px;color:var(--muted)}
+.tab:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.tab.on{background:rgba(240,194,100,.14);color:var(--gold-hot);font-weight:500}
+body.tab-pulls #navMonth,body.tab-pulls #toToday{display:none}
+body:not(.tab-pulls) #navPatch{display:none}
+
+/* ── чипы, поля, формы ── */
+.rowline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 0 0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:8px 14px;border-radius:999px;font-size:13.5px;position:relative}
+.chip.on{background:rgba(240,194,100,.13);border-color:rgba(240,194,100,.45);color:var(--gold-hot)}
+.chip .x{color:var(--dim);margin-left:8px;font-size:15px;line-height:1}
+.chip .x:hover{color:#e09a9a}
+.sm{height:34px;padding:0 14px;font-size:13px}
+input,select{
+  font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--edge-soft);
+  border-radius:var(--rs);padding:9px 11px;min-width:0;
+}
+input::placeholder{color:var(--dim)}
+input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+input[type=number]{font-variant-numeric:tabular-nums}
+.inline{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.inline input{flex:1;min-width:130px}
+/* типы круток — аккордеон */
+.acc{background:var(--panel);border:1px solid var(--edge-soft);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.acc.open{border-color:var(--edge)}
+.acchead{display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;border-radius:0;padding:15px 18px;text-align:left}
+.acchead:hover{background:rgba(255,255,255,.03)}
+.acchead .caret{color:var(--dim);font-size:11px;transition:transform .15s ease;display:inline-block}
+.acc.open .acchead .caret{transform:rotate(90deg)}
+.acchead .nm{flex:1;font-size:14.5px}
+.acchead .cnt{font-size:12px;color:var(--dim)}
+.acchead .sum{font-family:var(--display);font-size:19px;font-weight:600;color:var(--gold);letter-spacing:-0.02em}
+.acchead .unit{font-size:11.5px;color:var(--dim);margin-left:-6px}
+.accbody{padding:2px 18px 16px;border-top:1px solid var(--edge-soft)}
+.curline{display:grid;grid-template-columns:1fr 108px 118px 32px 32px;gap:7px;align-items:center;padding:8px 0}
+.iconbtn.trk{color:var(--gold);font-size:12px}
+.iconbtn.trk:hover{color:var(--gold-hot);border-color:rgba(240,194,100,.45)}
+.iconbtn.trk.off{color:var(--dim)}
+.iconbtn.trk.off:hover{color:var(--muted);border-color:var(--edge)}
+.curline .hd{font-size:11.5px;color:var(--dim);padding:0 2px}
+.curline input{text-align:right}
+.curline input.nm{text-align:left}
+.accfoot{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.typename{display:flex;align-items:center;gap:10px;padding:12px 0 4px}
+.typename span{font-size:11.5px;color:var(--dim);white-space:nowrap}
+.typename input{flex:1;max-width:260px}
+.plist{display:flex;flex-direction:column;gap:3px;max-height:230px;overflow:auto}
+.plist button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;border:none;background:none;border-radius:var(--rs);padding:9px 10px;font-size:13.5px}
+.plist button:hover{background:rgba(255,255,255,.06)}
+.plist button.on{background:rgba(240,194,100,.13);color:var(--gold-hot)}
+.plist button span{color:var(--dim);font-size:12px}
+.plist button.on span{color:#b8933f}
+.mpick.wide{width:320px}
+.mpick .mpick-head span{font-size:12px;color:var(--muted);font-weight:400}
+td input.cell-in{width:96px;text-align:right;padding:6px 8px;font-size:13.5px}
+tr.sum-row td{font-weight:600;border-top:1px solid var(--edge)}
+tr.type-row td:first-child{display:flex;align-items:center;gap:9px}
+tr.type-row .caret{color:var(--dim);font-size:10px;display:inline-block;transition:transform .15s ease}
+tr.type-row.open .caret{transform:rotate(90deg)}
+tr.sub td{border-top:none;padding-top:5px;padding-bottom:5px;color:var(--muted);font-size:13px}
+tr.sub td:first-child{padding-left:29px}
+tr.sub .raw{color:var(--dim);font-size:12px;margin-left:8px}
+tr.sub:last-of-type td{padding-bottom:11px}
+.iconbtn{width:32px;height:32px;padding:0;border-radius:50%;color:var(--dim);font-size:15px;line-height:1}
+.iconbtn:hover{color:#e09a9a;border-color:rgba(200,80,80,.4)}
+.pulls .tot .v{font-size:25px}
+.pulls .gold .v{color:var(--gold)}
+.pulls .st .v{color:var(--steel)}
+.pulls .cr .v{color:var(--crimson)}
+.totals.pulls{grid-template-columns:repeat(4,1fr);margin-top:22px}
+.nodata{color:var(--muted);font-size:13.5px;padding:14px 2px}
+
+/* ── быстрый выбор месяца ── */
+.pickwrap{position:relative}
+.month{cursor:pointer}
+.month:hover{background:rgba(255,255,255,.08)}
+.mpick{
+  position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);width:268px;z-index:16;
+  background:var(--raise);border:1px solid var(--edge);border-radius:var(--r);
+  padding:12px;display:none;box-shadow:0 22px 48px -18px rgba(0,0,0,.9);
+}
+.mpick.on{display:block;animation:drop .13s ease-out}
+.mpick-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mpick-head span{font-size:15px;font-weight:600}
+.mpick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mpick-grid button{position:relative;padding:10px 4px 14px;font-size:13px;text-align:center}
+.mpick-grid button.has::after{
+  content:"";position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;background:var(--gold-deep);
+}
+.mpick-grid button.cur{background:rgba(240,194,100,.12);border-color:rgba(240,194,100,.45);color:var(--gold-hot)}
+.mpick-grid button.cur.has::after{background:var(--gold-hot)}
+.mpick-grid button.fut{opacity:.4}
+
+/* ── меню данных ── */
+.menuwrap{position:relative}
+.menu{
+  position:absolute;right:0;top:calc(100% + 8px);width:268px;z-index:16;
+  background:var(--raise);border:1px solid var(--edge);border-radius:var(--r);
+  padding:6px;box-shadow:0 22px 48px -18px rgba(0,0,0,.9);display:none;text-align:left;
+}
+.menu.on{display:block;animation:drop .13s ease-out}
+@keyframes drop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.menu button{display:block;width:100%;text-align:left;background:none;border:none;border-radius:var(--rs);padding:10px 11px;font-size:14px}
+.menu button:hover{background:rgba(255,255,255,.07)}
+.menu .danger{color:#cd8f8f}
+.menu .danger:hover{background:rgba(180,60,60,.14);color:#efa9a9}
+.sep{height:1px;background:var(--edge-soft);margin:6px 8px}
+.menunote{font-size:11.5px;color:var(--dim);line-height:1.5;margin:10px 11px 5px}
+.menunote:empty{display:none}
+.destroy{background:#8b3030;border-color:transparent;color:#ffe6e6;font-weight:500}
+.destroy:hover{background:#a03737;border-color:transparent;color:#fff}
+
+/* ── модальные окна ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(5,5,8,.7);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:20px;z-index:20;
+}
+.overlay.on{display:flex}
+.sheet{
+  width:100%;max-width:420px;background:var(--raise);border:1px solid var(--edge);
+  border-radius:16px;padding:22px;box-shadow:0 30px 70px -26px rgba(0,0,0,.95);
+  animation:pop .16s cubic-bezier(.2,.9,.3,1);
+}
+@keyframes pop{from{transform:scale(.97);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet,.menu.on{animation:none}.bar i{transition:none}}
+.sheet h3{font-family:var(--display);margin:0;font-size:18px;font-weight:600;letter-spacing:-0.02em}
+.sheet .sub{font-size:12.5px;color:var(--muted);margin:4px 0 18px;line-height:1.5}
+.sheet .sub.guar{color:var(--gold)}
+.group{font-size:11.5px;color:var(--dim);margin:0 0 9px;letter-spacing:.02em}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:18px}
+.opt{padding:13px 10px;text-align:center;line-height:1.2;border-radius:var(--rs)}
+.opt b{display:block;font-family:var(--display);font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-0.025em}
+.opt small{font-size:10.5px;color:var(--dim);display:block;margin-top:3px}
+.opt kbd{font:inherit;font-size:10px;color:#4b4955;display:block;margin-top:4px}
+.opt.p{background:linear-gradient(150deg,rgba(240,194,100,.1),rgba(240,194,100,.02));border-color:rgba(240,194,100,.22)}
+.opt.p b{color:var(--gold)}
+.opt.p:hover{background:linear-gradient(150deg,rgba(240,194,100,.22),rgba(240,194,100,.05));border-color:rgba(240,194,100,.55)}
+.opt.p.big b{color:var(--gold-hot)}
+.opt.sel{outline:2px solid var(--gold);outline-offset:-1px}
+.opt.one{grid-template-columns:1fr}
+.opt.m{background:linear-gradient(150deg,rgba(224,87,111,.1),rgba(224,87,111,.02));border-color:rgba(224,87,111,.25)}
+.opt.m b{color:var(--crimson)}
+.opt.m:hover{background:linear-gradient(150deg,rgba(224,87,111,.2),rgba(224,87,111,.04));border-color:rgba(224,87,111,.6)}
+.opt.d b{color:var(--steel)}
+.opt.d:hover{border-color:rgba(135,148,161,.45)}
+.collapsed{display:none}
+.linkbtn{background:none;border:none;padding:0;color:var(--muted);font-size:12.5px;text-decoration:underline;text-underline-offset:4px}
+.linkbtn:hover{background:none;color:var(--text)}
+.sheet .row{display:flex;gap:8px;margin-top:6px}
+.sheet .row button{flex:1;padding:11px 12px}
+textarea{
+  width:100%;height:190px;resize:vertical;margin-bottom:12px;
+  background:var(--bg);color:var(--text);border:1px solid var(--edge-soft);border-radius:var(--rs);
+  padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;
+}
+textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+
+@media(max-width:760px){
+  body{padding:0 14px 70px}
+  .totals.pulls{grid-template-columns:1fr}
+  .curline{grid-template-columns:1fr 74px 84px 30px 30px;gap:5px}
+  .mpick.wide{width:calc(100vw - 40px);max-width:320px}
+  td input.cell-in{width:74px}
+  .totals{grid-template-columns:1fr}
+  .subs{grid-template-columns:repeat(3,1fr)}
+  .subs .tot{padding:13px 14px}
+  .subs .v{font-size:19px}
+  .hero .v{font-size:38px}
+  .nav{width:100%}
+  .navgroup{flex:1}
+  .nav .pickwrap{flex:1}
+  .month{width:100%;min-width:0}
+  .mpick{width:calc(100vw - 40px);max-width:280px}
+  .cell{min-height:54px;padding:6px 7px;aspect-ratio:1/.96;border-radius:10px}
+  .cell .val{font-size:14px}
+  .cell.p4 .val{font-size:15px}
+  .cell .sub{display:none}
+  .today{padding:16px}
+  .today .status{margin-left:0;width:100%}
+  .today .status .mark{width:100%}
+  .grid,.grid-head{gap:5px}
+  .card{padding:14px 12px 8px}
+  /* выбор награды — шторкой снизу */
+  .overlay{align-items:flex-end;padding:0}
+  .sheet{max-width:none;border-radius:18px 18px 0 0;padding:20px 16px 26px;animation:slideup .2s cubic-bezier(.2,.9,.3,1)}
+  @keyframes slideup{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+  .menu{position:fixed;left:14px;right:14px;top:auto;width:auto}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1 id="hTitle">Ежедневные награды<span id="hSub">Zenless Zone Zero</span></h1>
+    <div class="nav">
+      <div class="navgroup" id="navMonth">
+      <button class="arrow" id="prev" aria-label="Предыдущий месяц">‹</button>
+      <div class="pickwrap">
+        <button class="month num" id="monthLabel" aria-haspopup="true" aria-expanded="false">—</button>
+        <div class="mpick" id="monthPicker">
+          <div class="mpick-head">
+            <button class="arrow" id="pickPrevY" aria-label="Предыдущий год">‹</button>
+            <span class="num" id="pickYear">—</span>
+            <button class="arrow" id="pickNextY" aria-label="Следующий год">›</button>
+          </div>
+          <div class="mpick-grid" id="pickGrid"></div>
+        </div>
+      </div>
+      <button class="arrow" id="next" aria-label="Следующий месяц">›</button>
+      </div>
+
+      <div class="navgroup" id="navPatch">
+        <button class="arrow" id="patchPrev" aria-label="Предыдущий патч">‹</button>
+        <div class="pickwrap">
+          <button class="month num" id="patchLabel" aria-haspopup="true" aria-expanded="false">—</button>
+          <div class="mpick wide" id="patchPicker">
+            <div class="mpick-head"><span>Игра</span><button class="linkbtn" id="addGame">+ новая игра</button></div>
+            <div class="chips" id="gameChips"></div>
+            <div class="inline hidden" id="gameForm">
+              <input id="gameName" placeholder="Название игры" maxlength="40">
+              <button class="mark sm" id="gameSave">Добавить</button>
+            </div>
+            <div class="sep"></div>
+            <div class="mpick-head"><span>Патчи</span><button class="linkbtn" id="addPatch">+ новый патч</button></div>
+            <div class="plist" id="patchList"></div>
+            <div class="inline hidden" id="patchForm">
+              <input id="patchName" placeholder="Например, 3.0" maxlength="30" style="flex:1 1 110px">
+              <input id="patchDate" type="date" style="flex:1 1 140px">
+              <button class="mark sm" id="patchSave">Создать</button>
+            </div>
+          </div>
+        </div>
+        <button class="arrow" id="patchNext" aria-label="Следующий патч">›</button>
+      </div>
+
+      <button class="pill ghost" id="toToday">Сегодня</button>
+      <div class="menuwrap">
+        <button class="ghost" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-label="Данные">···</button>
+        <div class="menu" id="menu" role="menu">
+          <button role="menuitem" id="export">Скачать резервную копию</button>
+          <button role="menuitem" id="importBtn">Загрузить из файла</button>
+          <input type="file" id="importFile" accept="application/json" hidden>
+          <button role="menuitem" id="showJson">Показать данные текстом</button>
+          <div class="sep"></div>
+          <button role="menuitem" class="danger" id="reset">Очистить историю</button>
+          <p class="menunote" id="countNote"></p>
+          <p class="menunote" id="storeNote">Данные хранятся в этом браузере. Резервная копия переносит историю на другое устройство.</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-view="calendar">Календарь</button>
+    <button class="tab" data-view="pulls">Крутки</button>
+  </div>
+
+  <div id="viewCalendar">
+  <div class="today">
+    <div class="d"><b id="todayDate">—</b><span id="todayTag">—</span></div>
+    <div class="status" id="todayStatus"></div>
+  </div>
+
+  <div class="grid-head">
+    <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <div class="totals">
+    <div class="tot hero">
+      <div>
+        <div class="k">Полихромы за <span id="mLabel">месяц</span></div>
+        <div class="v num" id="mPoly">0</div>
+        <div class="delta" id="mDelta"></div>
+      </div>
+      <div>
+        <div class="bar"><i id="bar" style="width:0%"></i></div>
+        <p class="hint" id="coverage" style="margin-top:8px">—</p>
+      </div>
+    </div>
+    <div class="subs">
+      <div class="tot st"><div class="k">Денни за месяц</div><div class="v num" id="mDenny">0</div></div>
+      <div class="tot gold"><div class="k">Полихромы, <span id="yLabel1">год</span></div><div class="v num" id="yPoly">0</div></div>
+      <div class="tot st"><div class="k">Денни, <span id="yLabel2">год</span></div><div class="v num" id="yDenny">0</div></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Полихромы по дням месяца</h2>
+    <p class="hint">Точки под шкалой — дни 3, 8, 15, 20, 27 с гарантированным полихромом.</p>
+    <div class="card">
+      <div id="chartMonth"></div>
+      <div class="legend">
+        <span><i style="background:linear-gradient(180deg,#ffdf95,#c59a3c)"></i>полихромы</span>
+        <span><i style="background:#e0576f"></i>мастер-диски</span>
+        <span><i style="background:#39424c"></i>денни</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Год по месяцам</h2>
+    <p class="hint">Нажмите на столбец, чтобы открыть этот месяц.</p>
+    <div class="card"><div id="chartYear"></div></div>
+  </section>
+
+  <section>
+    <div class="sechead">
+      <div>
+        <h2>Рекорды по полихромам</h2>
+        <p class="hint">Лучшие месяцы за всё время. Строка открывает месяц.</p>
+      </div>
+      <div class="seg" id="recSeg"></div>
+    </div>
+    <div class="card" style="padding-bottom:6px">
+      <table>
+        <thead><tr><th class="rank"></th><th>Месяц</th><th>Полихромы</th><th>Денни</th><th>Диски</th><th>Отмечено</th></tr></thead>
+        <tbody id="records"></tbody>
+      </table>
+      <div class="pager" id="recPager"></div>
+    </div>
+  </section>
+  </div><!-- /viewCalendar -->
+
+  <div id="viewPulls" class="hidden">
+
+    <div class="totals pulls">
+      <div class="tot hero">
+        <div>
+          <div class="k">Остаток круток</div>
+          <div class="v num" id="pLeft">0</div>
+          <div class="delta" id="pByType"></div>
+        </div>
+      </div>
+      <div class="subs">
+        <div class="tot"><div class="k">На старте патча</div><div class="v num" id="pStart">—</div></div>
+        <div class="tot"><div class="k">На конец патча</div><div class="v num" id="pEnd">—</div></div>
+        <div class="tot gold"><div class="k">Изменение за патч</div><div class="v num" id="pIn">—</div></div>
+      </div>
+    </div>
+    <p class="hint" id="pSummary"></p>
+
+    <section>
+      <div class="sechead">
+        <div>
+          <h2>Крутки и валюта</h2>
+          <p class="hint">Тип круток разворачивается — внутри валюты, которые на него меняются.</p>
+        </div>
+        <button class="ghost pill sm" id="addType">+ тип круток</button>
+      </div>
+      <div class="inline hidden" id="typeForm">
+        <input id="typeName" placeholder="Например, ивентовые" maxlength="30">
+        <button class="mark sm" id="typeSave">Добавить</button>
+        <button class="ghost sm" id="typeCancel">Отмена</button>
+      </div>
+      <div id="typeList"></div>
+    </section>
+
+    <section>
+      <h2>Текущий патч</h2>
+      <p class="hint">Изменение — текущий остаток минус остаток на старте патча. Строка типа разворачивается по клику и показывает вклад каждой валюты.</p>
+      <div class="card" style="padding-bottom:6px">
+        <table>
+          <thead><tr><th>Тип круток</th><th>На старте</th><th>Сейчас</th><th>Изменение</th></tr></thead>
+          <tbody id="calcBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Итоги по патчам</h2>
+      <p class="hint">Строка открывает патч. Конец патча — это старт следующего.</p>
+      <div class="card" style="padding-bottom:6px">
+        <div id="patchChart"></div>
+        <table>
+          <thead><tr><th>Патч</th><th>Начало</th><th>Старт</th><th>Конец</th><th>Изменение</th></tr></thead>
+          <tbody id="patchBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div><!-- /viewPulls -->
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h3 id="sheetTitle">—</h3>
+    <p class="sub" id="sheetSub">—</p>
+
+    <div id="optsHost">
+      <div id="secPoly"><p class="group">Полихромы</p><div class="opts" id="polyOpts"></div></div>
+      <div id="secDenny"><p class="group">Денни</p><div class="opts" id="dennyOpts"></div></div>
+      <div id="secMaster"><p class="group">Мастер-диски</p><div class="opts one" id="masterOpts"></div></div>
+    </div>
+    <button class="linkbtn collapsed" id="showDenny">Выпало другое — показать денни и диски</button>
+
+    <div class="row">
+      <button class="ghost" id="clearDay">Очистить день</button>
+      <button class="ghost" id="closeSheet">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="confirmOverlay">
+  <div class="sheet" style="max-width:380px" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h3 id="confirmTitle">Очистить историю?</h3>
+    <p class="sub" id="confirmText">—</p>
+    <button class="linkbtn" id="backupFirst">Сначала скачать резервную копию</button>
+    <div class="row" style="margin-top:16px">
+      <button class="ghost" id="confirmNo">Отмена</button>
+      <button class="destroy" id="confirmYes">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="dataOverlay">
+  <div class="sheet" style="max-width:520px" role="dialog" aria-modal="true" aria-labelledby="dataTitle">
+    <h3 id="dataTitle">Резервная копия текстом</h3>
+    <p class="sub">Скопируйте содержимое и сохраните в файл — или вставьте сюда ранее сохранённые данные и нажмите «Загрузить из текста».</p>
+    <textarea id="dataText" spellcheck="false"></textarea>
+    <div class="row">
+      <button id="copyJson">Скопировать</button>
+      <button id="applyJson">Загрузить из текста</button>
+      <button class="ghost" id="closeData">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+const POLY  = [10,20,40,60];
+const DENNY = [2888,5888,8888,12888];
+const MASTER = [3];
+const GUAR  = [3,8,15,20,27];
+const KEY   = "zzz-daily-rewards-v1";
+const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+const MONTHS_SHORT = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+const MONTHS_IN = ["январе","феврале","марте","апреле","мае","июне","июле","августе","сентябре","октябре","ноябре","декабре"];
+
+/* ── хранилище: localStorage, с запасным вариантом в памяти ── */
+function makeStore(key){
+  let ok = false;
+  try { localStorage.setItem("__t","1"); localStorage.removeItem("__t"); ok = true; } catch(e){ ok = false; }
+  let mem = {};
+  return {
+    persistent: ok,
+    load(){
+      if(!ok) return mem;
+      try { return JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch(e){ return {}; }
+    },
+    save(d){
+      mem = d;
+      if(ok){ try { localStorage.setItem(key, JSON.stringify(d)); } catch(e){} }
+    }
+  };
+}
+const store = makeStore(KEY);
+
+let data = store.load();
+const now = new Date();
+const todayKey = iso(now.getFullYear(), now.getMonth(), now.getDate());
+let view = { y: now.getFullYear(), m: now.getMonth() };
+let picking = null;
+let keyMap = {};
+let recLimit = 10, recPage = 0;
+
+/* ── утилиты ── */
+function pad(n){ return n < 10 ? "0"+n : ""+n; }
+function iso(y,m,d){ return y+"-"+pad(m+1)+"-"+pad(d); }
+function daysIn(y,m){ return new Date(y, m+1, 0).getDate(); }
+function firstDow(y,m){ return (new Date(y,m,1).getDay()+6)%7; }
+function isGuar(d){ return GUAR.indexOf(d) !== -1; }
+function fmt(n){ return n.toLocaleString("ru-RU"); }
+function fmtK(n){ return n >= 1000 ? Math.round(n/1000)+"k" : ""+n; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function polyTier(v){ return v >= 60 ? 4 : v >= 40 ? 3 : v >= 20 ? 2 : 1; }
+
+function sumRange(pred){
+  let p = 0, d = 0, mt = 0, days = 0;
+  for(const k in data){
+    if(!pred(k)) continue;
+    const e = data[k];
+    if(e.t === "p"){ p += e.v; }
+    else if(e.t === "m"){ mt += e.v; }
+    else { d += e.v; }
+    days++;
+  }
+  return { poly:p, denny:d, master:mt, days:days };
+}
+function monthStats(y,m){ const pre = y+"-"+pad(m+1)+"-"; return sumRange(k => k.indexOf(pre) === 0); }
+function yearStats(y){ const pre = y+"-"; return sumRange(k => k.indexOf(pre) === 0); }
+
+/* ── отрисовка ── */
+function render(){
+  renderHeader();
+  renderToday();
+  renderGrid();
+  renderTotals();
+  renderMonthChart();
+  renderYearChart();
+  renderRecords();
+  const n = Object.keys(data).length;
+  document.getElementById("countNote").textContent = n ? "Отмечено дней всего: " + n : "";
+}
+
+function renderHeader(){
+  document.getElementById("monthLabel").textContent = MONTHS[view.m] + " " + view.y;
+  document.getElementById("yLabel1").textContent = view.y;
+  document.getElementById("yLabel2").textContent = view.y;
+}
+
+function renderToday(){
+  const d = now.getDate();
+  document.getElementById("todayDate").textContent = d + " " + MONTHS[now.getMonth()].toLowerCase() + ", " +
+    ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"][now.getDay()];
+  document.getElementById("todayTag").textContent = isGuar(d)
+    ? "Сегодня гарантированно полихромы"
+    : "Обычный день";
+
+  const e = data[todayKey];
+  const box = document.getElementById("todayStatus");
+  box.innerHTML = "";
+  if(e){
+    const s = document.createElement("span");
+    s.className = "got num" + (e.t === "d" ? " denny" : e.t === "m" ? " master" : "");
+    s.textContent = e.t === "p" ? "+" + e.v + " полихромов"
+      : e.t === "m" ? "+" + e.v + " мастер-диска"
+      : "+" + fmt(e.v) + " денни";
+    const b = document.createElement("button");
+    b.className = "ghost";
+    b.textContent = "Изменить";
+    b.onclick = () => openPicker(todayKey);
+    box.append(s, b);
+  } else {
+    const b = document.createElement("button");
+    b.className = "mark";
+    b.textContent = "Отметить награду";
+    b.onclick = () => openPicker(todayKey);
+    box.append(b);
+  }
+}
+
+function renderGrid(){
+  const g = document.getElementById("grid");
+  g.innerHTML = "";
+  const start = firstDow(view.y, view.m), n = daysIn(view.y, view.m);
+  for(let i = 0; i < start; i++){
+    const b = document.createElement("div");
+    b.className = "cell blank";
+    g.appendChild(b);
+  }
+  for(let d = 1; d <= n; d++){
+    const k = iso(view.y, view.m, d);
+    const e = data[k];
+    const future = k > todayKey;
+    const cell = document.createElement("button");
+    let cls = "cell";
+    if(isGuar(d)) cls += " guar";
+    if(k === todayKey) cls += " today-c";
+    if(future) cls += " future";
+    if(e) cls += e.t === "p" ? " p p" + polyTier(e.v) : e.t === "m" ? " m" : " d";
+    cell.className = cls;
+    cell.type = "button";
+    cell.innerHTML =
+      '<span class="dn">' + d + '</span>' +
+      (e ? '<span class="val">' + (e.t === "d" ? fmt(e.v) : e.v) + '</span>' +
+           '<span class="sub">' + (e.t === "p" ? "полихромы" : e.t === "m" ? "мастер-диски" : "денни") + '</span>'
+         : '<span class="sub">' + (future ? "" : "не отмечено") + '</span>');
+    if(future){ cell.disabled = true; }
+    else { cell.onclick = () => openPicker(k); }
+    g.appendChild(cell);
+  }
+}
+
+function renderTotals(){
+  const ms = monthStats(view.y, view.m), ys = yearStats(view.y);
+  document.getElementById("mPoly").textContent = fmt(ms.poly);
+  document.getElementById("mDenny").textContent = fmt(ms.denny);
+  document.getElementById("yPoly").textContent = fmt(ys.poly);
+  document.getElementById("yDenny").textContent = fmt(ys.denny);
+  document.getElementById("mLabel").textContent = MONTHS[view.m].toLowerCase();
+
+  const pm = view.m === 0 ? 11 : view.m - 1;
+  const py = view.m === 0 ? view.y - 1 : view.y;
+  const prev = monthStats(py, pm);
+  const dEl = document.getElementById("mDelta");
+  if(prev.days === 0){
+    dEl.textContent = ms.days ? "первый месяц с отметками" : "";
+  } else {
+    const diff = ms.poly - prev.poly;
+    dEl.textContent = diff === 0
+      ? "столько же, сколько в " + MONTHS_IN[pm]
+      : Math.abs(diff) + (diff > 0 ? " больше" : " меньше") + ", чем в " + MONTHS_IN[pm];
+  }
+
+  const n = daysIn(view.y, view.m);
+  // прошедшими считаем только завершённые дни: сегодня ещё можно отметить
+  const past = (view.y < now.getFullYear() || (view.y === now.getFullYear() && view.m < now.getMonth()))
+    ? n : (view.y === now.getFullYear() && view.m === now.getMonth() ? now.getDate() - 1 : 0);
+  const markedPast = ms.days - (data[todayKey] && todayKey.slice(0,7) === view.y + "-" + pad(view.m+1) ? 1 : 0);
+  const missed = Math.max(0, past - markedPast);
+  document.getElementById("bar").style.width = Math.round(ms.days / n * 100) + "%";
+  document.getElementById("coverage").textContent =
+    "Отмечено " + ms.days + " из " + n + " дней" +
+    (missed ? " · пропущено " + missed : "") +
+    (ms.master ? " · мастер-дисков " + ms.master : "") +
+    " · за год " + ys.days;
+}
+
+/* ── график месяца ── */
+function renderMonthChart(){
+  const n = daysIn(view.y, view.m);
+  const W = 720, H = 190, L = 26, R = 6, T = 16, B = 34;
+  const iw = W - L - R, ih = H - T - B;
+  const step = iw / n, bw = Math.min(step - 4, 16);
+  const max = 60;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Полихромы по дням месяца">' +
+    '<defs><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0%" stop-color="#ffdf95"/><stop offset="100%" stop-color="#c59a3c"/></linearGradient></defs>';
+
+  [0,20,40,60].forEach(v => {
+    const y = T + ih - (v / max) * ih;
+    s += '<line x1="' + L + '" y1="' + y + '" x2="' + (W-R) + '" y2="' + y + '" stroke="rgba(255,255,255,.05)" stroke-width="1"/>';
+    s += '<text x="' + (L-8) + '" y="' + (y+3.5) + '" fill="#5e5c68" font-size="10" text-anchor="end">' + v + '</text>';
+  });
+
+  for(let d = 1; d <= n; d++){
+    const k = iso(view.y, view.m, d);
+    const e = data[k];
+    const cx = L + (d - 0.5) * step;
+    const x = cx - bw / 2;
+    if(e && e.t === "p"){
+      const h = Math.max(4, (e.v / max) * ih);
+      s += '<rect class="bar-h" x="' + x.toFixed(1) + '" y="' + (T + ih - h).toFixed(1) + '" width="' + bw.toFixed(1) +
+           '" height="' + h.toFixed(1) + '" fill="url(#gp)" rx="3" opacity="' + (e.v >= 40 ? 1 : 0.72) + '">' +
+           '<title>' + d + " " + MONTHS_SHORT[view.m] + ": " + e.v + ' полихромов</title></rect>';
+    } else if(e && e.t === "m"){
+      s += '<rect class="bar-h" x="' + x.toFixed(1) + '" y="' + (T + ih - 9) + '" width="' + bw.toFixed(1) +
+           '" height="9" fill="#e0576f" rx="3" opacity="0.85"><title>' + d + " " + MONTHS_SHORT[view.m] + ": " + e.v + ' мастер-диска</title></rect>';
+    } else if(e){
+      s += '<rect class="bar-h" x="' + x.toFixed(1) + '" y="' + (T + ih - 5) + '" width="' + bw.toFixed(1) +
+           '" height="5" fill="#39424c" rx="2.5"><title>' + d + " " + MONTHS_SHORT[view.m] + ": " + fmt(e.v) + ' денни</title></rect>';
+    }
+    if(isGuar(d)){
+      s += '<circle cx="' + cx.toFixed(1) + '" cy="' + (T+ih+9) + '" r="2" fill="#7e6226"/>';
+    }
+    if(d === 1 || d % 5 === 0 || d === n){
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (H-9) + '" fill="#5e5c68" font-size="10" text-anchor="middle">' + d + '</text>';
+    }
+  }
+  s += '</svg>';
+  document.getElementById("chartMonth").innerHTML = s;
+}
+
+/* ── график года ── */
+function renderYearChart(){
+  const W = 720, H = 210, L = 30, R = 6, T = 18, B = 46;
+  const iw = W - L - R, ih = H - T - B;
+  const step = iw / 12, bw = Math.min(step - 16, 30);
+  const vals = [];
+  let max = 0;
+  for(let m = 0; m < 12; m++){
+    const st = monthStats(view.y, m);
+    vals.push(st);
+    if(st.poly > max) max = st.poly;
+  }
+  max = Math.max(max, 100);
+  const tick = Math.ceil(max / 3 / 50) * 50 || 50;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Полихромы по месяцам года">' +
+    '<defs><linearGradient id="gy" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0%" stop-color="#f0c264"/><stop offset="100%" stop-color="#8a6a28"/></linearGradient>' +
+    '<linearGradient id="gyc" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0%" stop-color="#ffdf95"/><stop offset="100%" stop-color="#d0a343"/></linearGradient></defs>';
+  for(let v = 0; v <= max; v += tick){
+    const y = T + ih - (v / max) * ih;
+    s += '<line x1="' + L + '" y1="' + y.toFixed(1) + '" x2="' + (W-R) + '" y2="' + y.toFixed(1) + '" stroke="rgba(255,255,255,.05)"/>';
+    s += '<text x="' + (L-8) + '" y="' + (y+3.5).toFixed(1) + '" fill="#5e5c68" font-size="10" text-anchor="end">' + v + '</text>';
+  }
+  for(let m = 0; m < 12; m++){
+    const st = vals[m];
+    const cx = L + (m + 0.5) * step;
+    const h = st.poly ? Math.max(3, (st.poly / max) * ih) : 0;
+    const cur = m === view.m;
+    s += '<g class="bar-h" data-m="' + m + '" style="cursor:pointer">';
+    s += '<rect x="' + (cx - step/2).toFixed(1) + '" y="' + T + '" width="' + step.toFixed(1) +
+         '" height="' + (ih + B - 12) + '" fill="transparent"/>';
+    if(h){
+      s += '<rect x="' + (cx - bw/2).toFixed(1) + '" y="' + (T+ih-h).toFixed(1) +
+           '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="url(#' + (cur ? "gyc" : "gy") + ')" rx="4">' +
+           '<title>' + MONTHS[m] + ": " + st.poly + " полихромов, " + fmt(st.denny) + " денни" +
+           (st.master ? ", " + st.master + " мастер-диска" : "") + '</title></rect>';
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih-h-7).toFixed(1) + '" fill="' + (cur ? "#ffdf95" : "#7d7a86") +
+           '" font-size="10.5" font-weight="500" text-anchor="middle">' + st.poly + '</text>';
+    }
+    s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih+17) + '" fill="' + (cur ? "#eceae5" : "#5e5c68") + '" font-size="10.5" text-anchor="middle">' + MONTHS_SHORT[m] + '</text>';
+    s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih+31) + '" fill="#45434e" font-size="9.5" text-anchor="middle">' + (st.denny ? fmtK(st.denny) : "") + '</text>';
+    s += '</g>';
+  }
+  s += '</svg>';
+  const host = document.getElementById("chartYear");
+  host.innerHTML = s;
+  host.querySelectorAll("g[data-m]").forEach(el => {
+    el.addEventListener("click", () => { view.m = +el.dataset.m; render(); });
+  });
+}
+
+/* ── рекорды ── */
+function renderRecords(){
+  const by = {};
+  for(const k in data){
+    const mk = k.slice(0,7);
+    if(!by[mk]) by[mk] = { poly:0, denny:0, master:0, days:0 };
+    const e = data[k];
+    if(e.t === "p") by[mk].poly += e.v;
+    else if(e.t === "m") by[mk].master += e.v;
+    else by[mk].denny += e.v;
+    by[mk].days++;
+  }
+  const all = Object.keys(by).map(k => ({ k:k, ...by[k] }))
+    .sort((a,b) => b.poly - a.poly || b.denny - a.denny || (a.k < b.k ? -1 : 1));
+
+  const tb = document.getElementById("records");
+  const seg = document.getElementById("recSeg");
+  const pager = document.getElementById("recPager");
+
+  if(!all.length){
+    tb.innerHTML = '<tr><td colspan="6" class="empty">Пока пусто. Отметьте первую награду — месяц появится в таблице.</td></tr>';
+    seg.innerHTML = "";
+    pager.innerHTML = "";
+    return;
+  }
+
+  // показываем только те размеры страницы, которые меньше числа месяцев
+  const sizes = [10,20,50].filter(n => all.length > n);
+  if(!sizes.length) recLimit = 0;
+  else if(recLimit && sizes.indexOf(recLimit) === -1) recLimit = sizes[0];
+  seg.innerHTML = "";
+  if(sizes.length){
+    sizes.concat([0]).forEach(n => {
+      const b = document.createElement("button");
+      b.textContent = n ? n : "все";
+      if(recLimit === n) b.classList.add("on");
+      b.onclick = () => { recLimit = n; recPage = 0; renderRecords(); };
+      seg.appendChild(b);
+    });
+  }
+
+  const per = recLimit || all.length;
+  const pages = Math.max(1, Math.ceil(all.length / per));
+  if(recPage > pages - 1) recPage = pages - 1;
+  const from = recPage * per;
+  const rows = all.slice(from, from + per);
+
+  tb.innerHTML = rows.map((r,i) => {
+    const y = +r.k.slice(0,4), m = +r.k.slice(5,7) - 1;
+    const n = daysIn(y,m);
+    const place = from + i + 1;
+    return '<tr class="top' + place + '" data-y="' + y + '" data-m="' + m + '">' +
+      '<td class="rank">' + place + '</td>' +
+      '<td>' + MONTHS[m] + " " + y + '</td>' +
+      '<td class="poly">' + r.poly + '</td>' +
+      '<td class="denny">' + fmt(r.denny) + '</td>' +
+      '<td class="master">' + (r.master || "—") + '</td>' +
+      '<td>' + r.days + " / " + n + '</td></tr>';
+  }).join("");
+  tb.querySelectorAll("tr").forEach(tr => {
+    if(!tr.dataset.y) return;
+    tr.onclick = () => { view.y = +tr.dataset.y; view.m = +tr.dataset.m; render(); window.scrollTo({top:0,behavior:"smooth"}); };
+  });
+
+  pager.innerHTML = "";
+  if(pages > 1){
+    const mk = (label, target, off) => {
+      const b = document.createElement("button");
+      b.textContent = label;
+      b.disabled = off;
+      if(!off) b.onclick = () => { recPage = target; renderRecords(); };
+      return b;
+    };
+    const info = document.createElement("span");
+    info.textContent = "Месяцы " + (from + 1) + "–" + Math.min(from + per, all.length) + " из " + all.length;
+    pager.append(info, mk("‹", recPage - 1, recPage === 0), mk("›", recPage + 1, recPage >= pages - 1));
+  }
+}
+
+/* ── выбор награды ── */
+function openPicker(k){
+  picking = k;
+  const y = +k.slice(0,4), m = +k.slice(5,7) - 1, d = +k.slice(8,10);
+  const g = isGuar(d);
+  const cur = data[k];
+
+  document.getElementById("sheetTitle").textContent = d + " " + MONTHS[m].toLowerCase() + " " + y;
+  const sub = document.getElementById("sheetSub");
+  sub.textContent = g ? "Гарантированный день полихромов" : "Что выпало сегодня";
+  sub.className = "sub" + (g ? " guar" : "");
+
+  // в гарантированные дни первыми идут полихромы, в обычные — денни как самая частая награда
+  const order = g ? ["p","d"] : ["d","p"];
+  keyMap = {};
+  let ki = 1;
+  order.forEach(t => {
+    (t === "p" ? POLY : DENNY).forEach(v => { keyMap[ki++] = { t:t, v:v }; });
+  });
+  keyMap[9] = { t:"m", v:MASTER[0] };   // мастер-диски всегда последние
+
+  const host = document.getElementById("optsHost");
+  order.forEach(t => host.appendChild(document.getElementById(t === "p" ? "secPoly" : "secDenny")));
+  host.appendChild(document.getElementById("secMaster"));
+
+  function keyOf(t,v){
+    for(const n in keyMap){ if(keyMap[n].t === t && keyMap[n].v === v) return n; }
+    return "";
+  }
+  function fill(id, list, t, cls, label){
+    const box = document.getElementById(id);
+    box.innerHTML = "";
+    list.forEach(v => {
+      const b = document.createElement("button");
+      b.className = "opt " + cls + (t === "p" && v === 60 ? " big" : "") +
+        (cur && cur.t === t && cur.v === v ? " sel" : "");
+      b.innerHTML = "<b>" + (t === "d" ? fmt(v) : v) + "</b><small>" + label + "</small><kbd>" + keyOf(t,v) + "</kbd>";
+      b.onclick = () => setDay(k, t, v);
+      box.appendChild(b);
+    });
+  }
+  fill("polyOpts", POLY, "p", "p", "полихромы");
+  fill("dennyOpts", DENNY, "d", "d", "денни");
+  fill("masterOpts", MASTER, "m", "m", "мастер-диски · редко");
+
+  const hideRest = g && !(cur && (cur.t === "d" || cur.t === "m"));
+  document.getElementById("secDenny").classList.toggle("collapsed", hideRest);
+  document.getElementById("secMaster").classList.toggle("collapsed", hideRest);
+  document.getElementById("showDenny").classList.toggle("collapsed", !hideRest);
+
+  document.getElementById("clearDay").style.display = cur ? "" : "none";
+  document.getElementById("overlay").classList.add("on");
+  const sel = host.querySelector(".opt.sel");
+  (sel || host.querySelector("div:not(.collapsed) .opt")).focus();
+}
+
+function closePicker(){
+  picking = null;
+  document.getElementById("overlay").classList.remove("on");
+}
+
+function setDay(k, t, v){
+  data[k] = { t:t, v:v };
+  store.save(data);
+  closePicker();
+  render();
+}
+
+/* ── события ── */
+document.getElementById("prev").onclick = () => { if(--view.m < 0){ view.m = 11; view.y--; } render(); };
+document.getElementById("next").onclick = () => { if(++view.m > 11){ view.m = 0; view.y++; } render(); };
+document.getElementById("toToday").onclick = () => { view = { y: now.getFullYear(), m: now.getMonth() }; render(); };
+document.getElementById("closeSheet").onclick = closePicker;
+document.getElementById("clearDay").onclick = () => {
+  if(picking){ delete data[picking]; store.save(data); }
+  closePicker(); render();
+};
+document.getElementById("showDenny").onclick = function(){
+  document.getElementById("secDenny").classList.remove("collapsed");
+  document.getElementById("secMaster").classList.remove("collapsed");
+  this.classList.add("collapsed");
+};
+document.getElementById("overlay").addEventListener("mousedown", e => {
+  if(e.target.id === "overlay") closePicker();
+});
+document.addEventListener("keydown", e => {
+  if(document.getElementById("confirmOverlay").classList.contains("on")){
+    if(e.key === "Escape") closeConfirm();
+    return;
+  }
+  if(document.getElementById("dataOverlay").classList.contains("on")){
+    if(e.key === "Escape") closeData();
+    return;
+  }
+  if(e.key === "Escape" && menuOpen()){ closeMenu(); return; }
+  if(patchPickOpen() && e.key === "Escape"){ closePatchPick(); return; }
+  if(document.body.classList.contains("tab-pulls")){
+    if(document.activeElement && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+    if(e.key === "ArrowLeft"){ stepPatch(-1); return; }
+    if(e.key === "ArrowRight"){ stepPatch(1); return; }
+    return;
+  }
+  if(pickOpen()){
+    if(e.key === "Escape"){ closePick(); return; }
+    if(e.key === "ArrowLeft"){ pickY--; renderPick(); return; }
+    if(e.key === "ArrowRight"){ pickY++; renderPick(); return; }
+  }
+  if(!picking){
+    if(e.key === "ArrowLeft") document.getElementById("prev").click();
+    if(e.key === "ArrowRight") document.getElementById("next").click();
+    return;
+  }
+  if(e.key === "Escape"){ closePicker(); return; }
+  const hit = keyMap[e.key];
+  if(hit) setDay(picking, hit.t, hit.v);
+});
+
+/* ── резервные копии ── */
+function note(msg){ document.getElementById("storeNote").textContent = msg; }
+
+function merge(text){
+  let inc;
+  try { inc = JSON.parse(text); } catch(e){ inc = null; }
+  if(!inc || typeof inc !== "object"){
+    note("Данные не читаются — нужен JSON из этого же трекера.");
+    return false;
+  }
+  if(inc.v === 2 || inc.rewards){
+    if(inc.pulls && inc.pulls.games){ pdata = inc.pulls; pSave(); renderPulls(); }
+    inc = inc.rewards || {};
+  }
+  let added = 0, upd = 0;
+  for(const k in inc){
+    const e = inc[k];
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(k)) continue;
+    if(!e || ["p","d","m"].indexOf(e.t) === -1 || typeof e.v !== "number") continue;
+    if(data[k]) upd++; else added++;
+    data[k] = { t:e.t, v:e.v };
+  }
+  if(!added && !upd){ note("Данные загружены (новых дней в календаре нет)."); store.save(data); render(); return true; }
+  store.save(data);
+  render();
+  note("Загружено. Новых дней: " + added + ", обновлено: " + upd + ".");
+  return true;
+}
+
+document.getElementById("export").onclick = () => {
+  const text = JSON.stringify({ v:2, rewards:data, pulls:pdata }, null, 1);
+  const name = "zzz-rewards-" + todayKey + ".json";
+  try {
+    const blob = new Blob([text], { type:"application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.rel = "noopener";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+    note("Файл " + name + " ушёл в загрузки. Не нашли его — откройте «Показать данные текстом».");
+  } catch(err){
+    openData();
+    note("Скачивание заблокировано браузером. Скопируйте данные из окна вручную.");
+  }
+};
+
+document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
+document.getElementById("importFile").onchange = function(){
+  const f = this.files[0];
+  if(!f){ return; }
+  const r = new FileReader();
+  r.onload = () => merge(r.result);
+  r.onerror = () => note("Файл не прочитался. Попробуйте вставить его содержимое текстом.");
+  r.readAsText(f);
+  this.value = "";
+};
+
+function openData(){
+  closeMenu();
+  const t = document.getElementById("dataText");
+  t.value = JSON.stringify(data, null, 1);
+  document.getElementById("dataOverlay").classList.add("on");
+  t.focus();
+  t.select();
+}
+function closeData(){ document.getElementById("dataOverlay").classList.remove("on"); }
+
+document.getElementById("showJson").onclick = openData;
+document.getElementById("closeData").onclick = closeData;
+document.getElementById("dataOverlay").addEventListener("mousedown", e => {
+  if(e.target.id === "dataOverlay") closeData();
+});
+document.getElementById("copyJson").onclick = function(){
+  const t = document.getElementById("dataText");
+  t.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+  if(!ok && navigator.clipboard){
+    navigator.clipboard.writeText(t.value).then(
+      () => { this.textContent = "Скопировано"; },
+      () => { this.textContent = "Скопируйте вручную"; }
+    );
+    return;
+  }
+  this.textContent = ok ? "Скопировано" : "Скопируйте вручную";
+  setTimeout(() => { this.textContent = "Скопировать"; }, 2000);
+};
+document.getElementById("applyJson").onclick = () => {
+  if(merge(document.getElementById("dataText").value)) closeData();
+};
+
+/* ── быстрый выбор месяца ── */
+let pickY = view.y;
+function pickOpen(){ return document.getElementById("monthPicker").classList.contains("on"); }
+function closePick(){
+  document.getElementById("monthPicker").classList.remove("on");
+  document.getElementById("monthLabel").setAttribute("aria-expanded","false");
+}
+function renderPick(){
+  document.getElementById("pickYear").textContent = pickY;
+  const grid = document.getElementById("pickGrid");
+  grid.innerHTML = "";
+  for(let m = 0; m < 12; m++){
+    const st = monthStats(pickY, m);
+    const b = document.createElement("button");
+    let cls = "";
+    if(pickY === view.y && m === view.m) cls += " cur";
+    if(st.days) cls += " has";
+    if(pickY > now.getFullYear() || (pickY === now.getFullYear() && m > now.getMonth())) cls += " fut";
+    b.className = cls.trim();
+    b.textContent = MONTHS_SHORT[m];
+    b.title = st.days ? st.poly + " полихромов · отмечено дней: " + st.days : "нет отметок";
+    b.onclick = () => { view = { y:pickY, m:m }; closePick(); render(); };
+    grid.appendChild(b);
+  }
+}
+document.getElementById("monthLabel").onclick = e => {
+  e.stopPropagation();
+  closeMenu();
+  const on = !pickOpen();
+  if(on){ pickY = view.y; renderPick(); }
+  document.getElementById("monthPicker").classList.toggle("on", on);
+  document.getElementById("monthLabel").setAttribute("aria-expanded", on ? "true" : "false");
+};
+document.getElementById("pickPrevY").onclick = () => { pickY--; renderPick(); };
+document.getElementById("pickNextY").onclick = () => { pickY++; renderPick(); };
+
+/* ── меню данных ── */
+function menuOpen(){ return document.getElementById("menu").classList.contains("on"); }
+function closeMenu(){
+  document.getElementById("menu").classList.remove("on");
+  document.getElementById("menuBtn").setAttribute("aria-expanded","false");
+}
+document.getElementById("menuBtn").onclick = e => {
+  e.stopPropagation();
+  closePick();
+  const on = !menuOpen();
+  document.getElementById("menu").classList.toggle("on", on);
+  document.getElementById("menuBtn").setAttribute("aria-expanded", on ? "true" : "false");
+};
+document.addEventListener("mousedown", e => {
+  if(menuOpen() && !e.target.closest(".menuwrap")) closeMenu();
+  if(pickOpen() && !e.target.closest(".pickwrap")) closePick();
+  if(patchPickOpen() && !e.target.closest(".pickwrap")) closePatchPick();
+});
+
+/* ── подтверждение очистки ── */
+function daysWord(n){
+  const t = n % 100, o = n % 10;
+  if(t > 10 && t < 20) return "дней";
+  if(o === 1) return "день";
+  if(o > 1 && o < 5) return "дня";
+  return "дней";
+}
+let confirmCb = null;
+function askConfirm(title, text, btn, cb, withBackup){
+  confirmCb = cb;
+  document.getElementById("confirmTitle").textContent = title;
+  document.getElementById("confirmText").textContent = text;
+  document.getElementById("confirmYes").textContent = btn;
+  document.getElementById("backupFirst").classList.toggle("hidden", !withBackup);
+  document.getElementById("confirmOverlay").classList.add("on");
+  document.getElementById("confirmNo").focus();
+}
+document.getElementById("reset").onclick = () => {
+  closeMenu();
+  const n = Object.keys(data).length;
+  if(!n){ openMenuNote("История пуста — удалять нечего."); return; }
+  askConfirm("Очистить историю?",
+    "Будет стёрто " + n + " отмеченных " + daysWord(n) + " за всё время. Вернуть их будет нельзя.",
+    "Удалить " + n + " " + daysWord(n),
+    () => { data = {}; store.save(data); render(); openMenuNote("История очищена."); },
+    true);
+};
+function closeConfirm(){ document.getElementById("confirmOverlay").classList.remove("on"); }
+document.getElementById("confirmNo").onclick = closeConfirm;
+document.getElementById("confirmYes").onclick = () => {
+  const cb = confirmCb;
+  confirmCb = null;
+  closeConfirm();
+  if(cb) cb();
+};
+document.getElementById("backupFirst").onclick = () => document.getElementById("export").click();
+document.getElementById("confirmOverlay").addEventListener("mousedown", e => {
+  if(e.target.id === "confirmOverlay") closeConfirm();
+});
+
+function openMenuNote(msg){
+  note(msg);
+  document.getElementById("menu").classList.add("on");
+  document.getElementById("menuBtn").setAttribute("aria-expanded","true");
+}
+
+if(!store.persistent){
+  document.getElementById("storeNote").textContent =
+    "Этот просмотр без постоянного хранилища: отметки пропадут при перезагрузке. На GitHub Pages всё сохраняется в браузере.";
+}
+
+
+/* ══ раздел «Крутки»: типы круток, валюта, патчи, несколько игр ══ */
+const PKEY = "zzz-pulls-v1";
+const pstore = makeStore(PKEY);
+let pdata = pstore.load();
+if(!pdata || !pdata.games) pdata = { games:[], active:null };
+let openTypes = {}, openCalc = {};
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function pSave(){ pstore.save(pdata); }
+function fmtP(x){ return (Math.round(x * 10) / 10).toLocaleString("ru-RU"); }
+function dmy(s){ return s ? s.split("-").reverse().join(".") : ""; }
+
+function G(){
+  if(!pdata.games.length){
+    pdata.games.push({
+      id: uid(), name: "Zenless Zone Zero", patch: null, patches: [],
+      types: [{ id: uid(), name: "Обычные", currencies: [
+        { id:uid(), name:"Мастер-ленты", rate:1, amount:0 },
+        { id:uid(), name:"Полихромы", rate:160, amount:0 }
+      ]}]
+    });
+    pdata.active = pdata.games[0].id;
+    pSave();
+  }
+  const g = pdata.games.find(x => x.id === pdata.active) || pdata.games[0];
+  // перенос старого формата (валюты без типов, операции)
+  if(!g.types){
+    g.types = [{ id: uid(), name: "Обычные", currencies: (g.currencies || []).map(c => ({ id:c.id, name:c.name, rate:c.rate, amount:0 })) }];
+    delete g.currencies;
+    (g.patches || []).forEach(p => {
+      if(typeof p.start === "number"){ const o = {}; o[g.types[0].id] = p.start; p.start = o; }
+      delete p.ops;
+    });
+    pSave();
+  }
+  return g;
+}
+function P(){ const g = G(); return g.patches.find(x => x.id === g.patch) || null; }
+function curPulls(c){ return (c.amount || 0) / (c.rate > 0 ? c.rate : 1); }
+function tracked(c){ return c.track !== false; }
+function typePulls(t){ return (t.currencies || []).reduce((s,c) => s + curPulls(c), 0); }
+// в статистику патча идут только отслеживаемые валюты
+function typeTracked(t){ return (t.currencies || []).reduce((s,c) => s + (tracked(c) ? curPulls(c) : 0), 0); }
+function typeMuted(t){ return (t.currencies || []).filter(c => !tracked(c)).length; }
+function nowMap(g){ const o = {}; (g.types||[]).forEach(t => o[t.id] = typeTracked(t)); return o; }
+function totalNow(g){ return (g.types||[]).reduce((s,t) => s + typePulls(t), 0); }
+function sortedPatches(g){
+  return (g.patches||[]).slice().sort((a,b) => (a.date||"") < (b.date||"") ? -1 : (a.date||"") > (b.date||"") ? 1 : 0);
+}
+// конец патча — это старт следующего по дате, а для последнего — текущий остаток
+function endMap(g, p){
+  const ps = sortedPatches(g);
+  const i = ps.findIndex(x => x.id === p.id);
+  const nxt = ps[i+1];
+  return nxt ? (nxt.start || {}) : nowMap(g);
+}
+function patchStats(g, p){
+  const end = endMap(g, p), st = p.start || {};
+  let s = 0, e = 0;
+  (g.types||[]).forEach(t => { s += st[t.id] || 0; e += end[t.id] || 0; });
+  return { start:s, end:e, diff:e - s };
+}
+function signed(x){ return (x > 0 ? "+" : x < 0 ? "−" : "") + fmtP(Math.abs(x)); }
+function signCls(x){ return x < 0 ? "master" : "poly"; }
+
+function renderPulls(){
+  const g = G(), p = P();
+  document.getElementById("hTitle").childNodes[0].nodeValue = "Крутки";
+  document.getElementById("hSub").textContent = g.name;
+  document.getElementById("patchLabel").textContent = p ? "Патч " + p.name : "+ создать патч";
+
+  renderGames();
+  renderPatchList();
+  renderTypes();
+  renderCalc();
+  renderPatchTable(g);
+  renderPatchChart(g);
+
+  const total = totalNow(g);
+  document.getElementById("pLeft").textContent = fmtP(total);
+  document.getElementById("pByType").textContent =
+    (g.types||[]).map(t => t.name.toLowerCase() + " " + fmtP(typePulls(t)) +
+      (typeMuted(t) ? " (в патче " + fmtP(typeTracked(t)) + ")" : "")).join(" · ");
+
+  if(!p){
+    ["pStart","pEnd","pIn"].forEach(i => document.getElementById(i).textContent = "—");
+    const sm = document.getElementById("pSummary");
+    sm.innerHTML = "Патчей пока нет. ";
+    const lb = document.createElement("button");
+    lb.className = "linkbtn";
+    lb.textContent = "Создать первый патч";
+    lb.onclick = () => openPatchPick(true);
+    sm.appendChild(lb);
+  } else {
+    const st = patchStats(g, p);
+    document.getElementById("pStart").textContent = fmtP(st.start);
+    document.getElementById("pEnd").textContent = fmtP(st.end);
+    document.getElementById("pIn").textContent = signed(st.diff);
+    const ps = sortedPatches(g), i = ps.findIndex(x => x.id === p.id);
+    document.getElementById("pSummary").textContent =
+      "Патч " + p.name + (p.date ? " · с " + dmy(p.date) : "") +
+      (ps[i+1] ? " по " + dmy(ps[i+1].date) + " · завершён" : " · идёт сейчас");
+  }
+}
+
+function renderGames(){
+  const g = G();
+  const box = document.getElementById("gameChips");
+  box.innerHTML = "";
+  pdata.games.forEach(x => {
+    const b = document.createElement("button");
+    b.className = "chip" + (x.id === g.id ? " on" : "");
+    b.textContent = x.name;
+    b.onclick = () => { pdata.active = x.id; pSave(); renderPulls(); };
+    if(pdata.games.length > 1 && x.id === g.id){
+      const s = document.createElement("span");
+      s.className = "x"; s.textContent = "×";
+      s.onclick = e => {
+        e.stopPropagation();
+        askConfirm("Удалить игру?", "«" + x.name + "» со всеми патчами и валютой будет удалена.", "Удалить", () => {
+          pdata.games = pdata.games.filter(y => y.id !== x.id);
+          pdata.active = pdata.games[0] ? pdata.games[0].id : null;
+          pSave(); renderPulls();
+        });
+      };
+      b.appendChild(s);
+    }
+    box.appendChild(b);
+  });
+}
+
+function renderPatchList(){
+  const g = G(), p = P();
+  const box = document.getElementById("patchList");
+  box.innerHTML = "";
+  const ps = sortedPatches(g).reverse();
+  if(!ps.length){
+    box.innerHTML = '<p class="nodata" style="padding:4px 10px">Патчей пока нет.</p>';
+    return;
+  }
+  ps.forEach(x => {
+    const b = document.createElement("button");
+    b.className = p && x.id === p.id ? "on" : "";
+    b.innerHTML = '<b>' + esc(x.name) + '</b><span>' + dmy(x.date) + " · " + signed(patchStats(g,x).diff) + '</span>';
+    b.onclick = () => { g.patch = x.id; pSave(); renderPulls(); };
+    box.appendChild(b);
+  });
+}
+
+function renderTypes(){
+  const g = G();
+  const host = document.getElementById("typeList");
+  host.innerHTML = "";
+  if(!(g.types||[]).length){
+    host.innerHTML = '<p class="nodata">Типов круток нет — добавьте первый.</p>';
+    return;
+  }
+  g.types.forEach(t => {
+    const open = !!openTypes[t.id];
+    const acc = document.createElement("div");
+    acc.className = "acc" + (open ? " open" : "");
+
+    const head = document.createElement("button");
+    head.className = "acchead";
+    const muted = typeMuted(t);
+    head.innerHTML = '<span class="caret">▶</span><span class="nm">' + esc(t.name) + '</span>' +
+      '<span class="cnt">' + (t.currencies||[]).length + " вал." +
+      (muted ? " · " + muted + " вне патча" : "") + "</span>" +
+      '<span class="sum num">' + fmtP(typePulls(t)) + '</span><span class="unit">круток</span>';
+    head.onclick = () => { openTypes[t.id] = !open; renderTypes(); };
+    acc.appendChild(head);
+
+    if(open){
+      const body = document.createElement("div");
+      body.className = "accbody";
+
+      const tn = document.createElement("div");
+      tn.className = "typename";
+      const tnLabel = document.createElement("span");
+      tnLabel.textContent = "Название типа";
+      const tnInput = document.createElement("input");
+      tnInput.value = t.name;
+      tnInput.maxLength = 30;
+      tnInput.onchange = () => {
+        const v = tnInput.value.trim();
+        if(v){ t.name = v; pSave(); renderPulls(); } else { tnInput.value = t.name; }
+      };
+      tn.append(tnLabel, tnInput);
+      body.appendChild(tn);
+
+      const hd = document.createElement("div");
+      hd.className = "curline";
+      hd.innerHTML = '<div class="hd">Валюта</div><div class="hd" style="text-align:right">Единиц на крутку</div><div class="hd" style="text-align:right">Есть сейчас</div><div class="hd" style="text-align:center">В патче</div><div></div>';
+      body.appendChild(hd);
+
+      (t.currencies||[]).forEach(c => {
+        const row = document.createElement("div");
+        row.className = "curline";
+        const nm = document.createElement("input");
+        nm.className = "nm"; nm.value = c.name;
+        nm.onchange = () => { c.name = nm.value.trim() || c.name; pSave(); renderPulls(); };
+        const rt = document.createElement("input");
+        rt.type = "number"; rt.step = "any"; rt.min = "0"; rt.value = c.rate;
+        rt.onchange = () => { const v = parseFloat(rt.value); if(v > 0){ c.rate = v; pSave(); renderPulls(); } };
+        const am = document.createElement("input");
+        am.type = "number"; am.step = "any"; am.min = "0"; am.value = c.amount || 0;
+        am.onchange = () => { c.amount = Math.max(0, parseFloat(am.value) || 0); pSave(); renderPulls(); };
+        const trk = document.createElement("button");
+        trk.className = "iconbtn trk" + (tracked(c) ? "" : " off");
+        trk.textContent = tracked(c) ? "●" : "○";
+        trk.title = tracked(c)
+          ? "Учитывается в изменении за патч — нажмите, чтобы исключить"
+          : "Не учитывается в изменении за патч";
+        trk.onclick = () => { c.track = !tracked(c); pSave(); renderPulls(); };
+        const del = document.createElement("button");
+        del.className = "iconbtn"; del.textContent = "×"; del.title = "Удалить валюту";
+        del.onclick = () => {
+          t.currencies = t.currencies.filter(x => x.id !== c.id);
+          pSave(); renderPulls();
+        };
+        row.append(nm, rt, am, trk, del);
+        body.appendChild(row);
+      });
+
+      const foot = document.createElement("div");
+      foot.className = "accfoot";
+      const add = document.createElement("button");
+      add.className = "ghost sm"; add.textContent = "+ валюта";
+      add.onclick = () => {
+        t.currencies = t.currencies || [];
+        t.currencies.push({ id:uid(), name:"Новая валюта", rate:1, amount:0 });
+        pSave(); renderPulls();
+      };
+      const dlt = document.createElement("button");
+      dlt.className = "linkbtn"; dlt.textContent = "удалить тип";
+      dlt.style.marginLeft = "auto";
+      dlt.onclick = () => askConfirm("Удалить тип круток?", "«" + t.name + "» и его валюты будут удалены.", "Удалить", () => {
+        g.types = g.types.filter(x => x.id !== t.id);
+        (g.patches||[]).forEach(pt => { if(pt.start) delete pt.start[t.id]; });
+        pSave(); renderPulls();
+      });
+      foot.append(add, dlt);
+      body.appendChild(foot);
+      acc.appendChild(body);
+    }
+    host.appendChild(acc);
+  });
+}
+
+function renderCalc(){
+  const g = G(), p = P();
+  const tb = document.getElementById("calcBody");
+  tb.innerHTML = "";
+  if(!p){
+    tb.innerHTML = '<tr><td colspan="4" class="empty">Нет активного патча.</td></tr>';
+    return;
+  }
+  const end = endMap(g, p);
+  const rows = (g.types||[]).filter(t => (t.currencies||[]).some(tracked));
+  if(!rows.length){
+    tb.innerHTML = '<tr><td colspan="4" class="empty">Ни одна валюта не отслеживается в патче.</td></tr>';
+    return;
+  }
+  let ts = 0, te = 0;
+  rows.forEach(t => {
+    const st = (p.start||{})[t.id] || 0;
+    const en = end[t.id] || 0;
+    ts += st; te += en;
+    const open = !!openCalc[t.id];
+    const tr = document.createElement("tr");
+    tr.className = "type-row" + (open ? " open" : "");
+    tr.title = "Показать валюты этого типа";
+    tr.onclick = e => {
+      if(e.target.tagName === "INPUT") return;
+      openCalc[t.id] = !open;
+      renderCalc();
+    };
+    tr.innerHTML = '<td><span class="caret">▶</span>' + esc(t.name) + '</td><td></td><td>' + fmtP(en) +
+      '</td><td class="' + signCls(en - st) + '">' + signed(en - st) + '</td>';
+    const i = document.createElement("input");
+    i.className = "cell-in num"; i.type = "number"; i.step = "any"; i.min = "0";
+    i.value = Math.round(st * 10) / 10;
+    i.title = "Остаток круток этого типа на старте патча";
+    i.onchange = () => {
+      p.start = p.start || {};
+      p.start[t.id] = Math.max(0, parseFloat(i.value) || 0);
+      pSave(); renderPulls();
+    };
+    tr.children[1].appendChild(i);
+    tb.appendChild(tr);
+
+    if(open){
+      const cur = (t.currencies||[]).filter(tracked);
+      if(!cur.length){
+        const e0 = document.createElement("tr");
+        e0.className = "sub";
+        e0.innerHTML = '<td colspan="4">Нет отслеживаемых валют.</td>';
+        tb.appendChild(e0);
+      }
+      cur.forEach(c => {
+        const sub = document.createElement("tr");
+        sub.className = "sub";
+        sub.style.cursor = "default";
+        sub.innerHTML =
+          '<td>' + esc(c.name) + '<span class="raw">' + fmt(Math.round((c.amount||0)*100)/100) +
+            " ÷ " + c.rate + '</span></td>' +
+          '<td></td><td>' + fmtP(curPulls(c)) + '</td><td></td>';
+        tb.appendChild(sub);
+      });
+    }
+  });
+  const sum = document.createElement("tr");
+  sum.className = "sum-row";
+  sum.style.cursor = "default";
+  sum.innerHTML = '<td>Всего</td><td>' + fmtP(ts) + '</td><td>' + fmtP(te) +
+    '</td><td class="' + signCls(te - ts) + '">' + signed(te - ts) + '</td>';
+  tb.appendChild(sum);
+}
+
+function renderPatchTable(g){
+  const tb = document.getElementById("patchBody");
+  tb.innerHTML = "";
+  const ps = sortedPatches(g).reverse();
+  if(!ps.length){
+    tb.innerHTML = '<tr><td colspan="5" class="empty">Пока нет ни одного патча.</td></tr>';
+    return;
+  }
+  ps.forEach(p => {
+    const st = patchStats(g, p);
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td>' + esc(p.name) + '</td>' +
+      '<td style="color:var(--dim)">' + dmy(p.date) + '</td>' +
+      '<td>' + fmtP(st.start) + '</td>' +
+      '<td class="denny">' + fmtP(st.end) + '</td>' +
+      '<td class="' + signCls(st.diff) + '">' + signed(st.diff) + '</td>';
+    tr.onclick = () => { g.patch = p.id; pSave(); renderPulls(); window.scrollTo({top:0,behavior:"smooth"}); };
+    tb.appendChild(tr);
+  });
+}
+
+function renderPatchChart(g){
+  const host = document.getElementById("patchChart");
+  const list = sortedPatches(g).slice(-12);
+  if(list.length < 2){ host.innerHTML = ""; return; }
+  const W = 720, H = 190, L = 34, R = 6, T = 16, B = 34;
+  const iw = W - L - R, ih = H - T - B;
+  const step = iw / list.length, bw = Math.min(step - 16, 34);
+  const stats = list.map(p => patchStats(g, p));
+  let max = 10, min = 0;
+  stats.forEach(s => { max = Math.max(max, s.diff); min = Math.min(min, s.diff); });
+  const span = max - min || 1;
+  const zero = T + ih * (max / span);
+  const tick = Math.max(1, Math.round(span / 4));
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Изменение круток по патчам">' +
+    '<defs><linearGradient id="gpin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffdf95"/><stop offset="100%" stop-color="#c59a3c"/></linearGradient>' +
+    '<linearGradient id="gpout" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8a3247"/><stop offset="100%" stop-color="#e0576f"/></linearGradient></defs>';
+  for(let v = Math.ceil(min / tick) * tick; v <= max; v += tick){
+    const y = T + ih * ((max - v) / span);
+    s += '<line x1="' + L + '" y1="' + y.toFixed(1) + '" x2="' + (W-R) + '" y2="' + y.toFixed(1) +
+         '" stroke="rgba(255,255,255,' + (v === 0 ? ".14" : ".05") + ')"/>';
+    s += '<text x="' + (L-8) + '" y="' + (y+3.5).toFixed(1) + '" fill="#5e5c68" font-size="10" text-anchor="end">' + v + '</text>';
+  }
+  list.forEach((p, i) => {
+    const d = stats[i].diff;
+    const cx = L + (i + 0.5) * step;
+    const hgt = Math.abs(d) / span * ih;
+    const y = d >= 0 ? zero - hgt : zero;
+    s += '<g class="bar-h">';
+    if(hgt > 0.5){
+      s += '<rect x="' + (cx - bw/2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) +
+           '" height="' + hgt.toFixed(1) + '" fill="url(#' + (d >= 0 ? "gpin" : "gpout") + ')" rx="3">' +
+           '<title>' + esc(p.name) + ": " + signed(d) + '</title></rect>';
+    }
+    s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih+17) + '" fill="#5e5c68" font-size="10" text-anchor="middle">' + esc(p.name) + '</text>';
+    s += '</g>';
+  });
+  s += '</svg>';
+  host.innerHTML = s +
+    '<div class="legend"><span><i style="background:linear-gradient(180deg,#ffdf95,#c59a3c)"></i>накопили за патч</span>' +
+    '<span><i style="background:linear-gradient(180deg,#e0576f,#8a3247)"></i>потратили больше, чем получили</span></div>';
+}
+
+/* ── управление патчами и играми ── */
+function patchPickOpen(){ return document.getElementById("patchPicker").classList.contains("on"); }
+function closePatchPick(){
+  document.getElementById("patchPicker").classList.remove("on");
+  document.getElementById("patchLabel").setAttribute("aria-expanded","false");
+}
+function openPatchPick(withForm){
+  closeMenu();
+  renderPulls();
+  document.getElementById("patchPicker").classList.add("on");
+  document.getElementById("patchLabel").setAttribute("aria-expanded","true");
+  if(withForm){
+    document.getElementById("patchForm").classList.remove("hidden");
+    document.getElementById("patchDate").value = todayKey;
+    document.getElementById("patchName").focus();
+  }
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+document.getElementById("patchLabel").onclick = e => {
+  e.stopPropagation();
+  if(patchPickOpen()) closePatchPick();
+  else openPatchPick(!P());
+};
+function stepPatch(dir){
+  const g = G(), ps = sortedPatches(g);
+  if(!ps.length) return;
+  let i = ps.findIndex(x => x.id === g.patch);
+  if(i === -1) i = ps.length - 1;
+  i = Math.min(ps.length - 1, Math.max(0, i + dir));
+  g.patch = ps[i].id;
+  pSave(); renderPulls();
+}
+document.getElementById("patchPrev").onclick = () => stepPatch(-1);
+document.getElementById("patchNext").onclick = () => stepPatch(1);
+
+document.getElementById("addGame").onclick = () => {
+  document.getElementById("gameForm").classList.remove("hidden");
+  document.getElementById("gameName").focus();
+};
+document.getElementById("gameSave").onclick = () => {
+  const nm = document.getElementById("gameName").value.trim();
+  if(!nm) return;
+  const g = { id:uid(), name:nm, patch:null, patches:[],
+    types:[{ id:uid(), name:"Обычные", currencies:[{ id:uid(), name:"Крутки", rate:1, amount:0 }] }] };
+  pdata.games.push(g);
+  pdata.active = g.id;
+  pSave();
+  document.getElementById("gameName").value = "";
+  document.getElementById("gameForm").classList.add("hidden");
+  renderPulls();
+};
+document.getElementById("addPatch").onclick = () => {
+  document.getElementById("patchForm").classList.remove("hidden");
+  document.getElementById("patchDate").value = todayKey;
+  document.getElementById("patchName").focus();
+};
+document.getElementById("patchSave").onclick = () => {
+  const g = G();
+  const nm = document.getElementById("patchName").value.trim();
+  if(!nm) return;
+  // старт берём из текущего остатка, потом его можно поправить в таблице патча
+  const p = { id:uid(), name:nm, date:document.getElementById("patchDate").value || todayKey,
+    start: nowMap(g) };
+  g.patches.push(p);
+  g.patch = p.id;
+  pSave();
+  document.getElementById("patchName").value = "";
+  document.getElementById("patchForm").classList.add("hidden");
+  renderPulls();
+};
+document.getElementById("addType").onclick = () => {
+  document.getElementById("typeForm").classList.remove("hidden");
+  document.getElementById("typeName").focus();
+};
+document.getElementById("typeCancel").onclick = () => document.getElementById("typeForm").classList.add("hidden");
+document.getElementById("typeSave").onclick = () => {
+  const g = G();
+  const nm = document.getElementById("typeName").value.trim();
+  if(!nm) return;
+  const t = { id:uid(), name:nm, currencies:[{ id:uid(), name:"Крутки", rate:1, amount:0 }] };
+  g.types.push(t);
+  openTypes[t.id] = true;
+  pSave();
+  document.getElementById("typeName").value = "";
+  document.getElementById("typeForm").classList.add("hidden");
+  renderPulls();
+};
+
+/* ── вкладки ── */
+document.querySelectorAll(".tab").forEach(t => {
+  t.onclick = () => {
+    const pulls = t.dataset.view === "pulls";
+    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
+    document.getElementById("viewCalendar").classList.toggle("hidden", pulls);
+    document.getElementById("viewPulls").classList.toggle("hidden", !pulls);
+    document.body.classList.toggle("tab-pulls", pulls);
+    closeMenu(); closePick(); closePatchPick();
+    if(pulls) renderPulls();
+    else {
+      document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";
+      document.getElementById("hSub").textContent = "Zenless Zone Zero";
+    }
+  };
+});
+
+render();
+})();
+</script>
+</body>
+</html>

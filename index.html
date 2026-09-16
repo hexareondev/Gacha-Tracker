@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ежедневные награды · Zenless Zone Zero</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%230c0c10%22%2F%3E%3Crect%20x%3D%220.6%22%20y%3D%220.6%22%20width%3D%2230.8%22%20height%3D%2230.8%22%20rx%3D%226.6%22%20fill%3D%22none%22%20stroke%3D%22%233a2f14%22%20stroke-width%3D%221.2%22%2F%3E%3Cpath%20d%3D%22M16%204.5%2027%2016%2016%2027.5%205%2016Z%22%20fill%3D%22%23f0c264%22%2F%3E%3Cpath%20d%3D%22M16%204.5%2027%2016%2016%2027.5Z%22%20fill%3D%22%23c2913a%22%2F%3E%3Cpath%20d%3D%22M16%204.5%2020%2016%2016%2027.5%2012%2016Z%22%20fill%3D%22%23ffe3a0%22%2F%3E%3C%2Fsvg%3E">
+<meta name="theme-color" content="#0a0a0c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -205,6 +207,11 @@ svg .bar-h:hover{opacity:1;filter:brightness(1.15) saturate(1.05)}
 .seg button:hover{background:rgba(255,255,255,.06);color:var(--text)}
 .seg button.on{background:rgba(240,194,100,.14);color:var(--gold-hot)}
 .seg:empty{display:none}
+.segs{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+th.sortable{cursor:pointer;user-select:none;-webkit-user-select:none;white-space:nowrap}
+th.sortable:hover{color:var(--text)}
+th.sorted{color:var(--gold-hot)}
+th .arw{margin-left:5px;font-size:9px;vertical-align:1px}
 .pager{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:12px 4px 8px;font-size:12.5px;color:var(--muted)}
 .pager:empty{display:none}
 .pager button{padding:6px 12px;border-radius:999px}
@@ -617,11 +624,14 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
         <h2>Рекорды по полихромам</h2>
         <p class="hint">Лучшие месяцы за всё время. Строка открывает месяц.</p>
       </div>
-      <div class="seg" id="recSeg"></div>
+      <div class="segs">
+        <div class="seg" id="recMode"></div>
+        <div class="seg" id="recSeg"></div>
+      </div>
     </div>
     <div class="card" style="padding-bottom:6px">
       <table>
-        <thead><tr><th class="rank"></th><th>Месяц</th><th>Полихромы</th><th>Денни</th><th>Диски</th><th>Отмечено</th></tr></thead>
+        <thead><tr id="recHead"></tr></thead>
         <tbody id="records"></tbody>
       </table>
       <div class="pager" id="recPager"></div>
@@ -768,6 +778,9 @@ function makeStore(key){
   };
 }
 const store = makeStore(KEY);
+const ustore = makeStore("zzz-ui-v1");
+const ui = ustore.load() || {};
+function saveUI(){ ustore.save(ui); }
 
 let data = store.load();
 const now = new Date();
@@ -775,7 +788,10 @@ const todayKey = iso(now.getFullYear(), now.getMonth(), now.getDate());
 let view = { y: now.getFullYear(), m: now.getMonth() };
 let picking = null;
 let keyMap = {};
-let recLimit = 10, recPage = 0;
+let recLimit = typeof ui.recLimit === "number" ? ui.recLimit : 10;
+let recPage = 0;
+let recMode = ui.recMode === "year" ? "year" : "month";
+let recSort = (ui.recSort && ui.recSort.key) ? ui.recSort : { key:"poly", dir:-1 };
 
 /* ── утилиты ── */
 function pad(n){ return n < 10 ? "0"+n : ""+n; }
@@ -1018,67 +1034,139 @@ function renderYearChart(){
 }
 
 /* ── рекорды ── */
-function renderRecords(){
+function daysInYear(y){ return new Date(y,1,29).getMonth() === 1 ? 366 : 365; }
+
+const REC_COLS = [
+  { k:"name",   label:"Месяц",     num:false },
+  { k:"poly",   label:"Полихромы", num:true, cls:"poly" },
+  { k:"denny",  label:"Денни",     num:true, cls:"denny", fmt:fmt },
+  { k:"master", label:"Диски",     num:true, cls:"master" },
+  { k:"days",   label:"Отмечено",  num:true }
+];
+
+function recAggregate(){
   const by = {};
   for(const k in data){
-    const mk = k.slice(0,7);
-    if(!by[mk]) by[mk] = { poly:0, denny:0, master:0, days:0 };
+    const key = recMode === "year" ? k.slice(0,4) : k.slice(0,7);
+    if(!by[key]) by[key] = { key:key, poly:0, denny:0, master:0, days:0 };
     const e = data[k];
-    if(e.t === "p") by[mk].poly += e.v;
-    else if(e.t === "m") by[mk].master += e.v;
-    else by[mk].denny += e.v;
-    by[mk].days++;
+    if(e.t === "p") by[key].poly += e.v;
+    else if(e.t === "m") by[key].master += e.v;
+    else by[key].denny += e.v;
+    by[key].days++;
   }
-  const all = Object.keys(by).map(k => ({ k:k, ...by[k] }))
-    .sort((a,b) => b.poly - a.poly || b.denny - a.denny || (a.k < b.k ? -1 : 1));
+  return Object.keys(by).map(k => {
+    const r = by[k];
+    const y = +k.slice(0,4);
+    if(recMode === "year"){
+      r.label = "" + y; r.total = daysInYear(y); r.y = y; r.m = null;
+    } else {
+      const m = +k.slice(5,7) - 1;
+      r.label = MONTHS[m] + " " + y; r.total = daysIn(y,m); r.y = y; r.m = m;
+    }
+    return r;
+  });
+}
 
+function recSortRows(rows){
+  const dir = recSort.dir, key = recSort.key;
+  return rows.sort((a,b) => {
+    if(key === "name") return (a.key < b.key ? -1 : a.key > b.key ? 1 : 0) * dir;
+    return (a[key] - b[key]) * dir || (a.key < b.key ? 1 : -1);
+  });
+}
+
+function renderRecHead(){
+  const tr = document.getElementById("recHead");
+  tr.innerHTML = "";
+  const rank = document.createElement("th");
+  rank.className = "rank";
+  tr.appendChild(rank);
+  REC_COLS.forEach(c => {
+    const th = document.createElement("th");
+    th.className = "sortable" + (recSort.key === c.k ? " sorted" : "");
+    th.textContent = c.k === "name" && recMode === "year" ? "Год" : c.label;
+    if(recSort.key === c.k){
+      const a = document.createElement("span");
+      a.className = "arw";
+      a.textContent = recSort.dir < 0 ? "▼" : "▲";
+      th.appendChild(a);
+    }
+    th.onclick = () => {
+      if(recSort.key === c.k) recSort.dir = -recSort.dir;
+      else recSort = { key:c.k, dir: c.num ? -1 : 1 };
+      recPage = 0;
+      ui.recSort = recSort; saveUI();
+      renderRecords();
+    };
+    tr.appendChild(th);
+  });
+}
+
+function renderRecords(){
   const tb = document.getElementById("records");
   const seg = document.getElementById("recSeg");
+  const modeSeg = document.getElementById("recMode");
   const pager = document.getElementById("recPager");
 
+  modeSeg.innerHTML = "";
+  [["month","месяцы"],["year","годы"]].forEach(([v,label]) => {
+    const b = document.createElement("button");
+    b.textContent = label;
+    if(recMode === v) b.classList.add("on");
+    b.onclick = () => { recMode = v; recPage = 0; ui.recMode = v; saveUI(); renderRecords(); };
+    modeSeg.appendChild(b);
+  });
+  renderRecHead();
+
+  const all = recSortRows(recAggregate());
   if(!all.length){
-    tb.innerHTML = '<tr><td colspan="6" class="empty">Пока пусто. Отметьте первую награду — месяц появится в таблице.</td></tr>';
+    tb.innerHTML = '<tr><td colspan="6" class="empty">Пока пусто. Отметьте первую награду — период появится в таблице.</td></tr>';
     seg.innerHTML = "";
     pager.innerHTML = "";
     return;
   }
 
-  // показываем только те размеры страницы, которые меньше числа месяцев
   const sizes = [10,20,50].filter(n => all.length > n);
-  if(!sizes.length) recLimit = 0;
-  else if(recLimit && sizes.indexOf(recLimit) === -1) recLimit = sizes[0];
+  // выбранный размер сохраняем как есть, для показа берём подходящий
+  const eff = (recLimit && sizes.indexOf(recLimit) !== -1) ? recLimit : 0;
   seg.innerHTML = "";
   if(sizes.length){
     sizes.concat([0]).forEach(n => {
       const b = document.createElement("button");
       b.textContent = n ? n : "все";
-      if(recLimit === n) b.classList.add("on");
-      b.onclick = () => { recLimit = n; recPage = 0; renderRecords(); };
+      if(eff === n) b.classList.add("on");
+      b.onclick = () => { recLimit = n; recPage = 0; ui.recLimit = n; saveUI(); renderRecords(); };
       seg.appendChild(b);
     });
   }
 
-  const per = recLimit || all.length;
+  const per = eff || all.length;
   const pages = Math.max(1, Math.ceil(all.length / per));
   if(recPage > pages - 1) recPage = pages - 1;
   const from = recPage * per;
   const rows = all.slice(from, from + per);
+  const medals = recSort.key === "poly" && recSort.dir < 0;
 
-  tb.innerHTML = rows.map((r,i) => {
-    const y = +r.k.slice(0,4), m = +r.k.slice(5,7) - 1;
-    const n = daysIn(y,m);
+  tb.innerHTML = "";
+  rows.forEach((r,i) => {
     const place = from + i + 1;
-    return '<tr class="top' + place + '" data-y="' + y + '" data-m="' + m + '">' +
+    const tr = document.createElement("tr");
+    if(medals && place <= 3) tr.className = "top" + place;
+    tr.innerHTML =
       '<td class="rank">' + place + '</td>' +
-      '<td>' + MONTHS[m] + " " + y + '</td>' +
+      '<td>' + r.label + '</td>' +
       '<td class="poly">' + r.poly + '</td>' +
       '<td class="denny">' + fmt(r.denny) + '</td>' +
       '<td class="master">' + (r.master || "—") + '</td>' +
-      '<td>' + r.days + " / " + n + '</td></tr>';
-  }).join("");
-  tb.querySelectorAll("tr").forEach(tr => {
-    if(!tr.dataset.y) return;
-    tr.onclick = () => { view.y = +tr.dataset.y; view.m = +tr.dataset.m; render(); window.scrollTo({top:0,behavior:"smooth"}); };
+      '<td>' + r.days + " / " + r.total + '</td>';
+    tr.onclick = () => {
+      view.y = r.y;
+      if(r.m !== null) view.m = r.m;
+      render();
+      window.scrollTo({ top:0, behavior:"smooth" });
+    };
+    tb.appendChild(tr);
   });
 
   pager.innerHTML = "";
@@ -1091,7 +1179,8 @@ function renderRecords(){
       return b;
     };
     const info = document.createElement("span");
-    info.textContent = "Месяцы " + (from + 1) + "–" + Math.min(from + per, all.length) + " из " + all.length;
+    info.textContent = (recMode === "year" ? "Годы " : "Месяцы ") + (from + 1) + "–" +
+      Math.min(from + per, all.length) + " из " + all.length;
     pager.append(info, mk("‹", recPage - 1, recPage === 0), mk("›", recPage + 1, recPage >= pages - 1));
   }
 }
@@ -1164,7 +1253,7 @@ function setDay(k, t, v){
   render();
 }
 
-/* ── события ── */
+/* ── события календаря ── */
 document.getElementById("prev").onclick = () => { if(--view.m < 0){ view.m = 11; view.y--; } render(); };
 document.getElementById("next").onclick = () => { if(++view.m > 11){ view.m = 0; view.y++; } render(); };
 document.getElementById("toToday").onclick = () => { view = { y: now.getFullYear(), m: now.getMonth() }; render(); };
@@ -1279,7 +1368,7 @@ document.getElementById("importFile").onchange = function(){
 function openData(){
   closeMenu();
   const t = document.getElementById("dataText");
-  t.value = JSON.stringify(data, null, 1);
+  t.value = JSON.stringify({ v:2, rewards:data, pulls:pdata }, null, 1);
   document.getElementById("dataOverlay").classList.add("on");
   t.focus();
   t.select();
@@ -1424,7 +1513,7 @@ const PKEY = "zzz-pulls-v1";
 const pstore = makeStore(PKEY);
 let pdata = pstore.load();
 if(!pdata || !pdata.games) pdata = { games:[], active:null };
-let openTypes = {}, openCalc = {};
+let openTypes = ui.openTypes || {}, openCalc = ui.openCalc || {};
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function pSave(){ pstore.save(pdata); }
@@ -1612,7 +1701,11 @@ function renderTypes(){
       '<span class="cnt">' + (t.currencies||[]).length + " вал." +
       (muted ? " · " + muted + " вне патча" : "") + "</span>" +
       '<span class="sum num">' + fmtP(typePulls(t)) + '</span><span class="unit">круток</span>';
-    head.onclick = () => { openTypes[t.id] = !open; renderTypes(); };
+    head.onclick = () => {
+      openTypes[t.id] = !open;
+      ui.openTypes = openTypes; saveUI();
+      renderTypes();
+    };
     acc.appendChild(head);
 
     if(open){
@@ -1718,7 +1811,11 @@ function renderCalc(){
       '<span class="tinner"><span class="caret">▶</span><span class="tnm">' + esc(t.name) + '</span></span>' +
       '</td><td></td><td>' + fmtP(en) +
       '</td><td class="' + signCls(en - st) + '">' + signed(en - st) + '</td>';
-    tr.children[0].onclick = () => { openCalc[t.id] = !open; renderCalc(); };
+    tr.children[0].onclick = () => {
+      openCalc[t.id] = !open;
+      ui.openCalc = openCalc; saveUI();
+      renderCalc();
+    };
     const i = document.createElement("input");
     i.className = "cell-in num"; i.type = "number"; i.step = "any"; i.min = "0";
     i.value = Math.round(st * 10) / 10;
@@ -1938,23 +2035,27 @@ document.getElementById("burger").onclick = () => {
 document.getElementById("scrim").onclick = closeSide;
 
 /* ── разделы ── */
+function setView(name){
+  const pulls = name === "pulls";
+  document.querySelectorAll(".navitem").forEach(x => x.classList.toggle("on", x.dataset.view === name));
+  document.getElementById("viewCalendar").classList.toggle("hidden", pulls);
+  document.getElementById("viewPulls").classList.toggle("hidden", !pulls);
+  document.body.classList.toggle("tab-pulls", pulls);
+  closeMenu(); closePick(); closePatchPick(); closeGamePick(); closeSide();
+  if(pulls) renderPulls();
+  else {
+    document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";
+    document.getElementById("hSub").textContent = "Zenless Zone Zero";
+  }
+  ui.tab = name;
+  saveUI();
+}
 document.querySelectorAll(".navitem").forEach(t => {
-  t.onclick = () => {
-    const pulls = t.dataset.view === "pulls";
-    document.querySelectorAll(".navitem").forEach(x => x.classList.toggle("on", x === t));
-    document.getElementById("viewCalendar").classList.toggle("hidden", pulls);
-    document.getElementById("viewPulls").classList.toggle("hidden", !pulls);
-    document.body.classList.toggle("tab-pulls", pulls);
-    closeMenu(); closePick(); closePatchPick(); closeGamePick(); closeSide();
-    if(pulls) renderPulls();
-    else {
-      document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";
-      document.getElementById("hSub").textContent = "Zenless Zone Zero";
-    }
-  };
+  t.onclick = () => setView(t.dataset.view);
 });
 
 render();
+if(ui.tab === "pulls") setView("pulls");
 })();
 </script>
 </body>

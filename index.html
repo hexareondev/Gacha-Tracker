@@ -223,13 +223,34 @@ td.denny{color:var(--steel)}
 td.master{color:var(--crimson)}
 .empty{padding:26px 4px;color:var(--muted);font-size:13.5px;border-top:none}
 
-/* ── вкладки ── */
+/* ── боковое меню ── */
 .hidden{display:none !important}
-.tabs{display:flex;gap:3px;padding:3px;margin:2px 0 4px;width:max-content;
-  background:var(--panel);border:1px solid var(--edge-soft);border-radius:999px}
-.tab{border:none;background:none;padding:8px 18px;border-radius:999px;font-size:14px;color:var(--muted)}
-.tab:hover{background:rgba(255,255,255,.06);color:var(--text)}
-.tab.on{background:rgba(240,194,100,.14);color:var(--gold-hot);font-weight:500}
+.shell{display:flex;gap:26px;max-width:1240px;margin:0 auto;align-items:flex-start}
+.shell .wrap{flex:1;min-width:0;margin:0}
+.side{
+  position:sticky;top:18px;z-index:20;width:186px;flex:0 0 186px;
+  padding:18px 0 0;display:flex;flex-direction:column;gap:22px;
+}
+.burger{display:none;width:38px;height:38px;padding:0;border-radius:10px;font-size:18px;line-height:1;color:var(--muted)}
+.scrim{position:fixed;inset:0;z-index:29;display:none;background:rgba(5,5,8,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+body.menu-open .scrim{display:block}
+.sidenav{display:flex;flex-direction:column;gap:3px}
+.navitem{
+  border:none;background:none;text-align:left;padding:10px 14px;border-radius:10px;
+  font-size:14.5px;color:var(--muted);position:relative;
+}
+.navitem:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.navitem.on{background:rgba(240,194,100,.12);color:var(--gold-hot);font-weight:500}
+.navitem.on::before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:2px;border-radius:2px;background:var(--gold)}
+.hleft{display:flex;align-items:center;gap:13px;min-width:0}
+.sidelabel{font-size:11px;color:var(--dim);letter-spacing:.04em;padding:0 14px 8px}
+.sidegroup{display:flex;flex-direction:column;gap:2px}
+.sidegroup .linkbtn{align-self:flex-start;margin:8px 0 0 14px;font-size:12.5px}
+.sidegroup .inline{margin:8px 0 0 0;flex-wrap:nowrap}
+.sidegroup .inline input{min-width:0}
+body:not(.tab-pulls) #navGame{display:none}
+#gameLabel{min-width:120px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#navGame{padding:3px 4px}
 body.tab-pulls #navMonth,body.tab-pulls #toToday{display:none}
 body:not(.tab-pulls) #navPatch{display:none}
 
@@ -281,12 +302,28 @@ input[type=number]{font-variant-numeric:tabular-nums}
 .plist button span{color:var(--dim);font-size:12px}
 .plist button.on span{color:#b8933f}
 .mpick.wide{width:320px}
+.editrow{display:flex;align-items:center;gap:10px;padding:3px 2px 7px}
+.editrow span{font-size:11.5px;color:var(--dim);width:66px;flex:0 0 66px}
+.editrow input{flex:1;min-width:0;padding:7px 10px;font-size:13.5px}
 .mpick .mpick-head span{font-size:12px;color:var(--muted);font-weight:400}
 td input.cell-in{width:96px;text-align:right;padding:6px 8px;font-size:13.5px}
 tr.sum-row td{font-weight:600;border-top:1px solid var(--edge)}
-tr.type-row td:first-child{display:flex;align-items:center;gap:9px}
-tr.type-row .caret{color:var(--dim);font-size:10px;display:inline-block;transition:transform .15s ease}
-tr.type-row.open .caret{transform:rotate(90deg)}
+#calcTable{table-layout:fixed}
+#calcTable th:nth-child(1),#calcTable td:nth-child(1){width:46%}
+#calcTable th:nth-child(2),#calcTable td:nth-child(2){width:18%}
+#calcTable th:nth-child(3),#calcTable td:nth-child(3){width:18%}
+#calcTable th:nth-child(4),#calcTable td:nth-child(4){width:18%}
+#calcTable td.tcell{cursor:pointer;user-select:none;-webkit-user-select:none}
+#calcTable tr.type-row:hover td{background:rgba(255,255,255,.028)}
+#calcTable tr.type-row:hover td.tcell{background:rgba(255,255,255,.07)}
+.tinner{display:inline-flex;align-items:center;gap:9px;max-width:100%}
+.tinner .tnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tinner .caret{
+  flex:0 0 12px;width:12px;height:12px;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--dim);font-size:9px;line-height:1;transition:transform .15s ease;transform-origin:50% 50%;
+}
+tr.type-row.open .tinner .caret{transform:rotate(90deg)}
+#calcTable td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 tr.sub td{border-top:none;padding-top:5px;padding-bottom:5px;color:var(--muted);font-size:13px}
 tr.sub td:first-child{padding-left:29px}
 tr.sub .raw{color:var(--dim);font-size:12px;margin-left:8px}
@@ -297,7 +334,10 @@ tr.sub:last-of-type td{padding-bottom:11px}
 .pulls .gold .v{color:var(--gold)}
 .pulls .st .v{color:var(--steel)}
 .pulls .cr .v{color:var(--crimson)}
-.totals.pulls{grid-template-columns:repeat(4,1fr);margin-top:22px}
+.totals.pulls{grid-template-columns:1.15fr 2fr;margin-top:22px;align-items:stretch}
+.totals.pulls .hero{justify-content:center;gap:2px;padding:20px 22px}
+.totals.pulls .subs .tot{display:flex;flex-direction:column;justify-content:center;min-height:104px}
+.totals.pulls .delta{margin-top:6px;line-height:1.45}
 .nodata{color:var(--muted);font-size:13.5px;padding:14px 2px}
 
 /* ── быстрый выбор месяца ── */
@@ -386,6 +426,20 @@ textarea{
 }
 textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 
+@media(max-width:1040px){
+  .shell{display:block;max-width:none}
+  .burger{display:block}
+  .side{
+    position:fixed;left:0;top:0;bottom:0;width:252px;flex:none;z-index:30;
+    padding:22px 12px;gap:24px;overflow:auto;
+    background:var(--raise);border-right:1px solid var(--edge);
+    box-shadow:24px 0 60px -30px rgba(0,0,0,.95);
+    transform:translateX(-101%);transition:transform .22s cubic-bezier(.2,.9,.3,1);
+  }
+  body.menu-open .side{transform:none}
+  .sidelabel{padding:0 14px 8px}
+}
+@media (prefers-reduced-motion:reduce){.side{transition:none}}
 @media(max-width:760px){
   body{padding:0 14px 70px}
   .totals.pulls{grid-template-columns:1fr}
@@ -420,10 +474,22 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 </style>
 </head>
 <body>
+<div class="shell">
+
+<aside class="side">
+  <nav class="sidenav">
+    <button class="navitem on" data-view="calendar">Календарь</button>
+    <button class="navitem" data-view="pulls">Крутки</button>
+  </nav>
+</aside>
+
 <div class="wrap">
 
   <header>
-    <h1 id="hTitle">Ежедневные награды<span id="hSub">Zenless Zone Zero</span></h1>
+    <div class="hleft">
+      <button class="burger" id="burger" aria-label="Меню разделов" aria-expanded="false">≡</button>
+      <h1 id="hTitle">Ежедневные награды<span id="hSub">Zenless Zone Zero</span></h1>
+    </div>
     <div class="nav">
       <div class="navgroup" id="navMonth">
       <button class="arrow" id="prev" aria-label="Предыдущий месяц">‹</button>
@@ -441,18 +507,32 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
       <button class="arrow" id="next" aria-label="Следующий месяц">›</button>
       </div>
 
+      <div class="navgroup" id="navGame">
+        <div class="pickwrap">
+          <button class="month num" id="gameLabel" aria-haspopup="true" aria-expanded="false">—</button>
+          <div class="mpick" id="gamePicker">
+            <div class="editrow"><span>Название</span><input id="gameRename" maxlength="40"></div>
+            <div class="sep"></div>
+            <div class="mpick-head"><span>Игры</span><button class="linkbtn" id="addGame">+ новая игра</button></div>
+            <div class="plist" id="gameChips"></div>
+            <div class="inline hidden" id="gameForm">
+              <input id="gameName" placeholder="Название игры" maxlength="40" style="flex:1 1 140px">
+              <button class="mark sm" id="gameSave">Создать</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="navgroup" id="navPatch">
         <button class="arrow" id="patchPrev" aria-label="Предыдущий патч">‹</button>
         <div class="pickwrap">
           <button class="month num" id="patchLabel" aria-haspopup="true" aria-expanded="false">—</button>
           <div class="mpick wide" id="patchPicker">
-            <div class="mpick-head"><span>Игра</span><button class="linkbtn" id="addGame">+ новая игра</button></div>
-            <div class="chips" id="gameChips"></div>
-            <div class="inline hidden" id="gameForm">
-              <input id="gameName" placeholder="Название игры" maxlength="40">
-              <button class="mark sm" id="gameSave">Добавить</button>
+            <div id="patchEdit">
+              <div class="editrow"><span>Название</span><input id="patchRename" maxlength="30"></div>
+              <div class="editrow"><span>Начало</span><input id="patchReDate" type="date"></div>
+              <div class="sep"></div>
             </div>
-            <div class="sep"></div>
             <div class="mpick-head"><span>Патчи</span><button class="linkbtn" id="addPatch">+ новый патч</button></div>
             <div class="plist" id="patchList"></div>
             <div class="inline hidden" id="patchForm">
@@ -481,11 +561,6 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
       </div>
     </div>
   </header>
-
-  <div class="tabs">
-    <button class="tab on" data-view="calendar">Календарь</button>
-    <button class="tab" data-view="pulls">Крутки</button>
-  </div>
 
   <div id="viewCalendar">
   <div class="today">
@@ -559,7 +634,7 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
     <div class="totals pulls">
       <div class="tot hero">
         <div>
-          <div class="k">Остаток круток</div>
+          <div class="k">Остаток отслеживаемых круток</div>
           <div class="v num" id="pLeft">0</div>
           <div class="delta" id="pByType"></div>
         </div>
@@ -592,7 +667,7 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
       <h2>Текущий патч</h2>
       <p class="hint">Изменение — текущий остаток минус остаток на старте патча. Строка типа разворачивается по клику и показывает вклад каждой валюты.</p>
       <div class="card" style="padding-bottom:6px">
-        <table>
+        <table id="calcTable">
           <thead><tr><th>Тип круток</th><th>На старте</th><th>Сейчас</th><th>Изменение</th></tr></thead>
           <tbody id="calcBody"></tbody>
         </table>
@@ -614,6 +689,9 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
   </div><!-- /viewPulls -->
 
 </div>
+</div><!-- /shell -->
+
+<div class="scrim" id="scrim"></div>
 
 <div class="overlay" id="overlay">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -1112,8 +1190,10 @@ document.addEventListener("keydown", e => {
     if(e.key === "Escape") closeData();
     return;
   }
+  if(e.key === "Escape" && document.body.classList.contains("menu-open")){ closeSide(); return; }
   if(e.key === "Escape" && menuOpen()){ closeMenu(); return; }
   if(patchPickOpen() && e.key === "Escape"){ closePatchPick(); return; }
+  if(gamePickOpen() && e.key === "Escape"){ closeGamePick(); return; }
   if(document.body.classList.contains("tab-pulls")){
     if(document.activeElement && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
     if(e.key === "ArrowLeft"){ stepPatch(-1); return; }
@@ -1283,6 +1363,7 @@ document.addEventListener("mousedown", e => {
   if(menuOpen() && !e.target.closest(".menuwrap")) closeMenu();
   if(pickOpen() && !e.target.closest(".pickwrap")) closePick();
   if(patchPickOpen() && !e.target.closest(".pickwrap")) closePatchPick();
+  if(gamePickOpen() && !e.target.closest(".pickwrap")) closeGamePick();
 });
 
 /* ── подтверждение очистки ── */
@@ -1383,7 +1464,6 @@ function typePulls(t){ return (t.currencies || []).reduce((s,c) => s + curPulls(
 function typeTracked(t){ return (t.currencies || []).reduce((s,c) => s + (tracked(c) ? curPulls(c) : 0), 0); }
 function typeMuted(t){ return (t.currencies || []).filter(c => !tracked(c)).length; }
 function nowMap(g){ const o = {}; (g.types||[]).forEach(t => o[t.id] = typeTracked(t)); return o; }
-function totalNow(g){ return (g.types||[]).reduce((s,t) => s + typePulls(t), 0); }
 function sortedPatches(g){
   return (g.patches||[]).slice().sort((a,b) => (a.date||"") < (b.date||"") ? -1 : (a.date||"") > (b.date||"") ? 1 : 0);
 }
@@ -1416,8 +1496,8 @@ function renderPulls(){
   renderPatchTable(g);
   renderPatchChart(g);
 
-  const total = totalNow(g);
-  document.getElementById("pLeft").textContent = fmtP(total);
+  const trackedTotal = (g.types||[]).reduce((s,t) => s + typeTracked(t), 0);
+  document.getElementById("pLeft").textContent = fmtP(trackedTotal);
   document.getElementById("pByType").textContent =
     (g.types||[]).map(t => t.name.toLowerCase() + " " + fmtP(typePulls(t)) +
       (typeMuted(t) ? " (в патче " + fmtP(typeTracked(t)) + ")" : "")).join(" · ");
@@ -1445,18 +1525,29 @@ function renderPulls(){
 
 function renderGames(){
   const g = G();
+  document.getElementById("gameLabel").textContent = g.name;
+  const ren = document.getElementById("gameRename");
+  if(document.activeElement !== ren) ren.value = g.name;
+  ren.onchange = () => {
+    const v = ren.value.trim();
+    if(v){ g.name = v; pSave(); renderPulls(); } else { ren.value = g.name; }
+  };
   const box = document.getElementById("gameChips");
   box.innerHTML = "";
   pdata.games.forEach(x => {
     const b = document.createElement("button");
-    b.className = "chip" + (x.id === g.id ? " on" : "");
-    b.textContent = x.name;
-    b.onclick = () => { pdata.active = x.id; pSave(); renderPulls(); };
+    b.className = x.id === g.id ? "on" : "";
+    const nm = document.createElement("b");
+    nm.textContent = x.name;
+    b.appendChild(nm);
+    b.onclick = () => { pdata.active = x.id; pSave(); renderPulls(); closeGamePick(); };
     if(pdata.games.length > 1 && x.id === g.id){
       const s = document.createElement("span");
-      s.className = "x"; s.textContent = "×";
+      s.textContent = "удалить";
+      s.style.cursor = "pointer";
       s.onclick = e => {
         e.stopPropagation();
+        closeGamePick();
         askConfirm("Удалить игру?", "«" + x.name + "» со всеми патчами и валютой будет удалена.", "Удалить", () => {
           pdata.games = pdata.games.filter(y => y.id !== x.id);
           pdata.active = pdata.games[0] ? pdata.games[0].id : null;
@@ -1471,6 +1562,20 @@ function renderGames(){
 
 function renderPatchList(){
   const g = G(), p = P();
+  document.getElementById("patchEdit").classList.toggle("hidden", !p);
+  if(p){
+    const rn = document.getElementById("patchRename");
+    const rd = document.getElementById("patchReDate");
+    if(document.activeElement !== rn) rn.value = p.name;
+    if(document.activeElement !== rd) rd.value = p.date || "";
+    rn.onchange = () => {
+      const v = rn.value.trim();
+      if(v){ p.name = v; pSave(); renderPulls(); } else { rn.value = p.name; }
+    };
+    rd.onchange = () => {
+      if(rd.value){ p.date = rd.value; pSave(); renderPulls(); } else { rd.value = p.date || ""; }
+    };
+  }
   const box = document.getElementById("patchList");
   box.innerHTML = "";
   const ps = sortedPatches(g).reverse();
@@ -1609,14 +1714,11 @@ function renderCalc(){
     const open = !!openCalc[t.id];
     const tr = document.createElement("tr");
     tr.className = "type-row" + (open ? " open" : "");
-    tr.title = "Показать валюты этого типа";
-    tr.onclick = e => {
-      if(e.target.tagName === "INPUT") return;
-      openCalc[t.id] = !open;
-      renderCalc();
-    };
-    tr.innerHTML = '<td><span class="caret">▶</span>' + esc(t.name) + '</td><td></td><td>' + fmtP(en) +
+    tr.innerHTML = '<td class="tcell" title="Показать валюты этого типа">' +
+      '<span class="tinner"><span class="caret">▶</span><span class="tnm">' + esc(t.name) + '</span></span>' +
+      '</td><td></td><td>' + fmtP(en) +
       '</td><td class="' + signCls(en - st) + '">' + signed(en - st) + '</td>';
+    tr.children[0].onclick = () => { openCalc[t.id] = !open; renderCalc(); };
     const i = document.createElement("input");
     i.className = "cell-in num"; i.type = "number"; i.step = "any"; i.min = "0";
     i.value = Math.round(st * 10) / 10;
@@ -1722,13 +1824,26 @@ function renderPatchChart(g){
 }
 
 /* ── управление патчами и играми ── */
+function gamePickOpen(){ return document.getElementById("gamePicker").classList.contains("on"); }
+function closeGamePick(){
+  document.getElementById("gamePicker").classList.remove("on");
+  document.getElementById("gameLabel").setAttribute("aria-expanded","false");
+}
+document.getElementById("gameLabel").onclick = e => {
+  e.stopPropagation();
+  if(gamePickOpen()){ closeGamePick(); return; }
+  closeMenu(); closePatchPick();
+  renderGames();
+  document.getElementById("gamePicker").classList.add("on");
+  document.getElementById("gameLabel").setAttribute("aria-expanded","true");
+};
 function patchPickOpen(){ return document.getElementById("patchPicker").classList.contains("on"); }
 function closePatchPick(){
   document.getElementById("patchPicker").classList.remove("on");
   document.getElementById("patchLabel").setAttribute("aria-expanded","false");
 }
 function openPatchPick(withForm){
-  closeMenu();
+  closeMenu(); closeGamePick();
   renderPulls();
   document.getElementById("patchPicker").classList.add("on");
   document.getElementById("patchLabel").setAttribute("aria-expanded","true");
@@ -1770,6 +1885,7 @@ document.getElementById("gameSave").onclick = () => {
   pSave();
   document.getElementById("gameName").value = "";
   document.getElementById("gameForm").classList.add("hidden");
+  closeGamePick();
   renderPulls();
 };
 document.getElementById("addPatch").onclick = () => {
@@ -1809,15 +1925,27 @@ document.getElementById("typeSave").onclick = () => {
   renderPulls();
 };
 
-/* ── вкладки ── */
-document.querySelectorAll(".tab").forEach(t => {
+/* ── выдвижное меню на узких экранах ── */
+function closeSide(){
+  document.body.classList.remove("menu-open");
+  document.getElementById("burger").setAttribute("aria-expanded","false");
+}
+document.getElementById("burger").onclick = () => {
+  const on = !document.body.classList.contains("menu-open");
+  document.body.classList.toggle("menu-open", on);
+  document.getElementById("burger").setAttribute("aria-expanded", on ? "true" : "false");
+};
+document.getElementById("scrim").onclick = closeSide;
+
+/* ── разделы ── */
+document.querySelectorAll(".navitem").forEach(t => {
   t.onclick = () => {
     const pulls = t.dataset.view === "pulls";
-    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
+    document.querySelectorAll(".navitem").forEach(x => x.classList.toggle("on", x === t));
     document.getElementById("viewCalendar").classList.toggle("hidden", pulls);
     document.getElementById("viewPulls").classList.toggle("hidden", !pulls);
     document.body.classList.toggle("tab-pulls", pulls);
-    closeMenu(); closePick(); closePatchPick();
+    closeMenu(); closePick(); closePatchPick(); closeGamePick(); closeSide();
     if(pulls) renderPulls();
     else {
       document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";

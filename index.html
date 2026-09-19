@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ежедневные награды · Zenless Zone Zero</title>
+<title>Гача Трекер</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%230c0c10%22%2F%3E%3Crect%20x%3D%220.6%22%20y%3D%220.6%22%20width%3D%2230.8%22%20height%3D%2230.8%22%20rx%3D%226.6%22%20fill%3D%22none%22%20stroke%3D%22%233a2f14%22%20stroke-width%3D%221.2%22%2F%3E%3Cpath%20d%3D%22M16%204.5%2027%2016%2016%2027.5%205%2016Z%22%20fill%3D%22%23f0c264%22%2F%3E%3Cpath%20d%3D%22M16%204.5%2027%2016%2016%2027.5Z%22%20fill%3D%22%23c2913a%22%2F%3E%3Cpath%20d%3D%22M16%204.5%2020%2016%2016%2027.5%2012%2016Z%22%20fill%3D%22%23ffe3a0%22%2F%3E%3C%2Fsvg%3E">
 <meta name="theme-color" content="#0a0a0c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -241,6 +241,8 @@ td.master{color:var(--crimson)}
 .burger{display:none;width:38px;height:38px;padding:0;border-radius:10px;font-size:18px;line-height:1;color:var(--muted)}
 .scrim{position:fixed;inset:0;z-index:29;display:none;background:rgba(5,5,8,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 body.menu-open .scrim{display:block}
+.brand{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:-0.02em;padding:0 14px 4px}
+.brand span{color:var(--gold)}
 .sidenav{display:flex;flex-direction:column;gap:3px}
 .navitem{
   border:none;background:none;text-align:left;padding:10px 14px;border-radius:10px;
@@ -445,6 +447,7 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
   }
   body.menu-open .side{transform:none}
   .sidelabel{padding:0 14px 8px}
+  .brand{padding:0 14px 10px}
 }
 @media (prefers-reduced-motion:reduce){.side{transition:none}}
 @media(max-width:760px){
@@ -484,6 +487,7 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 <div class="shell">
 
 <aside class="side">
+  <div class="brand">Гача <span>Трекер</span></div>
   <nav class="sidenav">
     <button class="navitem on" data-view="calendar">Календарь</button>
     <button class="navitem" data-view="pulls">Крутки</button>
@@ -560,6 +564,8 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
           <button role="menuitem" id="importBtn">Загрузить из файла</button>
           <input type="file" id="importFile" accept="application/json" hidden>
           <button role="menuitem" id="showJson">Показать данные текстом</button>
+          <div class="sep"></div>
+          <button role="menuitem" id="openSettings">Настройки</button>
           <div class="sep"></div>
           <button role="menuitem" class="danger" id="reset">Очистить историю</button>
           <p class="menunote" id="countNote"></p>
@@ -722,6 +728,17 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
   </div>
 </div>
 
+<div class="overlay" id="settingsOverlay">
+  <div class="sheet" style="max-width:430px" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h3 id="setTitle">Настройки</h3>
+    <p class="sub">Время, когда в игре обновляются ежедневные награды. Календарь считает день по этому рубежу.</p>
+    <div class="editrow"><span>Сервер</span><select id="resetPreset"></select></div>
+    <div class="editrow"><span>Смена дня</span><input id="resetTime" type="time"></div>
+    <p class="hint" id="resetInfo" style="margin:10px 0 0"></p>
+    <div class="row" style="margin-top:16px"><button class="ghost" id="closeSettings">Готово</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="confirmOverlay">
   <div class="sheet" style="max-width:380px" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
     <h3 id="confirmTitle">Очистить историю?</h3>
@@ -781,10 +798,22 @@ const store = makeStore(KEY);
 const ustore = makeStore("zzz-ui-v1");
 const ui = ustore.load() || {};
 function saveUI(){ ustore.save(ui); }
+// смена игрового дня: сколько минут после полуночи по местному времени
+function resetMin(){ return typeof ui.resetMin === "number" ? ui.resetMin : 0; }
+function gameNow(){ return new Date(Date.now() - resetMin() * 60000); }
 
 let data = store.load();
-const now = new Date();
-const todayKey = iso(now.getFullYear(), now.getMonth(), now.getDate());
+let now = gameNow();
+let todayKey = iso(now.getFullYear(), now.getMonth(), now.getDate());
+// вкладка может висеть открытой через смену дня — сверяем дату заново
+function refreshToday(){
+  const d = gameNow();
+  const k = iso(d.getFullYear(), d.getMonth(), d.getDate());
+  now = d;
+  if(k === todayKey) return false;
+  todayKey = k;
+  return true;
+}
 let view = { y: now.getFullYear(), m: now.getMonth() };
 let picking = null;
 let keyMap = {};
@@ -821,6 +850,7 @@ function yearStats(y){ const pre = y+"-"; return sumRange(k => k.indexOf(pre) ==
 
 /* ── отрисовка ── */
 function render(){
+  refreshToday();
   renderHeader();
   renderToday();
   renderGrid();
@@ -1256,7 +1286,11 @@ function setDay(k, t, v){
 /* ── события календаря ── */
 document.getElementById("prev").onclick = () => { if(--view.m < 0){ view.m = 11; view.y--; } render(); };
 document.getElementById("next").onclick = () => { if(++view.m > 11){ view.m = 0; view.y++; } render(); };
-document.getElementById("toToday").onclick = () => { view = { y: now.getFullYear(), m: now.getMonth() }; render(); };
+document.getElementById("toToday").onclick = () => {
+  refreshToday();
+  view = { y: now.getFullYear(), m: now.getMonth() };
+  render();
+};
 document.getElementById("closeSheet").onclick = closePicker;
 document.getElementById("clearDay").onclick = () => {
   if(picking){ delete data[picking]; store.save(data); }
@@ -1277,6 +1311,10 @@ document.addEventListener("keydown", e => {
   }
   if(document.getElementById("dataOverlay").classList.contains("on")){
     if(e.key === "Escape") closeData();
+    return;
+  }
+  if(document.getElementById("settingsOverlay").classList.contains("on")){
+    if(e.key === "Escape") closeSettings();
     return;
   }
   if(e.key === "Escape" && document.body.classList.contains("menu-open")){ closeSide(); return; }
@@ -1400,6 +1438,63 @@ document.getElementById("applyJson").onclick = () => {
 };
 
 /* ── быстрый выбор месяца ── */
+/* ── настройки: время смены дня ── */
+const SERVERS = [
+  { id:"asia", name:"Азия · 04:00 (UTC+8)",    off: 8 * 60 },
+  { id:"eu",   name:"Европа · 04:00 (UTC+1)",  off: 1 * 60 },
+  { id:"us",   name:"Америка · 04:00 (UTC−5)", off: -5 * 60 }
+];
+function localReset(serverOff){
+  const localOff = -new Date().getTimezoneOffset();
+  return ((4 * 60 - serverOff + localOff) % 1440 + 1440) % 1440;
+}
+function hhmm(min){
+  return String(Math.floor(min / 60)).padStart(2,"0") + ":" + String(min % 60).padStart(2,"0");
+}
+function renderSettings(){
+  const sel = document.getElementById("resetPreset");
+  sel.innerHTML = SERVERS.map(s => '<option value="' + s.id + '">' + s.name + " → " + hhmm(localReset(s.off)) + " у вас</option>").join("") +
+    '<option value="custom">Своё время</option>';
+  sel.value = ui.resetPreset || "custom";
+  document.getElementById("resetTime").value = hhmm(resetMin());
+
+  const real = new Date();
+  const g = gameNow();
+  let left = (resetMin() - (real.getHours() * 60 + real.getMinutes()) + 1440) % 1440;
+  if(left === 0) left = 1440;
+  document.getElementById("resetInfo").textContent =
+    "Сейчас идёт игровой день " + g.getDate() + " " + MONTHS[g.getMonth()].toLowerCase() +
+    ", до смены " + Math.floor(left / 60) + " ч " + (left % 60) + " мин.";
+}
+function applyReset(min, preset){
+  ui.resetMin = ((min % 1440) + 1440) % 1440;
+  ui.resetPreset = preset;
+  saveUI();
+  refreshToday();
+  render();
+  renderSettings();
+}
+document.getElementById("openSettings").onclick = () => {
+  closeMenu();
+  renderSettings();
+  document.getElementById("settingsOverlay").classList.add("on");
+};
+function closeSettings(){ document.getElementById("settingsOverlay").classList.remove("on"); }
+document.getElementById("closeSettings").onclick = closeSettings;
+document.getElementById("settingsOverlay").addEventListener("mousedown", e => {
+  if(e.target.id === "settingsOverlay") closeSettings();
+});
+document.getElementById("resetPreset").onchange = function(){
+  const s = SERVERS.find(x => x.id === this.value);
+  if(s) applyReset(localReset(s.off), s.id);
+  else applyReset(resetMin(), "custom");
+};
+document.getElementById("resetTime").onchange = function(){
+  const m = /^(\d{2}):(\d{2})$/.exec(this.value);
+  if(!m){ this.value = hhmm(resetMin()); return; }
+  applyReset(+m[1] * 60 + +m[2], "custom");
+};
+
 let pickY = view.y;
 function pickOpen(){ return document.getElementById("monthPicker").classList.contains("on"); }
 function closePick(){
@@ -2052,6 +2147,11 @@ function setView(name){
 }
 document.querySelectorAll(".navitem").forEach(t => {
   t.onclick = () => setView(t.dataset.view);
+});
+
+setInterval(() => { if(refreshToday()) render(); }, 60000);
+document.addEventListener("visibilitychange", () => {
+  if(!document.hidden && refreshToday()) render();
 });
 
 render();

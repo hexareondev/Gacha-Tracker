@@ -374,6 +374,15 @@ tr.sub:last-of-type td{padding-bottom:11px}
 .dropin span{font-size:12.5px;color:var(--muted);max-width:540px;line-height:1.55}
 .dropin .row{margin-top:6px}
 .dropin .hint{margin:4px 0 0}
+.watchrow{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  margin-top:12px;padding:10px 14px;font-size:12.5px;color:var(--muted);
+  background:var(--panel-2);border:1px solid var(--edge-soft);border-radius:var(--rs);
+}
+.watchrow b{color:var(--text);font-weight:500}
+.watchrow .dot{width:7px;height:7px;border-radius:50%;background:#8fa86a;flex:0 0 7px}
+.watchrow .dot.wait{background:var(--gold)}
+.watchrow button{padding:6px 12px;font-size:12.5px;border-radius:999px}
 .bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:8px}
 .bcard{
   background:var(--panel);border:1px solid var(--edge-soft);border-radius:var(--r);padding:16px 18px;
@@ -820,11 +829,13 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
       <div class="dropin">
         <b>Перетащите сюда файл истории</b>
         <span>JSON в формате UIGF v4 — его делают выгрузчики истории круток. Файл читается прямо в браузере и никуда не отправляется.</span>
-        <div class="row" style="justify-content:flex-start">
+        <div class="row" style="justify-content:flex-start;flex-wrap:wrap">
           <button class="mark sm" id="pickHist">Выбрать файл</button>
           <input type="file" id="histFile" accept="application/json,.json" hidden>
+          <button class="ghost sm hidden" id="watchHist">Следить за файлом</button>
           <button class="ghost sm danger" id="clearHist">Очистить историю</button>
         </div>
+        <div class="watchrow hidden" id="watchRow"></div>
         <p class="hint" id="histNote"></p>
       </div>
     </div>
@@ -2145,16 +2156,20 @@ function analyzeImport(parsed){
   });
 }
 
-function previewImport(text){
+function previewImport(text, opts){
+  opts = opts || {};
   let parsed;
   try {
     parsed = parseUIGF(JSON.parse(text));
   } catch(e){
     document.getElementById("histNote").textContent = e.message || "Файл не читается.";
-    return;
+    return false;
   }
   const info = (function(){ try { return JSON.parse(text).info || {}; } catch(e){ return {}; } })();
   pending = { rows: analyzeImport(parsed), info: info };
+  const nothing = !pending.rows.some(r => r.nw || r.enr);
+  if(opts.quiet && nothing){ pending = null; return false; }      // нечего добавлять — молчим
+  if(opts.apply){ applyImport(); return true; }
   document.getElementById("impSource").textContent =
     "Источник: " + (info.export_app || "неизвестно") +
     (info.export_app_version ? " " + info.export_app_version : "") +
@@ -2164,6 +2179,7 @@ function previewImport(text){
   document.getElementById("impEnrich").value = "1";
   renderPreview();
   document.getElementById("importOverlay").classList.add("on");
+  return true;
 }
 
 function renderPreview(){
@@ -2638,6 +2654,113 @@ function jumpToDrop(id){
 
 document.getElementById("rareClose").onclick = () => { histBanner = null; renderHistory(); };
 
+/* ── слежение за файлом истории ──
+   Chrome и Edge умеют запоминать выбранный файл: страница получает на него ссылку
+   и при следующем открытии перечитывает файл сама, без диалога выбора. */
+const FS_DB = "zzz-fs-v1", FS_STORE = "handles", FS_KEY = "history";
+function fsSupported(){
+  try { return !!(window.showOpenFilePicker && window.indexedDB); } catch(e){ return false; }
+}
+function idbRun(mode, fn){
+  return new Promise((res, rej) => {
+    const rq = indexedDB.open(FS_DB, 1);
+    rq.onupgradeneeded = () => { rq.result.createObjectStore(FS_STORE); };
+    rq.onerror = () => rej(rq.error);
+    rq.onsuccess = () => {
+      const db = rq.result;
+      const tx = db.transaction(FS_STORE, mode);
+      const out = fn(tx.objectStore(FS_STORE));
+      tx.oncomplete = () => { db.close(); res(out && out.result); };
+      tx.onerror = () => { db.close(); rej(tx.error); };
+    };
+  });
+}
+let fsHandle = null;
+
+function renderWatchRow(state){
+  const btn = document.getElementById("watchHist");
+  const row = document.getElementById("watchRow");
+  btn.classList.toggle("hidden", !fsSupported() || !!fsHandle);
+  row.classList.toggle("hidden", !fsHandle);
+  if(!fsHandle) return;
+  row.innerHTML = "";
+  const dot = document.createElement("span");
+  dot.className = "dot" + (state === "wait" ? " wait" : "");
+  const txt = document.createElement("span");
+  txt.innerHTML = "Файл <b>" + esc(ui.fsName || "истории") + "</b> — " +
+    (state === "wait" ? "нужно подтвердить доступ"
+     : state === "fresh" ? "новых записей нет"
+     : ui.fsSeen ? "проверен " + ui.fsSeen : "будет перечитан при открытии");
+  const upd = document.createElement("button");
+  upd.className = "ghost";
+  upd.textContent = state === "wait" ? "Разрешить и обновить" : "Обновить сейчас";
+  upd.onclick = () => readWatched(true);
+  const mode = document.createElement("button");
+  mode.className = "ghost";
+  mode.textContent = ui.fsAuto ? "загружать сразу" : "показывать предпросмотр";
+  mode.title = "Как поступать с новыми записями";
+  mode.onclick = () => { ui.fsAuto = !ui.fsAuto; saveUI(); renderWatchRow(); };
+  const off = document.createElement("button");
+  off.className = "ghost danger";
+  off.textContent = "Не следить";
+  off.onclick = () => {
+    fsHandle = null;
+    delete ui.fsName; delete ui.fsStamp; delete ui.fsSeen;
+    saveUI();
+    idbRun("readwrite", st => st.delete(FS_KEY)).catch(() => {});
+    renderWatchRow();
+  };
+  row.append(dot, txt, upd, mode, off);
+}
+
+function watchFile(){
+  if(!fsSupported()) return;
+  window.showOpenFilePicker({
+    multiple: false,
+    types: [{ description: "История круток (UIGF)", accept: { "application/json": [".json"] } }]
+  }).then(res => {
+    fsHandle = res[0];
+    ui.fsName = fsHandle.name;
+    delete ui.fsStamp;
+    saveUI();
+    return idbRun("readwrite", st => st.put(fsHandle, FS_KEY)).catch(() => {});
+  }).then(() => readWatched(true)).catch(() => {});
+}
+
+function readWatched(manual){
+  if(!fsHandle) return;
+  const need = manual ? "requestPermission" : "queryPermission";
+  Promise.resolve(fsHandle.queryPermission({ mode: "read" })).then(p => {
+    if(p === "granted") return "granted";
+    if(!manual) return p;
+    return fsHandle.requestPermission({ mode: "read" });
+  }).then(p => {
+    if(p !== "granted"){ renderWatchRow("wait"); return; }
+    return fsHandle.getFile().then(file => {
+      const stamp = file.lastModified + ":" + file.size;
+      if(!manual && ui.fsStamp === stamp){ renderWatchRow(); return; }   // файл не менялся
+      return file.text().then(text => {
+        ui.fsStamp = stamp;
+        ui.fsSeen = new Date().toLocaleString("ru-RU", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+        saveUI();
+        const got = previewImport(text, { quiet: true, apply: !!ui.fsAuto });
+        renderWatchRow(got ? null : "fresh");
+      });
+    });
+  }).catch(() => { renderWatchRow("wait"); });
+}
+
+function restoreWatch(){
+  if(!fsSupported()) { renderWatchRow(); return; }
+  idbRun("readonly", st => st.get(FS_KEY)).then(hnd => {
+    if(!hnd) { renderWatchRow(); return; }
+    fsHandle = hnd;
+    ui.fsName = ui.fsName || hnd.name;
+    renderWatchRow();
+    readWatched(false);
+  }).catch(() => renderWatchRow());
+}
+
 /* загрузка файла */
 function readHistFile(file){
   if(!file) return;
@@ -2647,6 +2770,7 @@ function readHistFile(file){
   r.readAsText(file);
 }
 document.getElementById("pickHist").onclick = () => document.getElementById("histFile").click();
+document.getElementById("watchHist").onclick = watchFile;
 document.getElementById("histFile").onchange = function(){
   readHistFile(this.files[0]);
   this.value = "";
@@ -3436,7 +3560,7 @@ function setView(name){
   document.body.classList.add("tab-" + name);
   closeMenu(); closePick(); closePatchPick(); closeGamePick(); closeSide();
   if(name === "pulls") renderPulls();
-  else if(name === "history") renderHistory();
+  else if(name === "history"){ renderHistory(); readWatched(false); }
   else {
     document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";
     document.getElementById("hSub").textContent = "Zenless Zone Zero";
@@ -3450,11 +3574,14 @@ document.querySelectorAll(".navitem").forEach(t => {
 
 setInterval(() => { if(refreshToday()) render(); }, 60000);
 document.addEventListener("visibilitychange", () => {
-  if(!document.hidden && refreshToday()) render();
+  if(document.hidden) return;
+  if(refreshToday()) render();
+  if(document.body.classList.contains("tab-history")) readWatched(false);
 });
 
 render();
 setView(ui.tab || "calendar");
+restoreWatch();
 })();
 </script>
 </body>

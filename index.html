@@ -260,7 +260,7 @@ body.menu-open .scrim{display:block}
 body:not(.tab-pulls) #navGame{display:none}
 #gameLabel{min-width:120px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #navGame{padding:3px 4px}
-body.tab-pulls #navMonth,body.tab-pulls #toToday{display:none}
+body:not(.tab-calendar) #navMonth,body:not(.tab-calendar) #toToday{display:none}
 body:not(.tab-pulls) #navPatch{display:none}
 
 /* ── чипы, поля, формы ── */
@@ -311,6 +311,20 @@ input[type=number]{font-variant-numeric:tabular-nums}
 .plist button span{color:var(--dim);font-size:12px}
 .plist button.on span{color:#b8933f}
 .mpick.wide{width:320px}
+.sheet.wide{max-width:660px}
+.impscroll{max-height:44vh;overflow:auto;margin:0 -2px 16px;padding:0 2px}
+.impacc{border:1px solid var(--edge-soft);border-radius:var(--rs);padding:13px 15px;margin-bottom:8px}
+.impacc.off{opacity:.45}
+.imphead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.imphead .chip{padding:6px 12px;font-size:13px}
+.impnums{font-size:12.5px;color:var(--muted);flex:1 1 100%}
+.impnums b{color:var(--text);font-variant-numeric:tabular-nums}
+.impnums b.plus{color:var(--gold)}
+.impacc table{margin-top:10px;font-size:12.5px}
+.impacc th{padding:0 8px 6px;font-size:11.5px}
+.impacc td{padding:6px 8px}
+.impacc .note2{font-size:11.5px;color:var(--dim);margin:9px 0 0}
+.impacc .note2.ok{color:#8fa86a}
 .editrow{display:flex;align-items:center;gap:10px;padding:3px 2px 7px}
 .editrow span{font-size:11.5px;color:var(--dim);width:66px;flex:0 0 66px}
 .editrow input{flex:1;min-width:0;padding:7px 10px;font-size:13.5px}
@@ -348,6 +362,96 @@ tr.sub:last-of-type td{padding-bottom:11px}
 .totals.pulls .subs .tot{display:flex;flex-direction:column;justify-content:center;min-height:104px}
 .totals.pulls .delta{margin-top:6px;line-height:1.45}
 .nodata{color:var(--muted);font-size:13.5px;padding:14px 2px}
+
+/* ── история круток ── */
+.drop{
+  border:1px dashed var(--edge);text-align:center;padding:26px 20px;margin-top:22px;
+  transition:border-color .15s ease,background .15s ease;
+}
+.drop.over{border-color:var(--gold);background:rgba(240,194,100,.07)}
+.dropin{display:flex;flex-direction:column;align-items:center;gap:9px}
+.dropin b{font-size:15px;font-weight:600}
+.dropin span{font-size:12.5px;color:var(--muted);max-width:540px;line-height:1.55}
+.dropin .row{margin-top:6px}
+.dropin .hint{margin:4px 0 0}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:8px}
+.bcard{
+  background:var(--panel);border:1px solid var(--edge-soft);border-radius:var(--r);padding:16px 18px;
+  cursor:pointer;text-align:left;width:100%;transition:border-color .15s ease,background .15s ease,transform .1s ease;
+}
+.bcard:hover{border-color:var(--edge);background:var(--panel-2);transform:translateY(-1px)}
+.bcard.on{border-color:rgba(240,194,100,.5);background:linear-gradient(160deg,rgba(240,194,100,.08),rgba(240,194,100,.01))}
+.bcard .more{font-size:11.5px;color:var(--dim);margin-top:12px}
+#fiftyStats{margin-bottom:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:8px}
+#fiftyStats .tot{padding:13px 15px}
+#fiftyStats .v{font-size:21px}
+.tag{
+  display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;
+  border:1px solid transparent;cursor:pointer;user-select:none;-webkit-user-select:none;
+}
+.tag.win{background:rgba(240,194,100,.14);color:var(--gold-hot);border-color:rgba(240,194,100,.35)}
+.tag.lose{background:rgba(224,87,111,.14);color:var(--crimson);border-color:rgba(224,87,111,.35)}
+.tag.guard{background:rgba(255,255,255,.05);color:var(--muted)}
+.tag:hover{filter:brightness(1.2)}
+.tag.fixed::after{content:"·";margin-left:5px;opacity:.7}
+.tag.none{border-color:var(--edge);border-style:dashed;color:var(--dim)}
+.chartcard{position:relative}
+.tip{
+  position:absolute;z-index:5;pointer-events:none;transform:translate(-50%,-100%);
+  background:var(--raise);border:1px solid var(--edge);border-radius:var(--rs);
+  padding:9px 12px;font-size:12.5px;line-height:1.5;white-space:nowrap;
+  box-shadow:0 14px 34px -16px rgba(0,0,0,.9);
+}
+.tip b{display:block;font-size:13.5px;font-weight:600;margin-bottom:2px}
+.tip .st-win{color:var(--gold-hot)}
+.tip .st-lose{color:var(--crimson)}
+.tip .st-guard{color:var(--muted)}
+.tip .st-none{color:var(--dim)}
+tr.flash td{animation:flash 1.4s ease-out}
+@keyframes flash{from{background:rgba(240,194,100,.22)}to{background:transparent}}
+.bcard.on .more{color:var(--gold)}
+.bcard .nm{font-size:14px;font-weight:600}
+.bcard .sub2{font-size:11.5px;color:var(--dim);margin-top:2px}
+.bcard .big{font-family:var(--display);font-size:27px;font-weight:600;letter-spacing:-0.035em;color:var(--gold);margin-top:10px}
+.bcard .big small{font-size:12px;font-weight:400;color:var(--dim);margin-left:6px;letter-spacing:0}
+.bcard .line{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted);margin-top:9px}
+.bcard .line b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+.bcard .bar{margin-top:12px}
+.bcard.hot .bar i{background:linear-gradient(90deg,#8a3247,var(--crimson))}
+.icodiag{margin-top:12px;font-size:11.5px;color:var(--dim);line-height:1.6;word-break:break-all}
+.icodiag b{color:var(--muted);font-weight:500}
+.icodiag .ok{color:#8fa86a}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:8px;margin-top:8px}
+.pcard{
+  background:var(--panel);border:1px solid var(--edge-soft);border-radius:var(--r);
+  padding:14px 10px 12px;text-align:center;
+}
+.pcard.lose{border-color:rgba(224,87,111,.3)}
+.pcard.win{border-color:rgba(240,194,100,.35)}
+.pcard img{
+  width:62px;height:62px;border-radius:50%;object-fit:cover;display:block;
+  margin:0 auto 9px;background:rgba(255,255,255,.05);
+}
+.pcard .nm2{
+  height:2.6em;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;overflow-wrap:anywhere;
+}
+.pcard .nm2 span{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  font-size:12.5px;font-weight:600;line-height:1.3;
+}
+.pcard .pl{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-0.03em;margin:7px 0 1px}
+.pcard .pl.poly{color:var(--gold)}
+.pcard .pl.master{color:var(--crimson)}
+.pcard .dt{font-size:10.5px;color:var(--dim)}
+.pcard .tag{margin-top:8px}
+td.pic,th.pic{width:36px;padding-right:0}
+td.pic img{
+  width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;
+  background:rgba(255,255,255,.05);
+}
+td.rare{color:var(--gold-hot);font-weight:600}
+td.mid{color:#b49ad6}
 
 /* ── быстрый выбор месяца ── */
 .pickwrap{position:relative}
@@ -453,7 +557,10 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 @media(max-width:760px){
   body{padding:0 14px 70px}
   .totals.pulls{grid-template-columns:1fr}
+  .bgrid{grid-template-columns:1fr}
+  .drop{padding:20px 14px}
   .curline{grid-template-columns:1fr 74px 84px 30px 30px;gap:5px}
+  td.pic,th.pic{display:none}
   .mpick.wide{width:calc(100vw - 40px);max-width:320px}
   td input.cell-in{width:74px}
   .totals{grid-template-columns:1fr}
@@ -491,6 +598,7 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
   <nav class="sidenav">
     <button class="navitem on" data-view="calendar">Календарь</button>
     <button class="navitem" data-view="pulls">Крутки</button>
+    <button class="navitem" data-view="history">История</button>
   </nav>
 </aside>
 
@@ -704,6 +812,78 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 
   </div><!-- /viewPulls -->
 
+  <div id="viewHistory" class="hidden">
+
+    <div class="rowline" id="histAccounts"></div>
+
+    <div class="card drop" id="dropZone">
+      <div class="dropin">
+        <b>Перетащите сюда файл истории</b>
+        <span>JSON в формате UIGF v4 — его делают выгрузчики истории круток. Файл читается прямо в браузере и никуда не отправляется.</span>
+        <div class="row" style="justify-content:flex-start">
+          <button class="mark sm" id="pickHist">Выбрать файл</button>
+          <input type="file" id="histFile" accept="application/json,.json" hidden>
+          <button class="ghost sm danger" id="clearHist">Очистить историю</button>
+        </div>
+        <p class="hint" id="histNote"></p>
+      </div>
+    </div>
+
+    <div id="histBody" class="hidden">
+      <div class="totals pulls">
+        <div class="tot hero">
+          <div>
+            <div class="k">Всего круток</div>
+            <div class="v num" id="gTotal">0</div>
+            <div class="delta" id="gRange"></div>
+          </div>
+        </div>
+        <div class="subs">
+          <div class="tot gold"><div class="k" id="gTopLabel">Топовых выпадений</div><div class="v num" id="gTop">0</div></div>
+          <div class="tot"><div class="k">В среднем на одно</div><div class="v num" id="gAvg">—</div></div>
+          <div class="tot st"><div class="k">Каналов в истории</div><div class="v num" id="gBanners">0</div></div>
+        </div>
+      </div>
+
+      <section>
+        <h2>Каналы</h2>
+        <p class="hint">Разбивка определяется автоматически по игре и коду канала в файле.</p>
+        <div class="bgrid" id="bannerGrid"></div>
+      </section>
+
+      <section id="rareSection" class="hidden">
+        <div class="sechead">
+          <div>
+            <h2 id="rareTitle">Ценные выпадения</h2>
+            <p class="hint">Сколько круток ушло на каждое, считая от предыдущего.</p>
+          </div>
+          <div class="segs">
+            <div class="seg" id="rareViewSeg"></div>
+            <button class="ghost pill sm" id="rareClose">Свернуть</button>
+          </div>
+        </div>
+        <div class="rowline" style="margin:0 0 12px;gap:10px">
+          <button class="ghost sm" id="winDefault"></button>
+          <p class="hint" id="markHint" style="margin:0;flex:1 1 260px"></p>
+        </div>
+        <div class="subs" id="fiftyStats"></div>
+        <div class="card chartcard" id="bannerChartCard" style="margin-top:8px">
+          <div id="bannerChart"></div>
+          <div class="tip hidden" id="chartTip"></div>
+        </div>
+        <div class="card" id="rareTableCard" style="padding-bottom:6px;margin-top:8px">
+          <table>
+            <thead><tr><th>Дата</th><th class="pic"></th><th>Что выпало</th><th>Тип</th><th>Круток</th><th>50/50</th></tr></thead>
+            <tbody id="histBanners"></tbody>
+          </table>
+        </div>
+        <div class="pgrid hidden" id="rareGrid"></div>
+        <div class="pager" id="histPager"></div>
+      </section>
+    </div>
+
+  </div><!-- /viewHistory -->
+
 </div>
 </div><!-- /shell -->
 
@@ -728,6 +908,30 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
   </div>
 </div>
 
+<div class="overlay" id="importOverlay">
+  <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="impTitle">
+    <h3 id="impTitle">Загрузка истории</h3>
+    <p class="sub" id="impSource">—</p>
+    <div class="impscroll" id="impAccounts"></div>
+    <div id="impOptsBox">
+      <p class="group">Как загружать</p>
+      <div class="editrow"><span>Дополнять</span><select id="impEnrich">
+        <option value="1">дополнять уже загруженные записи</option>
+        <option value="0">не менять уже загруженные</option>
+      </select></div>
+      <div class="editrow"><span>Разметка</span><select id="impMark">
+        <option value="keep">не менять текущий режим</option>
+        <option value="win">неразмеченные считать выигрышем</option>
+        <option value="manual">только ручная разметка</option>
+      </select></div>
+    </div>
+    <div class="row">
+      <button class="mark" id="impApply">Загрузить</button>
+      <button class="ghost" id="impCancel">Отмена</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="settingsOverlay">
   <div class="sheet" style="max-width:430px" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <h3 id="setTitle">Настройки</h3>
@@ -735,6 +939,19 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
     <div class="editrow"><span>Сервер</span><select id="resetPreset"></select></div>
     <div class="editrow"><span>Смена дня</span><input id="resetTime" type="time"></div>
     <p class="hint" id="resetInfo" style="margin:10px 0 0"></p>
+    <div class="sep"></div>
+    <p class="group">Портреты в истории круток</p>
+    <div class="editrow"><span>Источник</span><select id="iconMode">
+      <option value="auto">автоматически: открытые базы и папка assets</option>
+      <option value="local">только папка рядом с сайтом</option>
+      <option value="custom">свой адрес</option>
+      <option value="off">не показывать</option>
+    </select></div>
+    <div class="editrow" id="iconTplRow"><span>Персонажи</span><input id="iconTpl" spellcheck="false" placeholder="assets/{game}/{id}.webp"></div>
+    <div class="editrow" id="iconTplRow2"><span>Предметы</span><input id="iconTplItem" spellcheck="false" placeholder="assets/{game}/{id}.webp"></div>
+    <p class="hint" style="margin:8px 0 0">В шаблоне {id} — код предмета из файла истории, {game} — nap, hkrpg или hk4e. Если картинки нет, портрет просто не показывается.</p>
+    <div class="icodiag" id="iconDiag"></div>
+    <button class="ghost sm" id="iconReset" style="margin-top:10px">Искать источники заново</button>
     <div class="row" style="margin-top:16px"><button class="ghost" id="closeSettings">Готово</button></div>
   </div>
 </div>
@@ -1317,6 +1534,10 @@ document.addEventListener("keydown", e => {
     if(e.key === "Escape") closeSettings();
     return;
   }
+  if(document.getElementById("importOverlay").classList.contains("on")){
+    if(e.key === "Escape") closeImport();
+    return;
+  }
   if(e.key === "Escape" && document.body.classList.contains("menu-open")){ closeSide(); return; }
   if(e.key === "Escape" && menuOpen()){ closeMenu(); return; }
   if(patchPickOpen() && e.key === "Escape"){ closePatchPick(); return; }
@@ -1352,8 +1573,9 @@ function merge(text){
     note("Данные не читаются — нужен JSON из этого же трекера.");
     return false;
   }
-  if(inc.v === 2 || inc.rewards){
+  if(inc.v >= 2 || inc.rewards){
     if(inc.pulls && inc.pulls.games){ pdata = inc.pulls; pSave(); renderPulls(); }
+    if(inc.gacha && inc.gacha.accounts){ hdata = inc.gacha; hSave(); renderHistory(); }
     inc = inc.rewards || {};
   }
   let added = 0, upd = 0;
@@ -1372,7 +1594,7 @@ function merge(text){
 }
 
 document.getElementById("export").onclick = () => {
-  const text = JSON.stringify({ v:2, rewards:data, pulls:pdata }, null, 1);
+  const text = JSON.stringify({ v:3, rewards:data, pulls:pdata, gacha:hdata }, null, 1);
   const name = "zzz-rewards-" + todayKey + ".json";
   try {
     const blob = new Blob([text], { type:"application/json" });
@@ -1406,12 +1628,22 @@ document.getElementById("importFile").onchange = function(){
 function openData(){
   closeMenu();
   const t = document.getElementById("dataText");
-  t.value = JSON.stringify({ v:2, rewards:data, pulls:pdata }, null, 1);
+  t.value = JSON.stringify({ v:3, rewards:data, pulls:pdata, gacha:hdata }, null, 1);
   document.getElementById("dataOverlay").classList.add("on");
   t.focus();
   t.select();
 }
 function closeData(){ document.getElementById("dataOverlay").classList.remove("on"); }
+
+document.getElementById("impApply").onclick = applyImport;
+function closeImport(){
+  pending = null;
+  document.getElementById("importOverlay").classList.remove("on");
+}
+document.getElementById("impCancel").onclick = closeImport;
+document.getElementById("importOverlay").addEventListener("mousedown", e => {
+  if(e.target.id === "importOverlay") closeImport();
+});
 
 document.getElementById("showJson").onclick = openData;
 document.getElementById("closeData").onclick = closeData;
@@ -1438,6 +1670,1014 @@ document.getElementById("applyJson").onclick = () => {
 };
 
 /* ── быстрый выбор месяца ── */
+/* ══ раздел «История»: импорт UIGF v4 ══ */
+const HKEY = "zzz-gacha-v1";
+const hstore = makeStore(HKEY);
+let hdata = hstore.load();
+if(!hdata || !hdata.accounts) hdata = { accounts: [], active: null };
+let histBanner = null, histPage = 0;
+
+const GAMES = {
+  hk4e:  { name:"Genshin Impact",    top:"5", mid:"4", topName:"пятизвёздочных",
+    banners:{
+      "301":{ n:"Ивентовый",        s:"персонажи",        pity:90, pool:"limited", ord:1 },
+      "302":{ n:"Оружейный",        s:"оружие",           pity:80, pool:"limited", ord:2 },
+      "500":{ n:"Хроники",          s:"смешанный",        pity:90, ord:3 },
+      "200":{ n:"Стандартный",      s:"постоянный",       pity:90, pool:"standard", ord:4 },
+      "100":{ n:"Новичковый",       s:"для начинающих",   pity:20, ord:5 }
+    }},
+  hkrpg: { name:"Honkai: Star Rail", top:"5", mid:"4", topName:"пятизвёздочных",
+    banners:{
+      "11":{ n:"Ивентовый",         s:"персонажи",        pity:90, pool:"limited", ord:1 },
+      "12":{ n:"Световые конусы",   s:"оружие",           pity:80, pool:"limited", ord:2 },
+      "21":{ n:"Коллаборация",      s:"персонажи",        pity:90, pool:"limited", ord:3 },
+      "22":{ n:"Коллаб-конусы",     s:"оружие",           pity:80, pool:"limited", ord:4 },
+      "1": { n:"Стандартный",       s:"постоянный",       pity:90, pool:"standard", ord:5 },
+      "2": { n:"Новичковый",        s:"для начинающих",   pity:50, ord:6 }
+    }},
+  nap:   { name:"Zenless Zone Zero", top:"4", mid:"3", topName:"S-ранга",
+    banners:{
+      "2":{ n:"Эксклюзивный",       s:"агенты",           pity:90, pool:"limited", ord:1 },
+      "3":{ n:"Амплификаторы",       s:"оружие",           pity:80, pool:"limited", ord:2 },
+      "5":{ n:"Банбу",              s:"бангбу",           pity:80, pool:"limited", ord:3 },
+      "1":{ n:"Стандартный",        s:"постоянный",       pity:90, pool:"standard", ord:4 }
+    }}
+};
+function gameInfo(g){ return GAMES[g] || { name:g, top:"5", mid:"4", topName:"редких", banners:{} }; }
+function bannerInfo(g, k){
+  const b = gameInfo(g).banners[k];
+  return b || { n:"Канал " + k, s:"неизвестный тип", pity:90, ord:99 };
+}
+const TYPE_RU = {
+  "character":"Персонаж", "characters":"Персонаж", "персонаж":"Персонаж", "персонажи":"Персонаж",
+  "角色":"Персонаж", "キャラクター":"Персонаж",
+  "weapon":"Оружие", "weapons":"Оружие", "оружие":"Оружие", "武器":"Оружие",
+  "light cone":"Световой конус", "light cones":"Световой конус",
+  "световой конус":"Световой конус", "световые конусы":"Световой конус", "光锥":"Световой конус", "光錐":"Световой конус",
+  "agent":"Агент", "agents":"Агент", "агент":"Агент", "агенты":"Агент", "代理人":"Агент", "エージェント":"Агент",
+  "w-engine":"Амплификатор", "w-engines":"Амплификатор",
+  "амплификатор":"Амплификатор", "амплификаторы":"Амплификатор", "音擎":"Амплификатор",
+  "bangboo":"Банбу", "bangboos":"Банбу", "банбу":"Банбу", "бангбу":"Банбу", "邦布":"Банбу"
+};
+function typeRu(raw, fallback){
+  if(!raw) return fallback || "—";
+  return TYPE_RU[String(raw).trim().toLowerCase()] || raw;
+}
+function itemKey(r){ return r.i || r.n; }
+function runKey(r){
+  const g = r.g;
+  return (g && g !== "0" && g !== r.k) ? g : "";
+}
+/* gacha_id считаем прогоном баннера только если он реально различается внутри канала:
+   некоторые выгрузки его не пишут вовсе или подставляют туда номер канала. */
+const runsCache = {};   // вне данных аккаунта: иначе кеш переживёт новый импорт
+function runsUsable(acc){
+  const ck = acc.key + ":" + acc.records.length;
+  if(runsCache[ck] !== undefined) return runsCache[ck];
+  const seen = {};
+  acc.records.forEach(r => {
+    const g = runKey(r);
+    if(!g) return;
+    (seen[r.k] = seen[r.k] || {})[g] = 1;
+  });
+  runsCache[ck] = Object.keys(seen).some(k => Object.keys(seen[k]).length > 1);
+  return runsCache[ck];
+}
+
+/* Отметка означает «этот персонаж разыгрывался в этом прогоне», а не «это выпадение —
+   победа». Поэтому при догрузке старых круток, когда перед ним появляется проигрыш,
+   выпадение само становится гарантом, но знание о разыгрываемом сохраняется — и
+   остальные выпадения того же прогона по-прежнему считаются проигрышами. */
+function featStatus(acc, run, key, id){
+  if((acc.featId || {})[id]) return true;
+  const f = acc.feat || {}, nf = acc.notfeat || {};
+  if(run && f[run]) return f[run] === key;
+  if(run && nf[run] && nf[run][key]) return false;
+  return null;
+}
+function savedMark(acc, x){
+  if((acc.featId || {})[x.rec.id]) return "win";
+  if((acc.fifty || {})[x.rec.id] === "lose") return "lose";
+  return "none";
+}
+function nextMark(acc, x){
+  const cur = savedMark(acc, x);
+  return cur === "win" ? "lose" : cur === "lose" ? "none" : "win";
+}
+
+function resolveTops(acc, b){
+  const ov = acc.fifty || {};
+  const useRuns = runsUsable(acc);
+  const optimistic = !!acc.winDefault;
+  let guaranteed = false;
+  return b.tops.map(x => {
+    const run = useRuns ? runKey(x.rec) : "";
+    const key = itemKey(x.rec);
+    const mark = savedMark(acc, x);
+    const feat = featStatus(acc, run, key, x.rec.id);
+    let st, auto = false;
+    if(mark === "lose") st = "lose";
+    else if(guaranteed){ st = "guard"; auto = mark !== "win"; }   // гарант перебивает всё
+    else if(feat === true) st = "win";
+    else if(feat === false){ st = "lose"; auto = true; }
+    else if(optimistic){ st = "win"; auto = true; }
+    else st = "none";
+    guaranteed = st === "lose";
+    return { rec:x.rec, pulls:x.pulls, st:st, run:run, key:key, auto:auto,
+      featured: feat === true, fixed: mark !== "none" };
+  });
+}
+
+function markTop(acc, x, st){
+  acc.fifty = acc.fifty || {};
+  acc.featId = acc.featId || {};
+  acc.feat = acc.feat || {};
+  acc.notfeat = acc.notfeat || {};
+  const run = x.run;
+  if(st === "win"){
+    acc.featId[x.rec.id] = 1;
+    delete acc.fifty[x.rec.id];
+    if(run){
+      acc.feat[run] = x.key;                        // разыгрываемый этого прогона
+      if(acc.notfeat[run]) delete acc.notfeat[run][x.key];
+      const g = gameInfo(acc.game);
+      acc.records.forEach(r => {                    // в прогоне разыгрываемый один
+        if(r.r === g.top && runKey(r) === run && itemKey(r) !== x.key) delete acc.featId[r.id];
+      });
+    }
+  } else if(st === "lose"){
+    acc.fifty[x.rec.id] = "lose";
+    delete acc.featId[x.rec.id];
+    if(run){
+      acc.notfeat[run] = acc.notfeat[run] || {};
+      acc.notfeat[run][x.key] = 1;
+      if(acc.feat[run] === x.key) delete acc.feat[run];
+    }
+  } else {
+    delete acc.featId[x.rec.id];
+    delete acc.fifty[x.rec.id];
+    if(run){
+      if(acc.feat[run] === x.key) delete acc.feat[run];
+      if(acc.notfeat[run]) delete acc.notfeat[run][x.key];
+    }
+  }
+  hSave();
+}
+function fiftyStats(tops){
+  const play = tops.filter(x => x.st === "win" || x.st === "lose");
+  let win = 0, curW = 0, curL = 0, bestW = 0, bestL = 0, cur = 0, curKind = "";
+  play.forEach(x => {
+    if(x.st === "win"){ win++; curW++; curL = 0; bestW = Math.max(bestW, curW); }
+    else { curL++; curW = 0; bestL = Math.max(bestL, curL); }
+  });
+  for(let i = play.length - 1; i >= 0; i--){
+    if(!curKind) curKind = play[i].st;
+    if(play[i].st !== curKind) break;
+    cur++;
+  }
+  return { played:play.length, win:win, rate: play.length ? win / play.length * 100 : 0,
+    cur:cur, kind:curKind, bestW:bestW, bestL:bestL,
+    unmarked: tops.filter(x => x.st === "none").length };
+}
+/* ── портреты ──
+   Прямые шаблоны URL у открытых баз разные и меняются, поэтому основной путь другой:
+   приложение подтягивает индексный JSON базы (id предмета → имя файла иконки) и строит
+   адрес по нему. Шаблоны остаются запасным вариантом. Если ничего не нашлось, портрет
+   просто не показывается. */
+const ICON_TPL = {
+  // Star Rail: имя файла совпадает с кодом предмета, справочник не нужен
+  hkrpg: {
+    char: ["https://static.nanoka.cc/assets/hsr/avatarshopicon/{id}.webp",
+           "https://api.hakush.in/hsr/UI/avatarshopicon/{id}.webp",
+           "https://enka.network/ui/hsr/SpriteOutput/AvatarRoundIcon/{id}.png"],
+    item: ["https://static.nanoka.cc/assets/hsr/lightconemediumicon/{id}.webp",
+           "https://api.hakush.in/hsr/UI/lightconemediumicon/{id}.webp",
+           "https://enka.network/ui/hsr/SpriteOutput/LightConeMediumIcon/{id}.png"]
+  },
+  // ZZZ и Genshin: имя файла с кодом не связано, нужен справочник
+  nap:  { char: [], item: [] },
+  hk4e: { char: [], item: [] }
+};
+/* Справочники: код предмета → имя файла иконки.
+   Файлы с raw.githubusercontent.com читаются из браузера без ограничений,
+   поэтому они идут первыми. */
+const ICON_IDX = {
+  nap: {
+    char: ["https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/zzz/avatars.json",
+           "https://api.hakush.in/zzz/data/character.json"],
+    item: ["https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/zzz/weapons.json",
+           "https://api.hakush.in/zzz/data/weapon.json",
+           "https://api.hakush.in/zzz/data/bangboo.json"]
+  },
+  hk4e: {
+    char: ["https://api.hakush.in/gi/data/character.json"],
+    item: ["https://api.hakush.in/gi/data/weapon.json"]
+  },
+  hkrpg: { char: [], item: [] }
+};
+const UI_BASE = {
+  hkrpg: "https://static.nanoka.cc/assets/hsr/",
+  nap:   "https://static.nanoka.cc/assets/zzz/",
+  hk4e:  "https://static.nanoka.cc/assets/gi/"
+};
+const ENKA_HOST = "https://enka.network";
+/* Версия набора источников. Меняется вместе со списками выше — тогда сохранённые
+   справочники и подобранные адреса сбрасываются, иначе старый пустой справочник
+   навсегда блокировал бы новые попытки. */
+const ICON_SRC_VER = 3;
+(function resetIconCacheOnUpgrade(){
+  if(ui.iconVer === ICON_SRC_VER) return;
+  ui.iconVer = ICON_SRC_VER;
+  ui.iconIdx = {};
+  ui.iconPick = {};
+  ui.iconOk = {};
+  saveUI();
+})();
+const LOCAL_TPL = "assets/{game}/{id}.webp";
+function iconMode(){ return ui.iconMode || "auto"; }
+function iconKind(r){
+  const t = String(r.y || "").toLowerCase();
+  return /персонаж|character|агент|agent/.test(t) ? "char" : "item";
+}
+
+/* вытаскиваем имя файла иконки из записи индекса, не завязываясь на конкретное поле */
+const ICON_FIELDS = ["CircleIcon","ImagePath","Image","Icon","icon","image","iconPath"];
+function pickIconField(v){
+  if(typeof v === "string") return v;
+  if(!v || typeof v !== "object") return "";
+  for(let i = 0; i < ICON_FIELDS.length; i++){
+    const val = v[ICON_FIELDS[i]];
+    if(typeof val === "string" && val) return val;
+  }
+  let best = "";
+  Object.keys(v).forEach(k => {
+    const val = v[k];
+    if(typeof val !== "string" || best) return;
+    if(/icon|image/i.test(k) || /(Icon|SpriteOutput|\/ui\/)/i.test(val)) best = val;
+  });
+  return best;
+}
+// значение сохраняем как есть: бывает и короткое имя, и путь вида /ui/zzz/IconRoleCircle01.png
+function iconNameFrom(v){ return pickIconField(v) || ""; }
+function buildIndex(json){
+  const out = {};
+  const put = (id, val) => {
+    const nm = iconNameFrom(val);
+    if(id && /^\d+$/.test(String(id)) && nm) out[String(id)] = nm;
+  };
+  const walk = (obj, depth) => {
+    if(!obj || typeof obj !== "object" || depth > 2) return;
+    if(Array.isArray(obj)){ obj.forEach(v => put(v && (v.id || v.Id || v.itemId), v)); return; }
+    Object.keys(obj).forEach(k => {
+      const v = obj[k];
+      if(/^\d+$/.test(k)) put(k, v);
+      else walk(v, depth + 1);      // бывает обёртка вроде { "Items": { ... } }
+    });
+  };
+  walk(json, 0);
+  return out;
+}
+let idxLoading = {};
+const iconMiss = {};        // в памяти, а не в настройках: после перезагрузки пробуем снова
+const idxFailed = {};       // справочники, которые не удалось получить в этой сессии
+function listSig(list){
+  let s = list.length + ":";
+  const j = list.join("|");
+  let n = 0;
+  for(let i = 0; i < j.length; i++) n = (n * 31 + j.charCodeAt(i)) >>> 0;
+  return s + n.toString(36);
+}
+function ensureIndex(game, kind, done){
+  if(iconMode() !== "auto") return;
+  ui.iconIdx = ui.iconIdx || {};
+  const slot = game + ":" + kind;
+  if(ui.iconIdx[slot] || idxLoading[slot]) return;
+  if(idxFailed[slot]) return;
+  const urls = (ICON_IDX[game] || {})[kind] || [];
+  if(!urls.length || typeof fetch !== "function"){
+    idxFailed[slot] = 1;          // справочник не предусмотрен: адреса строятся по коду
+    return;
+  }
+  idxLoading[slot] = 1;
+  let i = 0, acc = {};
+  const step = () => {
+    if(i >= urls.length){
+      delete idxLoading[slot];
+      if(Object.keys(acc).length){
+        ui.iconIdx[slot] = acc;
+        saveUI();
+        if(done) done();
+      } else {
+        idxFailed[slot] = 1;      // пусто — в этой сессии не повторяем, после перезагрузки пробуем снова
+      }
+      return;
+    }
+    fetch(urls[i], { cache: "force-cache" })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if(j) Object.assign(acc, buildIndex(j)); })
+      .catch(() => {})
+      .then(() => { i++; step(); });
+  };
+  step();
+}
+function indexUrls(game, r){
+  const slot = game + ":" + iconKind(r);
+  const map = (ui.iconIdx || {})[slot];
+  const nm = map && map[String(r.i)];
+  if(!nm) return [];
+  const base = UI_BASE[game] || "";
+  const bare = nm.split("/").pop().replace(/\.(png|webp|jpg)$/i, "");
+  const out = [];
+  if(nm.charAt(0) === "/") out.push(ENKA_HOST + nm);      // путь Enka уже с расширением
+  out.push(base + bare + ".webp", base + bare + ".png");
+  return out;
+}
+
+function iconList(game, r){
+  const mode = iconMode();
+  if(mode === "off") return [];
+  const kind = iconKind(r);
+  const own = kind === "char" ? (ui.iconTpl || LOCAL_TPL) : (ui.iconTplItem || ui.iconTpl || LOCAL_TPL);
+  if(mode === "local" || mode === "custom") return [own];
+  const set = ICON_TPL[game] || {};
+  const all = [own].concat(indexUrls(game, r)).concat(set[kind] || []);
+  return all.filter((u, i) => u && all.indexOf(u) === i);   // без повторов
+}
+
+function attachIcon(td, game, r){
+  if(!td || !r.i) return;
+  ensureIndex(game, iconKind(r), () => {
+    if(document.body.classList.contains("tab-history")) renderHistory();
+  });
+  const list = iconList(game, r);
+  if(!list.length) return;
+  ui.iconPick = ui.iconPick || {};
+  const kind = iconKind(r), slot = game + ":" + kind;
+  // промах привязан к составу адресов: появился справочник или сменился шаблон — пробуем заново
+  const missKey = slot + ":" + r.i + ":" + listSig(list);
+  if(iconMiss[missKey]) return;
+  const idxReady = (!!(ui.iconIdx || {})[slot] || !!idxFailed[slot]) && !idxLoading[slot];
+  const start = typeof ui.iconPick[slot] === "number" ? ui.iconPick[slot] : 0;
+  const order = list.slice(start).concat(list.slice(0, start));
+  const fill = t => t.replace(/\{id\}/g, r.i).replace(/\{game\}/g, game);
+  let i = 0;
+  const img = document.createElement("img");
+  img.alt = "";
+  img.loading = "lazy";
+  img.referrerPolicy = "no-referrer";
+  img.onload = () => {
+    const idx = list.indexOf(order[i]);
+    if(idx >= 0 && ui.iconPick[slot] !== idx){ ui.iconPick[slot] = idx; saveUI(); }
+    ui.iconOk = ui.iconOk || {};
+    if(ui.iconOk[slot] !== order[i]){ ui.iconOk[slot] = order[i]; saveUI(); }
+  };
+  img.onerror = () => {
+    i++;
+    if(i < order.length){ img.src = fill(order[i]); return; }
+    img.remove();
+    // пока справочник не пришёл, промах не запоминаем — адреса ещё изменятся
+    if(idxReady) iconMiss[missKey] = 1;
+  };
+  img.src = fill(order[0]);
+  td.appendChild(img);
+}
+
+function hSave(){ hstore.save(hdata); }
+function HA(){ return hdata.accounts.find(a => a.key === hdata.active) || hdata.accounts[0] || null; }
+// прежние версии хранили "win" как статус выпадения — переносим в пометку разыгрываемого
+(function migrateMarks(){
+  let touched = false;
+  (hdata.accounts || []).forEach(acc => {
+    const ov = acc.fifty;
+    if(!ov) return;
+    Object.keys(ov).forEach(id => {
+      if(ov[id] !== "win" && ov[id] !== "guard") return;
+      if(ov[id] === "win"){ acc.featId = acc.featId || {}; acc.featId[id] = 1; }
+      delete ov[id];
+      touched = true;
+    });
+  });
+  if(touched) hstore.save(hdata);
+})();
+function byId(a,b){ return a.id.length - b.id.length || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0); }
+
+/* разбор файла UIGF v4 */
+function parseUIGF(obj){
+  if(!obj || typeof obj !== "object" || !obj.info) throw new Error("Это не похоже на файл UIGF.");
+  const ver = String(obj.info.version || "");
+  if(!/^v4/.test(ver)) throw new Error("Нужен файл UIGF версии 4, а здесь " + (ver || "версия не указана") + ".");
+  const out = [];
+  Object.keys(GAMES).forEach(game => {
+    (obj[game] || []).forEach(acc => {
+      const recs = (acc.list || []).map(r => ({
+        id: String(r.id || ""),
+        k: String(game === "hk4e" ? (r.uigf_gacha_type || r.gacha_type) : r.gacha_type),
+        g: String(r.gacha_id || ""),
+        t: r.time || "",
+        n: r.name || "",
+        i: String(r.item_id || ""),
+        r: String(r.rank_type || ""),
+        y: r.item_type || ""
+      })).filter(r => r.id);
+      if(recs.length) out.push({ game:game, uid:String(acc.uid), records:recs });
+    });
+  });
+  if(!out.length) throw new Error("В файле нет записей по поддерживаемым играм.");
+  return out;
+}
+
+// какие поля более подробная выгрузка добавит к уже загруженной записи
+function enrichFields(old, r){
+  const out = [];
+  if(r.g && r.g !== "0" && r.g !== r.k && (!old.g || old.g === "0" || old.g === old.k)) out.push("g");
+  if(r.r && !old.r) out.push("r");
+  if(r.y && !old.y) out.push("y");
+  if(r.n && !old.n) out.push("n");
+  return out;
+}
+function applyEnrich(old, r){
+  enrichFields(old, r).forEach(f => { old[f] = r[f]; });
+}
+
+let pending = null;
+
+function analyzeImport(parsed){
+  return parsed.map(src => {
+    const key = src.game + ":" + src.uid;
+    const acc = hdata.accounts.find(a => a.key === key);
+    const have = {};
+    if(acc) acc.records.forEach(r => { have[r.id] = r; });
+    const g = gameInfo(src.game);
+    const byK = {};
+    let nw = 0, dup = 0, enr = 0, from = "", to = "";
+    src.records.forEach(r => {
+      const old = have[r.id];
+      byK[r.k] = byK[r.k] || { k:r.k, nw:0, tops:0, total:0 };
+      byK[r.k].total++;
+      if(old){
+        dup++;
+        if(enrichFields(old, r).length) enr++;
+        return;
+      }
+      nw++;
+      byK[r.k].nw++;
+      if(r.r === g.top) byK[r.k].tops++;
+      if(r.t){
+        if(!from || r.t < from) from = r.t;
+        if(!to || r.t > to) to = r.t;
+      }
+    });
+    // различаются ли прогоны внутри канала — от этого зависит авторазметка 50/50
+    const seen = {};
+    src.records.forEach(r => {
+      const gg = runKey(r);
+      if(!gg) return;
+      (seen[r.k] = seen[r.k] || {})[gg] = 1;
+    });
+    const runs = Object.keys(seen).some(k => Object.keys(seen[k]).length > 1);
+    const runsNow = acc ? runsUsable(acc) : false;
+    return { src:src, key:key, exists:!!acc, total:src.records.length,
+      nw:nw, dup:dup, enr:enr, from:from, to:to, runs:runs, runsNow:runsNow,
+      banners: Object.keys(byK).map(k => byK[k])
+        .sort((a,b) => (bannerInfo(src.game,a.k).ord || 99) - (bannerInfo(src.game,b.k).ord || 99)),
+      on: true };
+  });
+}
+
+function previewImport(text){
+  let parsed;
+  try {
+    parsed = parseUIGF(JSON.parse(text));
+  } catch(e){
+    document.getElementById("histNote").textContent = e.message || "Файл не читается.";
+    return;
+  }
+  const info = (function(){ try { return JSON.parse(text).info || {}; } catch(e){ return {}; } })();
+  pending = { rows: analyzeImport(parsed), info: info };
+  document.getElementById("impSource").textContent =
+    "Источник: " + (info.export_app || "неизвестно") +
+    (info.export_app_version ? " " + info.export_app_version : "") +
+    " · формат " + (info.version || "?") +
+    (info.export_timestamp ? " · выгружено " + new Date(info.export_timestamp * 1000).toLocaleDateString("ru-RU") : "");
+  document.getElementById("impMark").value = "keep";
+  document.getElementById("impEnrich").value = "1";
+  renderPreview();
+  document.getElementById("importOverlay").classList.add("on");
+}
+
+function renderPreview(){
+  const host = document.getElementById("impAccounts");
+  host.innerHTML = "";
+  pending.rows.forEach(row => {
+    const g = gameInfo(row.src.game);
+    const box = document.createElement("div");
+    box.className = "impacc" + (row.on ? "" : " off");
+
+    const head = document.createElement("div");
+    head.className = "imphead";
+    const chip = document.createElement("button");
+    chip.className = "chip" + (row.on ? " on" : "");
+    chip.textContent = g.name + " · " + row.src.uid;
+    chip.onclick = () => { row.on = !row.on; renderPreview(); };
+    const nums = document.createElement("div");
+    nums.className = "impnums";
+    nums.innerHTML =
+      (row.exists ? "аккаунт уже загружен" : "новый аккаунт") +
+      " · в файле <b>" + fmt(row.total) + "</b>" +
+      " · новых <b class=\"plus\">" + fmt(row.nw) + "</b>" +
+      " · уже есть <b>" + fmt(row.dup) + "</b>" +
+      (row.enr ? " · дополнится <b>" + fmt(row.enr) + "</b>" : "") +
+      (row.nw && row.from ? "<br>период новых: " + dmy(row.from.slice(0,10)) + " — " + dmy(row.to.slice(0,10)) : "");
+    head.append(chip, nums);
+    box.appendChild(head);
+
+    if(row.nw){
+      const t = document.createElement("table");
+      t.innerHTML = "<thead><tr><th>Канал</th><th>Новых</th><th>Из них " + g.topName + "</th><th>Всего в файле</th></tr></thead>";
+      const tb = document.createElement("tbody");
+      row.banners.forEach(b => {
+        const info = bannerInfo(row.src.game, b.k);
+        const tr = document.createElement("tr");
+        tr.style.cursor = "default";
+        tr.innerHTML = "<td>" + esc(info.n) + "</td>" +
+          '<td class="' + (b.nw ? "poly" : "") + '">' + (b.nw || "—") + "</td>" +
+          '<td class="rare">' + (b.tops || "—") + "</td>" +
+          "<td style=\"color:var(--dim)\">" + fmt(b.total) + "</td>";
+        tb.appendChild(tr);
+      });
+      t.appendChild(tb);
+      box.appendChild(t);
+    }
+
+    const note = document.createElement("p");
+    if(row.runs){
+      note.className = "note2 ok";
+      note.textContent = row.runsNow
+        ? "В файле есть прогоны баннеров — автоматическая разметка 50/50 продолжит работать."
+        : "В файле есть прогоны баннеров — после загрузки отметка 50/50 начнёт применяться ко всему прогону.";
+    } else {
+      note.className = "note2";
+      note.textContent = row.runsNow
+        ? "Прогонов в этом файле нет, но они уже есть у загруженных записей — авторазметка сохранится."
+        : "Прогонов баннеров в файле нет — 50/50 придётся отмечать по отдельным выпадениям.";
+    }
+    box.appendChild(note);
+    host.appendChild(box);
+  });
+
+  const on = pending.rows.filter(r => r.on);
+  const nw = on.reduce((s,r) => s + r.nw, 0);
+  const enr = on.reduce((s,r) => s + r.enr, 0);
+  const btn = document.getElementById("impApply");
+  btn.disabled = !on.length || (!nw && !enr);
+  btn.textContent = nw ? "Загрузить " + fmt(nw)
+    : enr ? "Дополнить " + fmt(enr)
+    : "Нечего загружать";
+}
+
+function applyImport(){
+  if(!pending) return;
+  const enrich = document.getElementById("impEnrich").value === "1";
+  const mark = document.getElementById("impMark").value;
+  let added = 0, enr = 0, accs = 0;
+
+  pending.rows.forEach(row => {
+    if(!row.on) return;
+    let acc = hdata.accounts.find(a => a.key === row.key);
+    if(!acc){
+      acc = { key:row.key, game:row.src.game, uid:row.src.uid, records:[] };
+      hdata.accounts.push(acc);
+      accs++;
+    }
+    const idx = {};
+    acc.records.forEach(r => { idx[r.id] = r; });
+    row.src.records.forEach(r => {
+      const old = idx[r.id];
+      if(old){
+        if(enrich && enrichFields(old, r).length){ applyEnrich(old, r); enr++; }
+        return;
+      }
+      idx[r.id] = r;
+      acc.records.push(r);
+      added++;
+    });
+    acc.records.sort(byId);
+    if(mark === "win") acc.winDefault = true;
+    else if(mark === "manual") acc.winDefault = false;
+    hdata.active = hdata.active || acc.key;
+  });
+
+  Object.keys(runsCache).forEach(k => { delete runsCache[k]; });
+  hSave();
+  pending = null;
+  document.getElementById("importOverlay").classList.remove("on");
+  renderHistory();
+  document.getElementById("histNote").textContent =
+    "Загружено " + added + " новых записей" +
+    (enr ? ", дополнено " + enr : "") +
+    (accs ? ", аккаунтов добавлено: " + accs : "") + ".";
+}
+
+/* статистика по каналу */
+function bannerStats(acc, k){
+  const g = gameInfo(acc.game);
+  const list = acc.records.filter(r => r.k === k).sort(byId);
+  let tops = [], since = 0;
+  list.forEach(r => {
+    since++;
+    if(r.r === g.top){ tops.push({ rec:r, pulls:since }); since = 0; }
+  });
+  const info = bannerInfo(acc.game, k);
+  return {
+    k:k, info:info, total:list.length, tops:tops, pity:since,
+    avg: tops.length ? tops.reduce((s,x) => s + x.pulls, 0) / tops.length : 0,
+    first: list.length ? list[0].t : "", last: list.length ? list[list.length-1].t : ""
+  };
+}
+function accountBanners(acc){
+  const keys = [];
+  acc.records.forEach(r => { if(keys.indexOf(r.k) === -1) keys.push(r.k); });
+  // порядок задаётся явно: числовые ключи объекта иначе встают по возрастанию
+  keys.sort((a,b) => (bannerInfo(acc.game,a).ord || 99) - (bannerInfo(acc.game,b).ord || 99));
+  return keys.map(k => bannerStats(acc, k));
+}
+
+function renderHistory(){
+  const acc = HA();
+  const g = acc ? gameInfo(acc.game) : null;
+  document.getElementById("hTitle").childNodes[0].nodeValue = "История круток";
+  document.getElementById("hSub").textContent = acc ? g.name + " · " + acc.uid : "файл не загружен";
+
+  const box = document.getElementById("histAccounts");
+  box.innerHTML = "";
+  hdata.accounts.forEach(a => {
+    const b = document.createElement("button");
+    b.className = "chip" + (acc && a.key === acc.key ? " on" : "");
+    b.textContent = gameInfo(a.game).name + " · " + a.uid;
+    b.onclick = () => { hdata.active = a.key; histBanner = null; histPage = 0; hSave(); renderHistory(); };
+    box.appendChild(b);
+  });
+
+  const body = document.getElementById("histBody");
+  body.classList.toggle("hidden", !acc);
+  if(!acc) return;
+
+  const banners = accountBanners(acc);
+  const total = acc.records.length;
+  const tops = banners.reduce((s,b) => s + b.tops.length, 0);
+  document.getElementById("gTotal").textContent = fmt(total);
+  document.getElementById("gTopLabel").textContent = "Выпадений " + g.topName;
+  document.getElementById("gTop").textContent = tops;
+  document.getElementById("gAvg").textContent = tops ? fmtP(total / tops) : "—";
+  document.getElementById("gBanners").textContent = banners.length;
+  const times = acc.records.map(r => r.t).filter(Boolean).sort();
+  document.getElementById("gRange").textContent = times.length
+    ? "с " + times[0].slice(0,10).split("-").reverse().join(".") + " по " + times[times.length-1].slice(0,10).split("-").reverse().join(".")
+    : "";
+
+  const grid = document.getElementById("bannerGrid");
+  grid.innerHTML = "";
+  if(histBanner && !banners.some(b => b.k === histBanner)) histBanner = null;
+  banners.forEach(b => {
+    // гарант в долгу: последнее ценное выпадение канала помечено проигрышем
+    const seq = resolveTops(acc, b);
+    const lastTop = seq[seq.length - 1];
+    const owed = !!(lastTop && lastTop.st === "lose");
+    const card = document.createElement("button");
+    const share = Math.min(100, Math.round(b.pity / b.info.pity * 100));
+    card.className = "bcard" + (share >= 75 ? " hot" : "") + (histBanner === b.k ? " on" : "");
+    card.onclick = () => {
+      histBanner = histBanner === b.k ? null : b.k;
+      histPage = 0;
+      renderHistory();
+      if(histBanner) document.getElementById("rareSection").scrollIntoView({ behavior:"smooth", block:"start" });
+    };
+    card.innerHTML =
+      '<div class="nm">' + esc(b.info.n) + '</div>' +
+      '<div class="sub2">' + esc(b.info.s) + ' · до гаранта ' + b.info.pity + '</div>' +
+      '<div class="big num">' + fmt(b.total) + '<small>круток</small></div>' +
+      '<div class="line"><span>' + g.topName.charAt(0).toUpperCase() + g.topName.slice(1) + '</span><b>' + b.tops.length + '</b></div>' +
+      '<div class="line"><span>В среднем на одно</span><b>' + (b.tops.length ? fmtP(b.avg) : "—") + '</b></div>' +
+      '<div class="line"><span>Круток без выпадения</span><b>' + b.pity + '</b></div>' +
+      (b.info.pity && owed
+        ? '<div class="line"><span>До гаранта осталось</span><b>' + Math.max(0, b.info.pity - b.pity) + " из " + b.info.pity + '</b></div>'
+        : "") +
+      '<div class="bar"><i style="width:' + share + '%"></i></div>' +
+      '<div class="more">' + (histBanner === b.k ? "список открыт ниже" : "показать выпадения") + '</div>';
+    grid.appendChild(card);
+  });
+
+  renderRareTable(acc, banners);
+}
+
+function rareView(){ return ui.rareView === "grid" ? "grid" : "table"; }
+
+// метка 50/50 — одна и та же в таблице и в сетке
+function makeTag(acc, x){
+  const tag = document.createElement("span");
+  tag.className = "tag " + x.st + (x.fixed ? " fixed" : "");
+  tag.textContent = x.st === "win" ? "выигран" : x.st === "lose" ? "проигран" :
+                    x.st === "guard" ? "гарант" : "не размечен";
+  tag.title = x.st === "guard" && x.featured
+    ? "Разыгрываемый персонаж, но перед ним проигрыш — значит это гарант."
+    : x.fixed
+      ? "Отмечено вручную. Нажмите: разыгрываемый → проигрыш → без метки."
+      : "Определено автоматически. Нажмите, чтобы отметить вручную.";
+  tag.onclick = () => {
+    markTop(acc, x, nextMark(acc, x));
+    renderHistory();
+  };
+  return tag;
+}
+function pullsClass(n){ return n <= 30 ? "poly" : n >= 70 ? "master" : ""; }
+
+function renderRareTable(acc, banners){
+  const sect = document.getElementById("rareSection");
+  const tb = document.getElementById("histBanners");
+  const grid = document.getElementById("rareGrid");
+  const pager = document.getElementById("histPager");
+  const stats = document.getElementById("fiftyStats");
+  const b = histBanner ? banners.find(x => x.k === histBanner) : null;
+
+  sect.classList.toggle("hidden", !b);
+  if(!b) return;
+  document.getElementById("rareTitle").textContent = "Выпадения · " + b.info.n;
+
+  const limited = b.info.pool === "limited";
+  const tops = resolveTops(acc, b);
+  const hint = document.getElementById("markHint");
+  const wd = document.getElementById("winDefault");
+  wd.classList.toggle("hidden", !limited);
+  if(limited){
+    const un = tops.filter(x => x.st === "none").length;
+    wd.textContent = acc.winDefault ? "Неразмеченные: выигрыш" : "Неразмеченные: без статуса";
+    wd.onclick = () => { acc.winDefault = !acc.winDefault; hSave(); renderHistory(); };
+    const withRun = tops.filter(x => x.run).length;
+    const runsPart = runsUsable(acc)
+      ? " Отметка применяется ко всему прогону баннера" +
+        (withRun < tops.length ? " — прогон известен у " + withRun + " из " + tops.length + " выпадений." : ".")
+      : "";
+    hint.textContent = acc.winDefault
+      ? "Отмечайте только проигрыши — остальное считается выигранным, а выпадение после проигрыша становится гарантом." + runsPart
+      : (un ? "Не размечено выпадений: " + un + ". Клик по метке: выигран → проигран → без метки."
+            : "Все выпадения размечены.") + runsPart;
+  } else { hint.textContent = ""; }
+
+  // серии 50/50
+  stats.innerHTML = "";
+  if(limited && tops.length){
+    const s = fiftyStats(tops);
+    const card = (k, v, cls) => {
+      const d = document.createElement("div");
+      d.className = "tot" + (cls ? " " + cls : "");
+      d.innerHTML = '<div class="k">' + k + '</div><div class="v num">' + v + '</div>';
+      return d;
+    };
+    const streak = s.cur
+      ? s.cur + (s.kind === "win" ? " подряд выиграно" : " подряд проиграно")
+      : "—";
+    stats.append(
+      card("Сыграно 50/50", s.played + (s.unmarked ? " · " + s.unmarked + " без метки" : "")),
+      card("Выиграно", s.win + " · " + Math.round(s.rate) + "%", "gold"),
+      card("Сейчас серия", streak, s.kind === "lose" ? "cr" : "gold"),
+      card("Лучшая серия побед", s.bestW, "gold"),
+      card("Худшая серия поражений", s.bestL, "cr")
+    );
+  }
+
+  renderBannerChart(b, tops, limited);
+
+  // переключатель представления
+  const seg = document.getElementById("rareViewSeg");
+  seg.innerHTML = "";
+  [["table","таблица"],["grid","портреты"]].forEach(([v,label]) => {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    if(rareView() === v) btn.classList.add("on");
+    btn.onclick = () => { ui.rareView = v; saveUI(); renderRareTable(acc, banners); };
+    seg.appendChild(btn);
+  });
+
+  const asGrid = rareView() === "grid";
+  document.getElementById("rareTableCard").classList.toggle("hidden", asGrid);
+  grid.classList.toggle("hidden", !asGrid);
+
+  if(!tops.length){
+    const noRank = acc.records.every(r => !r.r);
+    const msg = noRank ? "В файле нет данных о редкости — доступны только счётчики круток."
+                       : "На этом канале ценных выпадений пока нет.";
+    tb.innerHTML = '<tr><td colspan="6" class="empty">' + msg + '</td></tr>';
+    grid.innerHTML = '<p class="nodata">' + msg + '</p>';
+    pager.innerHTML = "";
+    return;
+  }
+
+  const rows = tops.slice().reverse();
+  const per = 20;
+  const pages = Math.max(1, Math.ceil(rows.length / per));
+  if(histPage > pages - 1) histPage = pages - 1;
+  const from = histPage * per;
+  const page = rows.slice(from, from + per);
+
+  if(asGrid){
+    grid.innerHTML = "";
+    page.forEach(x => {
+      const card = document.createElement("div");
+      card.className = "pcard" + (limited && (x.st === "win" || x.st === "lose") ? " " + x.st : "");
+      const pic = document.createElement("div");
+      attachIcon(pic, acc.game, x.rec);
+      if(pic.children.length) card.appendChild(pic.children[0]);
+      const nm = document.createElement("div");
+      nm.className = "nm2";
+      const nmIn = document.createElement("span");
+      nmIn.textContent = x.rec.n || "#" + x.rec.i;
+      nm.appendChild(nmIn);
+      const pl = document.createElement("div");
+      pl.className = "pl num " + pullsClass(x.pulls);
+      pl.textContent = x.pulls;
+      pl.title = x.pulls + " круток от предыдущего ценного выпадения" +
+        (x.pulls <= 30 ? " — быстро" : x.pulls >= 70 ? " — долго" : "");
+      const dt = document.createElement("div");
+      dt.className = "dt";
+      dt.textContent = x.rec.t.slice(0,10).split("-").reverse().join(".");
+      card.append(nm, pl, dt);
+      if(limited) card.appendChild(makeTag(acc, x));
+      grid.appendChild(card);
+    });
+  } else {
+    tb.innerHTML = "";
+    page.forEach(x => {
+      const tr = document.createElement("tr");
+      tr.style.cursor = "default";
+      tr.innerHTML =
+        '<td style="color:var(--dim)">' + esc(x.rec.t.slice(0,10).split("-").reverse().join(".")) + '</td>' +
+        '<td class="pic"></td>' +
+        '<td class="rare">' + esc(x.rec.n || "#" + x.rec.i) + '</td>' +
+        '<td>' + esc(typeRu(x.rec.y, b.info.s)) + '</td>' +
+        '<td class="' + pullsClass(x.pulls) + '">' + x.pulls + '</td>';
+      attachIcon(tr.children[1], acc.game, x.rec);
+      const last = document.createElement("td");
+      tr.appendChild(last);
+      if(limited) last.appendChild(makeTag(acc, x));
+      tr.dataset.rid = x.rec.id;
+      tb.appendChild(tr);
+    });
+  }
+
+  pager.innerHTML = "";
+  if(pages > 1){
+    const mk = (label, target, off) => {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      btn.disabled = off;
+      if(!off) btn.onclick = () => { histPage = target; renderRareTable(acc, banners); };
+      return btn;
+    };
+    const info = document.createElement("span");
+    info.textContent = "Записи " + (from + 1) + "\u2013" + Math.min(from + per, rows.length) + " из " + rows.length;
+    pager.append(info, mk("\u2039", histPage - 1, histPage === 0), mk("\u203a", histPage + 1, histPage >= pages - 1));
+  }
+}
+
+/* график: сколько круток ушло на каждое выпадение */
+function renderBannerChart(b, tops, limited){
+  const host = document.getElementById("bannerChart");
+  const card = document.getElementById("bannerChartCard");
+  if(tops.length < 2){ card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+
+  const list = tops.slice(-40);
+  const W = 720, H = 210, L = 30, R = 8, T = 16, B = 40;
+  const iw = W - L - R, ih = H - T - B;
+  const step = iw / list.length, bw = Math.min(step - 5, 26);
+  const cap = b.info.pity;
+  const max = Math.max(cap, ...list.map(x => x.pulls));
+  const avg = list.reduce((s,x) => s + x.pulls, 0) / list.length;
+  const y = v => T + ih - (v / max) * ih;
+
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Круток на выпадение">' +
+    '<defs>' +
+    '<linearGradient id="bw" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffdf95"/><stop offset="100%" stop-color="#c59a3c"/></linearGradient>' +
+    '<linearGradient id="bl" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e0576f"/><stop offset="100%" stop-color="#8a3247"/></linearGradient>' +
+    '<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9aa3ad"/><stop offset="100%" stop-color="#4a545e"/></linearGradient>' +
+    '<linearGradient id="bn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6f6b78"/><stop offset="100%" stop-color="#3a3742"/></linearGradient>' +
+    '</defs>';
+  const tick = max > 90 ? 30 : 20;
+  for(let v = 0; v <= max; v += tick){
+    s += '<line x1="' + L + '" y1="' + y(v).toFixed(1) + '" x2="' + (W-R) + '" y2="' + y(v).toFixed(1) + '" stroke="rgba(255,255,255,.05)"/>' +
+         '<text x="' + (L-8) + '" y="' + (y(v)+3.5).toFixed(1) + '" fill="#5e5c68" font-size="10" text-anchor="end">' + v + '</text>';
+  }
+  s += '<line x1="' + L + '" y1="' + y(cap).toFixed(1) + '" x2="' + (W-R) + '" y2="' + y(cap).toFixed(1) +
+       '" stroke="rgba(224,87,111,.45)" stroke-dasharray="5 5"/>' +
+       '<text x="' + (W-R) + '" y="' + (y(cap)-5).toFixed(1) + '" fill="#a8556a" font-size="10" text-anchor="end">гарант ' + cap + '</text>';
+  s += '<line x1="' + L + '" y1="' + y(avg).toFixed(1) + '" x2="' + (W-R) + '" y2="' + y(avg).toFixed(1) +
+       '" stroke="rgba(240,194,100,.45)" stroke-dasharray="3 4"/>' +
+       '<text x="' + (L+4) + '" y="' + (y(avg)-5).toFixed(1) + '" fill="#a9853a" font-size="10">среднее ' + fmtP(avg) + '</text>';
+
+  list.forEach((x,i) => {
+    const cx = L + (i + 0.5) * step;
+    const hgt = Math.max(2, (x.pulls / max) * ih);
+    const fill = !limited ? "url(#bw)" : x.st === "lose" ? "url(#bl)" : x.st === "guard" ? "url(#bg)"
+               : x.st === "none" ? "url(#bn)" : "url(#bw)";
+    s += '<g class="bar-h"><rect class="cbar" data-i="' + i + '" data-x="' + (cx / W * 100).toFixed(2) +
+         '" data-y="' + ((T + ih - hgt) / H * 100).toFixed(2) + '" style="cursor:pointer" x="' + (cx - bw/2).toFixed(1) +
+         '" y="' + (T+ih-hgt).toFixed(1) + '" width="' + bw.toFixed(1) +
+         '" height="' + hgt.toFixed(1) + '" fill="' + fill + '" rx="3"></rect>';
+    if(step > 26) s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih-hgt-6).toFixed(1) + '" fill="#7d7a86" font-size="9.5" text-anchor="middle">' + x.pulls + '</text>';
+    s += '</g>';
+  });
+  s += '<text x="' + L + '" y="' + (H-8) + '" fill="#5e5c68" font-size="10">раньше</text>' +
+       '<text x="' + (W-R) + '" y="' + (H-8) + '" fill="#5e5c68" font-size="10" text-anchor="end">позже</text></svg>';
+
+  host.innerHTML = s + (limited
+    ? '<div class="legend"><span><i style="background:linear-gradient(180deg,#ffdf95,#c59a3c)"></i>50/50 выигран</span>' +
+      '<span><i style="background:linear-gradient(180deg,#e0576f,#8a3247)"></i>проигран</span>' +
+      '<span><i style="background:linear-gradient(180deg,#9aa3ad,#4a545e)"></i>гарант</span>' +
+      '<span><i style="background:linear-gradient(180deg,#6f6b78,#3a3742)"></i>без метки</span></div>'
+    : '<div class="legend"><span><i style="background:linear-gradient(180deg,#ffdf95,#c59a3c)"></i>круток на выпадение</span></div>');
+
+  const tip = document.getElementById("chartTip");
+  const label = { win:"50/50 выигран", lose:"50/50 проигран", guard:"гарант", none:"без метки" };
+  host.querySelectorAll(".cbar").forEach(rect => {
+    const x = list[+rect.dataset.i];
+    const show = () => {
+      tip.innerHTML = '<b>' + esc(x.rec.n || "#" + x.rec.i) + '</b>' +
+        x.pulls + " круток · " + esc(x.rec.t.slice(0,10).split("-").reverse().join(".")) +
+        (limited ? '<br><span class="st-' + x.st + '">' + label[x.st] + '</span>' : "");
+      tip.style.left = rect.dataset.x + "%";
+      tip.style.top = "calc(" + rect.dataset.y + "% - 10px)";
+      tip.classList.remove("hidden");
+    };
+    rect.addEventListener("mouseenter", show);
+    rect.addEventListener("mousemove", show);
+    rect.addEventListener("mouseleave", () => tip.classList.add("hidden"));
+    rect.addEventListener("click", () => jumpToDrop(x.rec.id));
+  });
+}
+
+/* переход от столбца к строке списка */
+function jumpToDrop(id){
+  const acc = HA();
+  if(!acc) return;
+  const banners = accountBanners(acc);
+  const b = banners.find(x => x.k === histBanner);
+  if(!b) return;
+  const rows = resolveTops(acc, b).slice().reverse();
+  const idx = rows.findIndex(x => x.rec.id === id);
+  if(idx === -1) return;
+  const page = Math.floor(idx / 20);
+  if(page !== histPage){ histPage = page; renderRareTable(acc, banners); }
+  const tr = document.getElementById("histBanners").children[idx % 20];
+  if(!tr) return;
+  tr.classList.remove("flash");
+  void (tr.offsetWidth || 0);
+  tr.classList.add("flash");
+  if(tr.scrollIntoView) tr.scrollIntoView({ behavior:"smooth", block:"center" });
+}
+
+document.getElementById("rareClose").onclick = () => { histBanner = null; renderHistory(); };
+
+/* загрузка файла */
+function readHistFile(file){
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = () => previewImport(r.result);
+  r.onerror = () => { document.getElementById("histNote").textContent = "Файл не прочитался."; };
+  r.readAsText(file);
+}
+document.getElementById("pickHist").onclick = () => document.getElementById("histFile").click();
+document.getElementById("histFile").onchange = function(){
+  readHistFile(this.files[0]);
+  this.value = "";
+};
+const dz = document.getElementById("dropZone");
+["dragenter","dragover"].forEach(ev => dz.addEventListener(ev, e => {
+  e.preventDefault();
+  dz.classList.add("over");
+}));
+["dragleave","drop"].forEach(ev => dz.addEventListener(ev, e => {
+  e.preventDefault();
+  if(ev === "dragleave" && dz.contains(e.relatedTarget)) return;
+  dz.classList.remove("over");
+}));
+dz.addEventListener("drop", e => {
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  readHistFile(f);
+});
+document.getElementById("clearHist").onclick = () => {
+  const acc = HA();
+  if(!acc){ document.getElementById("histNote").textContent = "Загружать нечего — история пуста."; return; }
+  askConfirm("Удалить историю аккаунта?",
+    gameInfo(acc.game).name + " · " + acc.uid + " — " + acc.records.length + " записей будут удалены.",
+    "Удалить",
+    () => {
+      hdata.accounts = hdata.accounts.filter(a => a.key !== acc.key);
+      hdata.active = hdata.accounts[0] ? hdata.accounts[0].key : null;
+      hSave();
+      renderHistory();
+    });
+};
+
 /* ── настройки: время смены дня ── */
 const SERVERS = [
   { id:"asia", name:"Азия · 04:00 (UTC+8)",    off: 8 * 60 },
@@ -1451,7 +2691,63 @@ function localReset(serverOff){
 function hhmm(min){
   return String(Math.floor(min / 60)).padStart(2,"0") + ":" + String(min % 60).padStart(2,"0");
 }
+function renderIconSettings(){
+  const sel = document.getElementById("iconMode");
+  const hide = iconMode() === "off" || iconMode() === "auto";
+  document.getElementById("iconTplRow").classList.toggle("hidden", hide);
+  document.getElementById("iconTplRow2").classList.toggle("hidden", hide);
+  const inp = document.getElementById("iconTpl");
+  const inp2 = document.getElementById("iconTplItem");
+  sel.value = iconMode();
+  if(document.activeElement !== inp) inp.value = ui.iconTpl || LOCAL_TPL;
+  if(document.activeElement !== inp2) inp2.value = ui.iconTplItem || ui.iconTpl || LOCAL_TPL;
+  const reset = () => {
+    ui.iconPick = {}; ui.iconOk = {};
+    Object.keys(iconMiss).forEach(k => { delete iconMiss[k]; });
+    saveUI();
+    if(document.body.classList.contains("tab-history")) renderHistory();
+    renderIconSettings();
+  };
+  sel.onchange = () => { ui.iconMode = sel.value; reset(); };
+  inp.onchange = () => { ui.iconTpl = inp.value.trim() || LOCAL_TPL; reset(); };
+  inp2.onchange = () => { ui.iconTplItem = inp2.value.trim() || LOCAL_TPL; reset(); };
+  document.getElementById("iconReset").onclick = () => {
+    ui.iconIdx = {};
+    Object.keys(idxFailed).forEach(k => { delete idxFailed[k]; });
+    reset();
+  };
+
+  // диагностика: что именно сработало
+  const box = document.getElementById("iconDiag");
+  box.innerHTML = "";
+  if(iconMode() === "off"){ return; }
+  const names = { hkrpg:"Star Rail", nap:"Zenless Zone Zero", hk4e:"Genshin" };
+  const kinds = { char:"персонажи", item:"предметы" };
+  const lines = [];
+  Object.keys(names).forEach(g => {
+    Object.keys(kinds).forEach(k => {
+      const slot = g + ":" + k;
+      const idx = (ui.iconIdx || {})[slot];
+      const ok = (ui.iconOk || {})[slot];
+      if(!idx && !ok && !idxFailed[slot] && !idxLoading[slot]) return;
+      const needIdx = (((ICON_IDX[g] || {})[k] || []).length > 0);
+      const idxPart = !needIdx ? "адрес строится по коду предмета. "
+        : idx && Object.keys(idx).length ? "в справочнике " + Object.keys(idx).length + " записей. "
+        : idxFailed[slot] ? "справочник не загрузился. "
+        : "справочник ещё загружается. ";
+      lines.push("<b>" + names[g] + " · " + kinds[k] + ":</b> " + idxPart +
+        (ok ? '<span class="ok">картинки берутся с ' + esc(ok) + "</span>" : "рабочий адрес пока не найден"));
+    });
+  });
+  const noIdx = lines.length && lines.some(l => l.indexOf("не загрузился") !== -1);
+  box.innerHTML = lines.length
+    ? lines.join("<br>") +
+      (noIdx ? "<br>Справочник не загрузился — скорее всего база не отдаёт данные в браузер. Тогда помогает режим «свой адрес» или папка рядом с сайтом." : "")
+    : "Откройте раздел «История круток» — приложение переберёт источники и покажет здесь, какой сработал.";
+}
+
 function renderSettings(){
+  renderIconSettings();
   const sel = document.getElementById("resetPreset");
   sel.innerHTML = SERVERS.map(s => '<option value="' + s.id + '">' + s.name + " → " + hhmm(localReset(s.off)) + " у вас</option>").join("") +
     '<option value="custom">Своё время</option>';
@@ -2130,14 +3426,16 @@ document.getElementById("burger").onclick = () => {
 document.getElementById("scrim").onclick = closeSide;
 
 /* ── разделы ── */
+const VIEWS = { calendar:"viewCalendar", pulls:"viewPulls", history:"viewHistory" };
 function setView(name){
-  const pulls = name === "pulls";
+  if(!VIEWS[name]) name = "calendar";
   document.querySelectorAll(".navitem").forEach(x => x.classList.toggle("on", x.dataset.view === name));
-  document.getElementById("viewCalendar").classList.toggle("hidden", pulls);
-  document.getElementById("viewPulls").classList.toggle("hidden", !pulls);
-  document.body.classList.toggle("tab-pulls", pulls);
+  Object.keys(VIEWS).forEach(v => document.getElementById(VIEWS[v]).classList.toggle("hidden", v !== name));
+  document.body.classList.remove("tab-calendar","tab-pulls","tab-history");
+  document.body.classList.add("tab-" + name);
   closeMenu(); closePick(); closePatchPick(); closeGamePick(); closeSide();
-  if(pulls) renderPulls();
+  if(name === "pulls") renderPulls();
+  else if(name === "history") renderHistory();
   else {
     document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";
     document.getElementById("hSub").textContent = "Zenless Zone Zero";
@@ -2155,7 +3453,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 render();
-if(ui.tab === "pulls") setView("pulls");
+setView(ui.tab || "calendar");
 })();
 </script>
 </body>

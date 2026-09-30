@@ -1847,12 +1847,13 @@ function fiftyStats(tops){
 const ICON_TPL = {
   // Star Rail: имя файла совпадает с кодом предмета, справочник не нужен
   hkrpg: {
-    char: ["https://static.nanoka.cc/assets/hsr/avatarshopicon/{id}.webp",
-           "https://api.hakush.in/hsr/UI/avatarshopicon/{id}.webp",
-           "https://enka.network/ui/hsr/SpriteOutput/AvatarRoundIcon/{id}.png"],
+    // круглый портрет лучше смотрится в кружке, чем полная карточка персонажа
+    char: ["https://enka.network/ui/hsr/SpriteOutput/AvatarRoundIcon/{id}.png",
+           "https://static.nanoka.cc/assets/hsr/avatariconround/{id}.webp",
+           "https://static.nanoka.cc/assets/hsr/avatarshopicon/{id}.webp"],
     item: ["https://static.nanoka.cc/assets/hsr/lightconemediumicon/{id}.webp",
-           "https://api.hakush.in/hsr/UI/lightconemediumicon/{id}.webp",
-           "https://enka.network/ui/hsr/SpriteOutput/LightConeMediumIcon/{id}.png"]
+           "https://enka.network/ui/hsr/SpriteOutput/LightConeMediumIcon/{id}.png",
+           "https://enka.network/ui/hsr/SpriteOutput/ItemIcon/{id}.png"]
   },
   // ZZZ и Genshin: имя файла с кодом не связано, нужен справочник
   nap:  { char: [], item: [] },
@@ -1884,7 +1885,7 @@ const ENKA_HOST = "https://enka.network";
 /* Версия набора источников. Меняется вместе со списками выше — тогда сохранённые
    справочники и подобранные адреса сбрасываются, иначе старый пустой справочник
    навсегда блокировал бы новые попытки. */
-const ICON_SRC_VER = 3;
+const ICON_SRC_VER = 4;
 (function resetIconCacheOnUpgrade(){
   if(ui.iconVer === ICON_SRC_VER) return;
   ui.iconVer = ICON_SRC_VER;

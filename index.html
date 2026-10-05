@@ -1877,13 +1877,18 @@ const ICON_IDX = {
   nap: {
     char: ["https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/zzz/avatars.json",
            "https://api.hakush.in/zzz/data/character.json"],
+    // справочники перечитываются по сроку, иначе новые персонажи остаются без портрета
     item: ["https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/zzz/weapons.json",
            "https://api.hakush.in/zzz/data/weapon.json",
            "https://api.hakush.in/zzz/data/bangboo.json"]
   },
   hk4e: {
-    char: ["https://api.hakush.in/gi/data/character.json"],
-    item: ["https://api.hakush.in/gi/data/weapon.json"]
+    char: ["https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/characters.json",
+           "https://gi.yatta.moe/api/v2/en/avatar",
+           "https://api.hakush.in/gi/data/character.json"],
+    item: ["https://gi.yatta.moe/api/v2/en/weapon",
+           "https://api.hakush.in/gi/data/weapon.json",
+           "https://api.ambr.top/v2/en/weapon"]
   },
   hkrpg: { char: [], item: [] }
 };
@@ -1896,7 +1901,7 @@ const ENKA_HOST = "https://enka.network";
 /* Версия набора источников. Меняется вместе со списками выше — тогда сохранённые
    справочники и подобранные адреса сбрасываются, иначе старый пустой справочник
    навсегда блокировал бы новые попытки. */
-const ICON_SRC_VER = 4;
+const ICON_SRC_VER = 6;
 (function resetIconCacheOnUpgrade(){
   if(ui.iconVer === ICON_SRC_VER) return;
   ui.iconVer = ICON_SRC_VER;
@@ -1913,7 +1918,7 @@ function iconKind(r){
 }
 
 /* вытаскиваем имя файла иконки из записи индекса, не завязываясь на конкретное поле */
-const ICON_FIELDS = ["CircleIcon","ImagePath","Image","Icon","icon","image","iconPath"];
+const ICON_FIELDS = ["CircleIcon","ImagePath","Image","Icon","icon","image","iconPath","SideIconName"];
 function pickIconField(v){
   if(typeof v === "string") return v;
   if(!v || typeof v !== "object") return "";
@@ -1950,6 +1955,8 @@ function buildIndex(json){
   return out;
 }
 let idxLoading = {};
+const IDX_TTL = 3 * 24 * 3600 * 1000;    // справочник живёт трое суток
+const idxRefreshed = {};                 // принудительные обновления этой сессии
 const iconMiss = {};        // в памяти, а не в настройках: после перезагрузки пробуем снова
 const idxFailed = {};       // справочники, которые не удалось получить в этой сессии
 function listSig(list){
@@ -1959,11 +1966,19 @@ function listSig(list){
   for(let i = 0; i < j.length; i++) n = (n * 31 + j.charCodeAt(i)) >>> 0;
   return s + n.toString(36);
 }
-function ensureIndex(game, kind, done){
+function ensureIndex(game, kind, done, force){
   if(iconMode() !== "auto") return;
   ui.iconIdx = ui.iconIdx || {};
+  ui.iconIdxAt = ui.iconIdxAt || {};
   const slot = game + ":" + kind;
-  if(ui.iconIdx[slot] || idxLoading[slot]) return;
+  if(idxLoading[slot]) return;
+  const have = ui.iconIdx[slot];
+  const stale = have && (Date.now() - (ui.iconIdxAt[slot] || 0) > IDX_TTL);
+  if(have && !stale && !force) return;
+  if(force){
+    if(idxRefreshed[slot]) return;       // не больше одного обновления на слот за сессию
+    idxRefreshed[slot] = 1;
+  }
   if(idxFailed[slot]) return;
   const urls = (ICON_IDX[game] || {})[kind] || [];
   if(!urls.length || typeof fetch !== "function"){
@@ -1976,9 +1991,11 @@ function ensureIndex(game, kind, done){
     if(i >= urls.length){
       delete idxLoading[slot];
       if(Object.keys(acc).length){
+        const before = Object.keys(ui.iconIdx[slot] || {}).length;
         ui.iconIdx[slot] = acc;
+        ui.iconIdxAt[slot] = Date.now();
         saveUI();
-        if(done) done();
+        if(done && Object.keys(acc).length !== before) done();
       } else {
         idxFailed[slot] = 1;      // пусто — в этой сессии не повторяем, после перезагрузки пробуем снова
       }
@@ -2001,8 +2018,14 @@ function indexUrls(game, r){
   const bare = nm.split("/").pop().replace(/\.(png|webp|jpg)$/i, "");
   const out = [];
   if(nm.charAt(0) === "/") out.push(ENKA_HOST + nm);      // путь Enka уже с расширением
+  if(game === "hk4e"){
+    // в справочнике Genshin лежит боковая иконка — обычная называется без «_Side»
+    const front = bare.replace("UI_AvatarIcon_Side_", "UI_AvatarIcon_");
+    if(front !== bare) out.push(ENKA_HOST + "/ui/" + front + ".png");
+    out.push(ENKA_HOST + "/ui/" + bare + ".png");
+  }
   out.push(base + bare + ".webp", base + bare + ".png");
-  return out;
+  return out.filter((u, i) => out.indexOf(u) === i);
 }
 
 function iconList(game, r){
@@ -2018,13 +2041,17 @@ function iconList(game, r){
 
 function attachIcon(td, game, r){
   if(!td || !r.i) return;
-  ensureIndex(game, iconKind(r), () => {
+  const kind = iconKind(r), slot0 = game + ":" + kind;
+  const known = (ui.iconIdx || {})[slot0];
+  // код неизвестен справочнику — скорее всего персонаж новее, чем наша копия
+  const needFresh = !!known && !known[String(r.i)];
+  ensureIndex(game, kind, () => {
     if(document.body.classList.contains("tab-history")) renderHistory();
-  });
+  }, needFresh);
   const list = iconList(game, r);
   if(!list.length) return;
   ui.iconPick = ui.iconPick || {};
-  const kind = iconKind(r), slot = game + ":" + kind;
+  const slot = slot0;
   // промах привязан к составу адресов: появился справочник или сменился шаблон — пробуем заново
   const missKey = slot + ":" + r.i + ":" + listSig(list);
   if(iconMiss[missKey]) return;
@@ -2837,7 +2864,8 @@ function renderIconSettings(){
   inp.onchange = () => { ui.iconTpl = inp.value.trim() || LOCAL_TPL; reset(); };
   inp2.onchange = () => { ui.iconTplItem = inp2.value.trim() || LOCAL_TPL; reset(); };
   document.getElementById("iconReset").onclick = () => {
-    ui.iconIdx = {};
+    ui.iconIdx = {}; ui.iconIdxAt = {};
+    Object.keys(idxRefreshed).forEach(k => { delete idxRefreshed[k]; });
     Object.keys(idxFailed).forEach(k => { delete idxFailed[k]; });
     reset();
   };
@@ -2857,7 +2885,8 @@ function renderIconSettings(){
       if(!idx && !ok && !idxFailed[slot] && !idxLoading[slot]) return;
       const needIdx = (((ICON_IDX[g] || {})[k] || []).length > 0);
       const idxPart = !needIdx ? "адрес строится по коду предмета. "
-        : idx && Object.keys(idx).length ? "в справочнике " + Object.keys(idx).length + " записей. "
+        : idx && Object.keys(idx).length ? "в справочнике " + Object.keys(idx).length + " записей" +
+            ((ui.iconIdxAt || {})[slot] ? " от " + new Date(ui.iconIdxAt[slot]).toLocaleDateString("ru-RU") : "") + ". "
         : idxFailed[slot] ? "справочник не загрузился. "
         : "справочник ещё загружается. ";
       lines.push("<b>" + names[g] + " · " + kinds[k] + ":</b> " + idxPart +

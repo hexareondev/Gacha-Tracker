@@ -597,6 +597,82 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
   @keyframes slideup{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
   .menu{position:fixed;left:14px;right:14px;top:auto;width:auto}
 }
+/* ── достижения ── */
+.achtop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 0 0}
+.achtop .grow,.fbar .grow{flex:1}
+.achstate{margin-top:22px;padding:22px}
+.achstate b{display:block;font-size:15px;margin-bottom:6px}
+.achstate p{margin:0 0 6px;color:var(--muted);font-size:13.5px}
+.achstate code{font-size:12px;color:var(--dim);word-break:break-all}
+.achstate .row{justify-content:flex-start;flex-wrap:wrap;margin-top:14px}
+.tot .v small{font-size:.52em;color:var(--dim);font-weight:500;margin-left:5px;letter-spacing:0}
+#achSrcLine{margin:10px 2px 0}
+#achSrcLine .warn{color:#d9a45a}
+.achfilters{margin-top:16px;padding:16px 18px}
+.achsearch{width:100%;margin-bottom:12px}
+.fgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fgrid label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--dim);min-width:0}
+.fgrid select{width:100%;padding:8px 10px;font-size:13.5px}
+.fgrid select.set{border-color:rgba(240,194,100,.45);color:var(--gold-hot)}
+.fchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.fchips:empty{display:none}
+.fchips .chip{padding:6px 12px;font-size:12.5px}
+.fchips .chip i{font-style:normal;color:var(--dim);margin-left:6px;font-size:11.5px}
+.fbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--edge-soft)}
+.fbar .lbl{font-size:11.5px;color:var(--dim)}
+.fbar select{padding:6px 10px;font-size:13px}
+.fbar .chip{padding:6px 12px;font-size:12.5px}
+#aDir{width:34px;padding:0;font-size:15px}
+.achsum{display:flex;justify-content:space-between;align-items:baseline;gap:6px 14px;flex-wrap:wrap;margin:22px 2px 10px;font-size:13px;color:var(--muted)}
+.achsum b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.achsum b.g{color:var(--gold)}
+.achsum .acts{display:flex;gap:14px;flex:1 1 100%}
+.alist{display:flex;flex-direction:column;gap:6px}
+.achempty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13.5px}
+.agroup{display:flex;align-items:center;gap:12px;width:100%;margin-top:16px;padding:9px 6px;border:none;background:none;border-radius:var(--rs);text-align:left}
+.alist > .agroup:first-child{margin-top:0}
+.agroup:hover{background:rgba(255,255,255,.04)}
+.agroup .caret{color:var(--dim);font-size:11px;transition:transform .15s ease;display:inline-block;width:10px}
+.agroup.open .caret{transform:rotate(90deg)}
+.agroup .nm{flex:1;min-width:0;font-family:var(--display);font-weight:600;font-size:14.5px;letter-spacing:-0.01em}
+.agroup .ct{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.agroup .ct.g{color:var(--gold)}
+.agroup .mini{width:70px;height:3px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;flex:0 0 auto}
+.agroup .mini i{display:block;height:100%;background:var(--gold)}
+.arow{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:2px 12px;padding:13px 16px 12px 12px;background:var(--panel);border:1px solid var(--edge-soft);border-radius:var(--r)}
+.arow.done{background:linear-gradient(90deg,rgba(240,194,100,.075),var(--panel) 55%);border-color:rgba(240,194,100,.2)}
+.arow.blocked .amain,.arow.blocked .ar{opacity:.45}
+.achk{width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);background:none;color:#1a1405;font-size:13px;font-weight:700;line-height:1;margin-top:1px}
+.achk:hover{border-color:var(--gold);background:rgba(240,194,100,.1)}
+.arow.done .achk{background:var(--gold);border-color:var(--gold)}
+.arow.blocked .achk{border-style:dashed}
+.amain{min-width:0}
+.arow .an{font-weight:500;font-size:14.5px;line-height:1.4}
+.arow .ad{font-size:13px;color:var(--muted);white-space:pre-line;margin-top:3px;line-height:1.45}
+.arow .ad.spoil{filter:blur(5px);cursor:pointer;user-select:none;transition:filter .15s ease}
+.arow .ad.spoil:hover{filter:blur(3.5px)}
+.arow .ar{font-family:var(--display);font-weight:600;color:var(--gold);font-size:15px;white-space:nowrap;text-align:right}
+.arow .ar small{display:block;font-family:"Inter",system-ui,sans-serif;font-size:10.5px;color:var(--dim);font-weight:400}
+.ameta{grid-column:2 / 4;display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.am{font-size:11.5px;line-height:1.5;padding:1px 8px;border-radius:999px;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--edge-soft);white-space:nowrap}
+button.am{height:auto;font:inherit;font-size:11.5px}
+button.am:hover{color:var(--text);border-color:var(--edge)}
+.am.hid{color:#b8a6dc;border-color:rgba(184,166,220,.25)}
+.am.set{color:var(--gold-hot);border-color:rgba(240,194,100,.3)}
+.am.warn{color:var(--crimson);border-color:rgba(224,87,111,.3)}
+.am.d-hard{color:#e39a7a}
+.am.d-medium{color:#d6c27c}
+.am.d-easy{color:#8fa86a}
+.am.hintbtn{border-style:dashed}
+.am.hintbtn.on{color:var(--text);border-style:solid}
+.ahint{grid-column:2 / 4;font-size:12.5px;color:var(--muted);background:var(--bg);border:1px solid var(--edge-soft);border-radius:var(--rs);padding:9px 11px;margin-top:8px;line-height:1.5}
+.amore{display:block;margin:14px auto 0}
+@media(max-width:760px){
+  .fgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .achfilters{padding:14px 12px}
+  .arow{padding:12px 12px 11px 10px;gap:2px 10px}
+  .agroup .mini{display:none}
+}
 </style>
 </head>
 <body>
@@ -608,6 +684,7 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
     <button class="navitem on" data-view="calendar">Календарь</button>
     <button class="navitem" data-view="pulls">Крутки</button>
     <button class="navitem" data-view="history">История</button>
+    <button class="navitem" data-view="achievements">Достижения</button>
   </nav>
 </aside>
 
@@ -895,6 +972,82 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 
   </div><!-- /viewHistory -->
 
+  <div id="viewAchievements" class="hidden">
+    <div class="achtop">
+      <div class="seg" id="achGameSeg"></div>
+      <span class="grow"></span>
+      <button class="ghost sm" id="achLoadBtn" title="База достижений или файл прогресса (UIAF)">Загрузить файл</button>
+      <input type="file" id="achFile" accept="application/json,.json" hidden>
+      <button class="ghost sm" id="achExport">Выгрузить прогресс</button>
+    </div>
+
+    <div class="card achstate hidden" id="achState"></div>
+
+    <div id="achBody" class="hidden">
+      <div class="totals pulls">
+        <div class="tot hero">
+          <div>
+            <div class="k">Получено достижений</div>
+            <div class="v num" id="aDone">0</div>
+            <div class="bar"><i id="aBar" style="width:0"></i></div>
+            <div class="delta" id="aPct"></div>
+          </div>
+        </div>
+        <div class="subs">
+          <div class="tot gold"><div class="k" id="aGotK">Награда получена</div><div class="v num" id="aGot">0</div></div>
+          <div class="tot"><div class="k">Ещё можно получить</div><div class="v num" id="aLeft">0</div></div>
+          <div class="tot st"><div class="k">Скрытых получено</div><div class="v num" id="aHid">0</div></div>
+        </div>
+      </div>
+      <p class="hint" id="achSrcLine"></p>
+
+      <div class="card achfilters">
+        <input id="achQ" class="achsearch" type="search" placeholder="Поиск по названию, описанию и подсказке" autocomplete="off" spellcheck="false">
+        <div class="fgrid">
+          <label>Категория<select id="fSeries"></select></label>
+          <label>Версия<select id="fVer"></select></label>
+          <label>Статус<select id="fStatus">
+            <option value="">все</option>
+            <option value="notdone">не получены</option>
+            <option value="todo">можно получить</option>
+            <option value="done">получены</option>
+            <option value="blocked">недоступны</option>
+          </select></label>
+          <label>Награда<select id="fReward"></select></label>
+          <label>Сложность<select id="fDiff"></select></label>
+          <label>Вид<select id="fType">
+            <option value="">обычные и скрытые</option>
+            <option value="open">только обычные</option>
+            <option value="hidden">только скрытые</option>
+          </select></label>
+        </div>
+        <div class="fchips" id="fFlags"></div>
+        <div class="fbar">
+          <span class="lbl">Сортировка</span>
+          <select id="aSort">
+            <option value="game">как в игре</option>
+            <option value="version">по версии</option>
+            <option value="reward">по награде</option>
+            <option value="name">по названию</option>
+            <option value="diff">по сложности</option>
+            <option value="status">по статусу</option>
+          </select>
+          <button class="ghost sm" id="aDir"></button>
+          <span class="lbl" style="margin-left:6px">Группы</span>
+          <div class="seg" id="aGroup"></div>
+          <span class="grow"></span>
+          <button class="chip" id="aSpoil" title="Размывать описание скрытых, пока они не получены">Без спойлеров</button>
+          <button class="linkbtn" id="aReset">Сбросить фильтры</button>
+        </div>
+      </div>
+
+      <div class="achsum" id="achSum"></div>
+      <div class="alist" id="achList"></div>
+      <button class="ghost amore hidden" id="achMore">Показать ещё</button>
+    </div>
+  </div><!-- /viewAchievements -->
+
+
 </div>
 </div><!-- /shell -->
 
@@ -963,6 +1116,10 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
     <p class="hint" style="margin:8px 0 0">В шаблоне {id} — код предмета из файла истории, {game} — nap, hkrpg или hk4e. Если картинки нет, портрет просто не показывается.</p>
     <div class="icodiag" id="iconDiag"></div>
     <button class="ghost sm" id="iconReset" style="margin-top:10px">Искать источники заново</button>
+    <div class="sep"></div>
+    <p class="group">Базы достижений</p>
+    <div class="editrow"><span>Адрес</span><input id="achSrc" spellcheck="false" placeholder="авто — achievements/data в репозитории сайта"></div>
+    <p class="hint" style="margin:8px 0 0">Пусто — базы берутся из папки achievements/data репозитория, откуда открыт сайт. Можно указать «пользователь/репозиторий», адрес папки или полный адрес с {file} — он заменится на genshin, hsr или zzz.</p>
     <div class="row" style="margin-top:16px"><button class="ghost" id="closeSettings">Готово</button></div>
   </div>
 </div>
@@ -1587,6 +1744,17 @@ function merge(text){
   if(inc.v >= 2 || inc.rewards){
     if(inc.pulls && inc.pulls.games){ pdata = inc.pulls; pSave(); renderPulls(); }
     if(inc.gacha && inc.gacha.accounts){ hdata = inc.gacha; hSave(); renderHistory(); }
+    if(inc.ach && typeof inc.ach === "object"){
+      // отметки достижений объединяем: из копии добавляется то, чего здесь нет
+      Object.keys(inc.ach).forEach(gid => {
+        const src = inc.ach[gid];
+        if(!src || typeof src !== "object") return;
+        const m = aDoneMap(gid);
+        Object.keys(src).forEach(id => { if(src[id] && !m[id]) m[id] = src[id]; });
+      });
+      aSave();
+      if(ui.tab === "achievements") renderAch();
+    }
     inc = inc.rewards || {};
   }
   let added = 0, upd = 0;
@@ -1605,7 +1773,7 @@ function merge(text){
 }
 
 document.getElementById("export").onclick = () => {
-  const text = JSON.stringify({ v:3, rewards:data, pulls:pdata, gacha:hdata }, null, 1);
+  const text = JSON.stringify({ v:3, rewards:data, pulls:pdata, gacha:hdata, ach:adata }, null, 1);
   const name = "zzz-rewards-" + todayKey + ".json";
   try {
     const blob = new Blob([text], { type:"application/json" });
@@ -1639,7 +1807,7 @@ document.getElementById("importFile").onchange = function(){
 function openData(){
   closeMenu();
   const t = document.getElementById("dataText");
-  t.value = JSON.stringify({ v:3, rewards:data, pulls:pdata, gacha:hdata }, null, 1);
+  t.value = JSON.stringify({ v:3, rewards:data, pulls:pdata, gacha:hdata, ach:adata }, null, 1);
   document.getElementById("dataOverlay").classList.add("on");
   t.focus();
   t.select();
@@ -3579,17 +3747,812 @@ document.getElementById("burger").onclick = () => {
 };
 document.getElementById("scrim").onclick = closeSide;
 
+/* ── достижения ──
+   Базы (data/*_achievements.json) собирает скрипт в GitHub Actions. Страница берёт их
+   прямо из репозитория (raw.githubusercontent.com — там они свежие сразу после коммита
+   бота), а если не вышло — из папки data рядом с сайтом. Последняя удачная загрузка
+   хранится в IndexedDB, так что раздел открывается и без сети. Отметки — в localStorage. */
+const ACH_KEY = "zzz-ach-v1";
+const astore = makeStore(ACH_KEY);
+let adata = astore.load() || {};
+function aSave(){ astore.save(adata); }
+const ACH_GAMES = [
+  { id:"gi",  file:"genshin", name:"Genshin Impact",    short:"Genshin",   cur:"примогемов", hero:"Путешественник", who:"персонаж" },
+  { id:"hsr", file:"hsr",     name:"Honkai: Star Rail", short:"Star Rail", cur:"нефрита",    hero:"Первопроходец",  who:"персонаж" },
+  { id:"zzz", file:"zzz",     name:"Zenless Zone Zero", short:"ZZZ",       cur:"полихромов", hero:"Прокси",         who:"агент" }
+];
+const ACH_DIFF = { easy:"лёгкое", medium:"среднее", hard:"сложное" };
+const ACH_DORD = { easy:1, medium:2, hard:3 };
+const ACH_FLAGS = [
+  { k:"set",        label:() => "Выбор одного из нескольких", test:a => a.set != null },
+  { k:"gacha",      label:g => "Нужен " + g.who + " из баннера", test:a => !!a.gacha },
+  { k:"missable",   label:() => "Можно упустить", test:a => !!a.missable },
+  { k:"timegated",  label:() => "Растянуты во времени", test:a => !!a.timegated },
+  { k:"impossible", label:() => "Сейчас недоступны", test:a => !!a.impossible },
+  { k:"stages",     label:() => "Ступенчатые", test:a => (a.stages || 0) > 1 },
+  { k:"hint",       label:() => "С подсказкой", test:a => !!a.hint }
+];
+const ACH_SORT_DIR = { game:1, version:-1, reward:-1, name:1, diff:-1, status:1 };
+const ACH_TTL = 6 * 3600 * 1000;
+// где лежат базы относительно корня репозитория (скрипт кладёт их в achievements/data)
+const ACH_DIR = "achievements/data/";
+
+const AS = (ui.ach && typeof ui.ach === "object") ? ui.ach : {};
+ui.ach = AS;
+if(!ACH_GAMES.some(g => g.id === AS.game)) AS.game = "gi";
+["q","status","reward","diff","type"].forEach(k => { if(typeof AS[k] !== "string") AS[k] = ""; });
+if(!Array.isArray(AS.flags)) AS.flags = [];
+if(!ACH_SORT_DIR[AS.sort]) AS.sort = "game";
+if(AS.dir !== 1 && AS.dir !== -1) AS.dir = ACH_SORT_DIR[AS.sort];
+if(["none","series","version"].indexOf(AS.group) === -1) AS.group = "series";
+AS.spoil = !!AS.spoil;
+if(!AS.pg || typeof AS.pg !== "object") AS.pg = {};
+// категория, версия и свёрнутые группы — у каждой игры свои
+function pf(){
+  let p = AS.pg[AS.game];
+  if(!p || typeof p !== "object") p = AS.pg[AS.game] = {};
+  if(typeof p.series !== "string") p.series = "";
+  if(typeof p.ver !== "string") p.ver = "";
+  if(!Array.isArray(p.fold)) p.fold = [];
+  return p;
+}
+
+const adb = {};      // game → подготовленная база
+const aErr = {};     // game → { msg, tried:[...] }
+const aBusy = {};
+const aInit = {};
+let aLimit = 120;
+const aOpenHint = new Set();
+const aReveal = new Set();
+
+function achGame(){ return ACH_GAMES.find(g => g.id === AS.game) || ACH_GAMES[0]; }
+function achGameById(id){ return ACH_GAMES.find(g => g.id === id); }
+function achNorm(s){ return String(s || "").toLowerCase().replace(/ё/g, "е"); }
+function achVerKey(v){
+  const m = /^(\d+)\.(\d+)/.exec(String(v || ""));
+  return m ? +m[1] * 1000 + +m[2] : -1;
+}
+function achVerName(k){ return k < 0 ? "без версии" : Math.floor(k / 1000) + "." + (k % 1000); }
+// в текстах игры остаются служебные вставки: род героя, ник, переносы строк
+function achText(s, g){
+  return String(s == null ? "" : s)
+    .replace(/\\n/g, "\n")
+    .replace(/\{M#([^}]*)\}\{F#([^}]*)\}/g, "$1/$2")
+    .replace(/\{F#([^}]*)\}\{M#([^}]*)\}/g, "$2/$1")
+    .replace(/\{[MF]#([^}]*)\}/g, "($1)")
+    .replace(/\{NICKNAME\}/g, g.hero)
+    .replace(/\{TEXTJOIN#\d+\}/g, "…")
+    .replace(/<\/?[a-z][^>]*>/gi, "")
+    .replace(/^#/, "")
+    .trim();
+}
+
+function achCheck(doc, g){
+  if(!doc || typeof doc !== "object" || !Array.isArray(doc.achievements)) return "это не база достижений";
+  if(!doc.achievements.length) return "база пустая";
+  if(doc.game && doc.game !== g.id) return "в файле база другой игры (" + doc.game + ")";
+  return "";
+}
+function achPrep(doc, g){
+  const ser = {};
+  (Array.isArray(doc.series) ? doc.series : []).forEach((s, i) => {
+    if(s && s.id != null) ser[s.id] = { id:s.id, name:achText(s.name, g) || ("Категория " + s.id), ord:i };
+  });
+  const list = doc.achievements.filter(a => a && a.id != null);
+  const sets = {}, byId = {};
+  list.forEach((a, i) => {
+    a._o = i;
+    a._n = achText(a.name, g) || ("#" + a.id);
+    a._d = achText(a.description, g);
+    a._v = String(a.version == null ? "" : a.version).trim();
+    a._vk = achVerKey(a._v);
+    a._s = achNorm(a._n + " " + a._d + " " + (a.hint || "") + " " + a.id);
+    if(!ser[a.series_id]) ser[a.series_id] = { id:a.series_id, name:"Категория " + a.series_id, ord:1000 + i };
+    if(a.set != null) (sets[a.set] = sets[a.set] || []).push(a);
+    byId[a.id] = a;
+  });
+  return { doc, list, ser, sets, byId, src:"", at:0 };
+}
+function achSet(gid, doc, src, at, persist){
+  const g = achGameById(gid);
+  const db = achPrep(doc, g);
+  db.src = src; db.at = at || Date.now();
+  adb[gid] = db;
+  if(persist){
+    try { idbRun("readwrite", st => st.put({ doc, src, at:db.at }, "ach:" + gid)).catch(() => {}); } catch(e){}
+  }
+  return db;
+}
+
+function achSources(file){
+  const name = file + "_achievements.json";
+  const t = (ui.achSrc || "").trim();
+  if(t){
+    if(t.indexOf("{file}") !== -1) return [t.replace(/\{file\}/g, file)];
+    const m = /^([\w.-]+)\/([\w.-]+)$/.exec(t);
+    if(m) return ["https://raw.githubusercontent.com/" + m[1] + "/" + m[2] + "/HEAD/" + ACH_DIR + name];
+    if(/\.json(\?|$)/i.test(t)) return [t];
+    return [t.replace(/\/+$/, "") + "/" + name];
+  }
+  const out = [];
+  const m = /^([a-z0-9-]+)\.github\.io$/i.exec(location.hostname);
+  if(m){
+    const seg = location.pathname.split("/").filter(Boolean)[0];
+    const repo = seg && !/\.html?$/i.test(seg) ? seg : m[1] + ".github.io";
+    out.push("https://raw.githubusercontent.com/" + m[1] + "/" + repo + "/HEAD/" + ACH_DIR + name);
+  }
+  out.push(ACH_DIR + name);
+  return out;
+}
+
+async function achFetch(g){
+  if(aBusy[g.id]) return;
+  aBusy[g.id] = true;
+  delete aErr[g.id];
+  if(ui.tab === "achievements") renderAch();
+  const tried = [];
+  let ok = false;
+  for(const url of achSources(g.file)){
+    let why = "";
+    try {
+      const r = await fetch(url, { cache:"no-cache" });
+      if(!r.ok) why = r.status === 404 ? "файл не найден (404)" : "сервер ответил " + r.status;
+      else {
+        let doc = null;
+        try { doc = await r.json(); } catch(e){ why = "файл не читается как JSON"; }
+        if(doc){
+          why = achCheck(doc, g);
+          if(!why){ achSet(g.id, doc, url, Date.now(), true); ok = true; }
+        }
+      }
+    } catch(e){
+      why = location.protocol === "file:"
+        ? "страница открыта как файл — браузер не даёт ей читать соседние файлы"
+        : "адрес недоступен (нет сети или чтение запрещено)";
+    }
+    tried.push({ url, why });
+    if(ok) break;
+  }
+  aBusy[g.id] = false;
+  if(!ok) aErr[g.id] = { tried };
+  if(ui.tab === "achievements") renderAch();
+}
+function achOpen(g, force){
+  if(force){ achFetch(g); return; }
+  if(aInit[g.id]) return;
+  aInit[g.id] = true;
+  let p;
+  try { p = idbRun("readonly", st => st.get("ach:" + g.id)); } catch(e){ p = Promise.reject(e); }
+  p.then(c => {
+    if(c && c.doc && !achCheck(c.doc, g) && !adb[g.id]){
+      achSet(g.id, c.doc, c.src || "кеш", c.at, false);
+      if(ui.tab === "achievements") renderAch();
+    }
+    if(!c || !c.at || Date.now() - c.at > ACH_TTL) achFetch(g);
+  }).catch(() => achFetch(g));
+}
+
+/* отметки */
+function aDoneMap(gid){
+  if(!adata[gid] || typeof adata[gid] !== "object") adata[gid] = {};
+  return adata[gid];
+}
+function isDone(gid, a){ return !!(adata[gid] && adata[gid][a.id]); }
+function aStatus(gid, db, a){
+  if(isDone(gid, a)) return "done";
+  if(a.impossible) return "blocked";
+  if(a.set != null && db.sets[a.set].some(b => b !== a && isDone(gid, b))) return "blocked";
+  return "todo";
+}
+function aMark(gid, db, a, on){
+  const m = aDoneMap(gid);
+  if(on){
+    m[a.id] = Math.floor(Date.now() / 1000);
+    // во взаимоисключающем наборе получить можно только одно
+    if(a.set != null) db.sets[a.set].forEach(b => { if(b !== a) delete m[b.id]; });
+  } else delete m[a.id];
+}
+// награда с учётом наборов: из набора засчитывается одно достижение
+function achReward(gid, db, items){
+  let got = 0, left = 0;
+  const seen = {};
+  items.forEach(a => {
+    if(a.set != null){
+      if(seen[a.set]) return;
+      seen[a.set] = 1;
+      const mem = db.sets[a.set];
+      const d = mem.find(b => isDone(gid, b));
+      if(d){ got += d.reward || 0; return; }
+      const can = mem.filter(b => !b.impossible).map(b => b.reward || 0);
+      if(can.length) left += Math.max.apply(null, can);
+      return;
+    }
+    if(isDone(gid, a)) got += a.reward || 0;
+    else if(!a.impossible) left += a.reward || 0;
+  });
+  return { got, left };
+}
+
+function achFiltered(db, gid){
+  const p = pf();
+  const words = achNorm(AS.q).split(/\s+/).filter(Boolean);
+  const flags = AS.flags.map(k => ACH_FLAGS.find(f => f.k === k)).filter(Boolean);
+  const vMaj = /^(\d+)\.x$/.exec(p.ver);
+  return db.list.filter(a => {
+    if(p.series !== "" && String(a.series_id) !== p.series) return false;
+    if(p.ver){
+      if(p.ver === "none"){ if(a._vk >= 0) return false; }
+      else if(vMaj){ if(a._vk < 0 || Math.floor(a._vk / 1000) !== +vMaj[1]) return false; }
+      else if(achVerName(a._vk) !== p.ver) return false;
+    }
+    if(AS.status){
+      const s = aStatus(gid, db, a);
+      if(AS.status === "notdone" ? s === "done" : s !== AS.status) return false;
+    }
+    if(AS.reward && String(a.reward || 0) !== AS.reward) return false;
+    if(AS.diff){
+      if(AS.diff === "none" ? !!a.difficulty : a.difficulty !== AS.diff) return false;
+    }
+    if(AS.type === "hidden" && !a.hidden) return false;
+    if(AS.type === "open" && a.hidden) return false;
+    for(const f of flags) if(!f.test(a)) return false;
+    for(const w of words) if(a._s.indexOf(w) === -1) return false;
+    return true;
+  });
+}
+function achSorted(db, gid, arr){
+  const byGame = (a, b) => (db.ser[a.series_id].ord - db.ser[b.series_id].ord) || (a._o - b._o);
+  const SORD = { todo:0, blocked:1, done:2 };
+  const prim = {
+    game: byGame,
+    version: (a, b) => a._vk - b._vk,
+    reward: (a, b) => (a.reward || 0) - (b.reward || 0),
+    name: (a, b) => a._n.localeCompare(b._n, "ru"),
+    diff: (a, b) => (ACH_DORD[a.difficulty] || 0) - (ACH_DORD[b.difficulty] || 0),
+    status: (a, b) => SORD[aStatus(gid, db, a)] - SORD[aStatus(gid, db, b)]
+  }[AS.sort] || byGame;
+  return arr.slice().sort((a, b) => (AS.dir * prim(a, b)) || byGame(a, b));
+}
+function achGroups(db, items){
+  if(AS.group === "none") return [{ key:"", name:"", items }];
+  const map = {}, out = [];
+  items.forEach(a => {
+    const k = AS.group === "series" ? "s:" + a.series_id : "v:" + a._vk;
+    if(!map[k]){
+      map[k] = AS.group === "series"
+        ? { key:k, name:db.ser[a.series_id].name, ord:db.ser[a.series_id].ord, items:[] }
+        : { key:k, name:a._vk < 0 ? "Без версии" : "Версия " + achVerName(a._vk), ord:a._vk, items:[] };
+      out.push(map[k]);
+    }
+    map[k].items.push(a);
+  });
+  if(AS.group === "series") out.sort((x, y) => (AS.sort === "game" ? AS.dir : 1) * (x.ord - y.ord));
+  else out.sort((x, y) => (AS.sort === "version" ? AS.dir : -1) * (x.ord - y.ord));
+  return out;
+}
+
+function achOpt(value, text, cur){
+  return '<option value="' + esc(value) + '"' + (value === cur ? " selected" : "") + ">" + esc(text) + "</option>";
+}
+function achFillSelects(db, g){
+  const p = pf(), gid = g.id;
+  // категории — в порядке игры, с прогрессом
+  const sc = {};
+  db.list.forEach(a => {
+    const c = sc[a.series_id] || (sc[a.series_id] = { n:0, d:0 });
+    c.n++; if(isDone(gid, a)) c.d++;
+  });
+  const sers = Object.keys(db.ser).map(k => db.ser[k]).filter(s => sc[s.id]).sort((x, y) => x.ord - y.ord);
+  if(p.series && !sers.some(s => String(s.id) === p.series)) p.series = "";
+  let h = achOpt("", "все категории (" + sers.length + ")", p.series);
+  sers.forEach(s => { h += achOpt(String(s.id), s.name + " — " + sc[s.id].d + "/" + sc[s.id].n, p.series); });
+  const fS = document.getElementById("fSeries");
+  fS.innerHTML = h; fS.classList.toggle("set", !!p.series);
+
+  // версии — по крупным номерам, новые сверху
+  const vc = {}, mc = {};
+  db.list.forEach(a => {
+    vc[a._vk] = (vc[a._vk] || 0) + 1;
+    if(a._vk >= 0){ const M = Math.floor(a._vk / 1000); mc[M] = (mc[M] || 0) + 1; }
+  });
+  const vks = Object.keys(vc).map(Number).filter(k => k >= 0).sort((x, y) => y - x);
+  const valid = { "":1 };
+  h = achOpt("", "все версии", p.ver);
+  Object.keys(mc).map(Number).sort((x, y) => y - x).forEach(M => {
+    h += '<optgroup label="Версии ' + M + '.x">';
+    h += achOpt(M + ".x", "все " + M + ".x — " + mc[M], p.ver); valid[M + ".x"] = 1;
+    vks.filter(k => Math.floor(k / 1000) === M).forEach(k => {
+      const n = achVerName(k);
+      h += achOpt(n, n + " — " + vc[k], p.ver); valid[n] = 1;
+    });
+    h += "</optgroup>";
+  });
+  if(vc[-1]){ h += achOpt("none", "без версии — " + vc[-1], p.ver); valid.none = 1; }
+  if(!valid[p.ver]){ p.ver = ""; }
+  const fV = document.getElementById("fVer");
+  fV.innerHTML = h; fV.value = p.ver; fV.classList.toggle("set", !!p.ver);
+
+  const rc = {};
+  db.list.forEach(a => { const r = a.reward || 0; rc[r] = (rc[r] || 0) + 1; });
+  const rs = Object.keys(rc).map(Number).sort((x, y) => x - y);
+  if(AS.reward && !rc[AS.reward]) AS.reward = "";
+  h = achOpt("", "любая", AS.reward);
+  rs.forEach(r => { h += achOpt(String(r), "+" + r + " — " + rc[r], AS.reward); });
+  const fR = document.getElementById("fReward");
+  fR.innerHTML = h; fR.classList.toggle("set", !!AS.reward);
+
+  const dc = {};
+  db.list.forEach(a => { const d = ACH_DIFF[a.difficulty] ? a.difficulty : "none"; dc[d] = (dc[d] || 0) + 1; });
+  if(AS.diff && !dc[AS.diff]) AS.diff = "";
+  h = achOpt("", "любая", AS.diff);
+  ["easy","medium","hard"].forEach(d => { if(dc[d]) h += achOpt(d, ACH_DIFF[d] + " — " + dc[d], AS.diff); });
+  if(dc.none) h += achOpt("none", "без оценки — " + dc.none, AS.diff);
+  const fD = document.getElementById("fDiff");
+  fD.innerHTML = h; fD.classList.toggle("set", !!AS.diff);
+
+  const fSt = document.getElementById("fStatus");
+  fSt.value = AS.status; fSt.classList.toggle("set", !!AS.status);
+  const fT = document.getElementById("fType");
+  fT.value = AS.type; fT.classList.toggle("set", !!AS.type);
+
+  // особые признаки — показываем только те, что есть в базе этой игры
+  const box = document.getElementById("fFlags");
+  box.innerHTML = "";
+  ACH_FLAGS.forEach(f => {
+    const n = db.list.filter(f.test).length;
+    if(!n){ return; }
+    const b = document.createElement("button");
+    b.className = "chip" + (AS.flags.indexOf(f.k) !== -1 ? " on" : "");
+    b.innerHTML = esc(f.label(g)) + "<i>" + n + "</i>";
+    b.onclick = () => {
+      const i = AS.flags.indexOf(f.k);
+      if(i === -1) AS.flags.push(f.k); else AS.flags.splice(i, 1);
+      achChanged();
+    };
+    box.appendChild(b);
+  });
+  AS.flags = AS.flags.filter(k => ACH_FLAGS.some(f => f.k === k && db.list.some(f.test)));
+}
+function achFiltersActive(){
+  const p = pf();
+  return !!(AS.q || p.series || p.ver || AS.status || AS.reward || AS.diff || AS.type || AS.flags.length);
+}
+function achChanged(){
+  aLimit = 120;
+  saveUI();
+  renderAch();
+}
+
+function achAgo(t){
+  const m = Math.round((Date.now() - t) / 60000);
+  if(m < 1) return "только что";
+  if(m < 60) return m + " мин назад";
+  const h = Math.round(m / 60);
+  if(h < 48) return h + " ч назад";
+  return Math.round(h / 24) + " дн назад";
+}
+function achHost(u){
+  try { return /^https?:/.test(u) ? new URL(u).hostname : "папка " + ACH_DIR + " сайта"; } catch(e){ return u; }
+}
+
+function renderAch(){
+  const g = achGame();
+  achOpen(g);
+  const db = adb[g.id];
+  const gid = g.id;
+  document.getElementById("hTitle").childNodes[0].nodeValue = "Достижения";
+
+  const seg = document.getElementById("achGameSeg");
+  seg.innerHTML = "";
+  ACH_GAMES.forEach(x => {
+    const b = document.createElement("button");
+    b.className = x.id === gid ? "on" : "";
+    b.textContent = x.short;
+    b.onclick = () => { if(AS.game === x.id) return; AS.game = x.id; aLimit = 120; saveUI(); renderAch(); };
+    seg.appendChild(b);
+  });
+  document.getElementById("achExport").disabled = !db;
+
+  const state = document.getElementById("achState");
+  const body = document.getElementById("achBody");
+  if(!db){
+    document.getElementById("hSub").textContent = g.name;
+    body.classList.add("hidden");
+    state.classList.remove("hidden");
+    const err = aErr[gid];
+    if(!err){
+      state.innerHTML = "<b>Загружаю базу достижений…</b><p>" + esc(g.name) + "</p>";
+      return;
+    }
+    let h = "<b>Базу достижений " + esc(g.name) + " загрузить не удалось</b>" +
+      "<p>Её собирает скрипт в GitHub Actions и кладёт в папку <code>" + ACH_DIR + "</code> репозитория. Проверьте, что файл <code>" + ACH_DIR +
+      esc(g.file) + "_achievements.json</code> там есть, или загрузите его сюда вручную.</p>";
+    err.tried.forEach(t => { h += "<p><code>" + esc(t.url) + "</code> — " + esc(t.why) + "</p>"; });
+    h += '<div class="row"><button class="mark sm" data-act="retry">Повторить</button><button class="ghost sm" data-act="file">Загрузить файл базы</button></div>';
+    state.innerHTML = h;
+    return;
+  }
+  state.classList.add("hidden");
+  body.classList.remove("hidden");
+
+  // итоги по всей игре
+  const all = db.list;
+  const done = all.filter(a => isDone(gid, a)).length;
+  const rw = achReward(gid, db, all);
+  const hid = all.filter(a => a.hidden), hidDone = hid.filter(a => isDone(gid, a)).length;
+  const imp = all.filter(a => a.impossible && !isDone(gid, a)).length;
+  const pct = all.length ? done / all.length * 100 : 0;
+  document.getElementById("hSub").textContent = g.name + " · " + fmt(done) + " из " + fmt(all.length);
+  document.getElementById("aDone").innerHTML = fmt(done) + "<small>/ " + fmt(all.length) + "</small>";
+  document.getElementById("aBar").style.width = pct.toFixed(2) + "%";
+  document.getElementById("aPct").textContent = (pct >= 10 || pct === 0 ? Math.round(pct) : pct.toFixed(1)) + "%" +
+    (imp ? " · сейчас недоступно: " + imp : "");
+  document.getElementById("aGotK").textContent = "Получено " + g.cur;
+  document.getElementById("aGot").innerHTML = fmt(rw.got) + "<small>/ " + fmt(rw.got + rw.left) + "</small>";
+  document.getElementById("aLeft").textContent = fmt(rw.left);
+  document.getElementById("aHid").innerHTML = fmt(hidDone) + "<small>/ " + fmt(hid.length) + "</small>";
+
+  // откуда база и насколько свежая
+  const d = db.doc.generated_at ? new Date(db.doc.generated_at) : null;
+  const old = d && !isNaN(d) && Date.now() - d.getTime() > 14 * 864e5;
+  let s = "База " + esc(db.doc.source || "") + (d && !isNaN(d) ? " от " + d.toLocaleDateString("ru-RU", { day:"numeric", month:"long", year:"numeric" }) : "") +
+    " · " + fmt(all.length) + " шт. · " + esc(achHost(db.src)) + ", проверено " + achAgo(db.at) + " · ";
+  s += aBusy[gid] ? "обновляю…" : '<button class="linkbtn" data-act="refresh">обновить</button>';
+  if(old) s += '<br><span class="warn">База давно не обновлялась — проверьте, что автообновление в GitHub Actions работает.</span>';
+  if(aErr[gid]) s += '<br><span class="warn">Обновить не вышло: ' + esc(aErr[gid].tried.map(t => t.why).join("; ")) + ". Показана сохранённая копия.</span>";
+  document.getElementById("achSrcLine").innerHTML = s;
+
+  document.getElementById("achQ").value = AS.q;
+  achFillSelects(db, g);
+  document.getElementById("aSort").value = AS.sort;
+  const dir = document.getElementById("aDir");
+  dir.textContent = AS.dir === 1 ? "↑" : "↓";
+  dir.title = AS.dir === 1 ? "По возрастанию — нажмите, чтобы развернуть" : "По убыванию — нажмите, чтобы развернуть";
+  dir.setAttribute("aria-label", dir.title);
+  const gs = document.getElementById("aGroup");
+  gs.innerHTML = "";
+  [["none","нет"],["series","категории"],["version","версии"]].forEach(o => {
+    const b = document.createElement("button");
+    b.className = AS.group === o[0] ? "on" : "";
+    b.textContent = o[1];
+    b.onclick = () => { AS.group = o[0]; achChanged(); };
+    gs.appendChild(b);
+  });
+  document.getElementById("aSpoil").classList.toggle("on", AS.spoil);
+  document.getElementById("aReset").classList.toggle("hidden", !achFiltersActive());
+
+  renderAchList(db, g);
+}
+
+function achRowHtml(db, g, a){
+  const gid = g.id;
+  const st = aStatus(gid, db, a);
+  const spoil = AS.spoil && a.hidden && st !== "done" && !aReveal.has(a.id);
+  const m = [];
+  if(AS.group !== "series") m.push('<button class="am" data-act="ser" title="Показать только эту категорию">' + esc(db.ser[a.series_id].name) + "</button>");
+  if(AS.group !== "version") m.push('<button class="am" data-act="ver" title="Показать только эту версию">' + (a._vk < 0 ? "без версии" : "версия " + esc(a._v)) + "</button>");
+  if(a.hidden) m.push('<span class="am hid">скрытое</span>');
+  if(ACH_DIFF[a.difficulty]) m.push('<span class="am d-' + a.difficulty + '">' + ACH_DIFF[a.difficulty] + "</span>");
+  if(a.stages > 1) m.push('<span class="am">ступень ' + (a.stage || 1) + " из " + a.stages + "</span>");
+  if(a.set != null){
+    const mem = db.sets[a.set];
+    const other = mem.find(b => b !== a && isDone(gid, b));
+    m.push('<span class="am set" title="Взаимоисключающие: награду дают только за одно из ' + mem.length + '. ' +
+      esc(mem.filter(b => b !== a).map(b => b._n).join(" · ")) + '">' +
+      (other ? "выбрано другое из " + mem.length : "одно из " + mem.length) + "</span>");
+  }
+  if(a.gacha) m.push('<span class="am">нужен ' + g.who + "</span>");
+  if(a.missable) m.push('<span class="am warn">можно упустить</span>');
+  if(a.timegated) m.push('<span class="am"' + (typeof a.timegated === "string" ? ' title="' + esc(a.timegated) + '"' : "") + ">растянуто во времени</span>");
+  if(a.impossible) m.push('<span class="am warn">сейчас недоступно</span>');
+  const ho = aOpenHint.has(a.id);
+  if(a.hint) m.push('<button class="am hintbtn' + (ho ? " on" : "") + '" data-act="hint">подсказка' + (ho ? " ▴" : " ▾") + "</button>");
+  const tip = st === "done" ? "Снять отметку" : "Отметить как полученное";
+  return '<div class="arow' + (st === "done" ? " done" : st === "blocked" ? " blocked" : "") + '" data-id="' + esc(a.id) + '">' +
+    '<button class="achk" data-act="tog" title="' + tip + '" aria-label="' + tip + ": " + esc(a._n) + '" aria-pressed="' + (st === "done") + '">' + (st === "done" ? "✓" : "") + "</button>" +
+    '<div class="amain"><div class="an">' + esc(a._n) + "</div>" +
+    (a._d ? '<div class="ad' + (spoil ? ' spoil" data-act="spoil" title="Скрытое достижение — нажмите, чтобы прочитать' : "") + '">' + esc(a._d) + "</div>" : "") +
+    "</div>" +
+    '<div class="ar">+' + (a.reward || 0) + "</div>" +
+    '<div class="ameta">' + m.join("") + "</div>" +
+    (ho && a.hint ? '<div class="ahint">' + esc(a.hint) + "</div>" : "") +
+    "</div>";
+}
+
+function renderAchList(db, g){
+  const gid = g.id;
+  const items = achSorted(db, gid, achFiltered(db, gid));
+  const rw = achReward(gid, db, items);
+  const nd = items.filter(a => isDone(gid, a)).length;
+  const canMark = items.some(a => aStatus(gid, db, a) === "todo");
+  let sum = "<span>Показано <b>" + fmt(items.length) + "</b> из " + fmt(db.list.length) + " · получено <b>" + fmt(nd) + "</b></span>" +
+    "<span>награда: <b class=\"g\">" + fmt(rw.got) + "</b> получено · ещё <b>" + fmt(rw.left) + "</b> " + g.cur + "</span>";
+  if(achFiltersActive() && items.length){
+    sum += '<span class="acts">' +
+      (canMark ? '<button class="linkbtn" data-act="markall">отметить все показанные</button>' : "") +
+      (nd ? '<button class="linkbtn" data-act="unmarkall">снять отметки с показанных</button>' : "") + "</span>";
+  }
+  document.getElementById("achSum").innerHTML = sum;
+
+  const list = document.getElementById("achList");
+  if(!items.length){
+    list.innerHTML = '<div class="achempty">' + (achFiltersActive() ? "Под эти фильтры ничего не подходит." : "В базе нет достижений.") + "</div>";
+    document.getElementById("achMore").classList.add("hidden");
+    return;
+  }
+  const fold = pf().fold;
+  let html = "", shown = 0, more = 0;
+  achGroups(db, items).forEach(gr => {
+    if(shown >= aLimit){ if(fold.indexOf(gr.key) === -1) more += gr.items.length; return; }
+    const isFold = gr.key && fold.indexOf(gr.key) !== -1;
+    if(gr.key){
+      const gd = gr.items.filter(a => isDone(gid, a)).length;
+      const gl = achReward(gid, db, gr.items).left;
+      html += '<button class="agroup' + (isFold ? "" : " open") + '" data-act="fold" data-k="' + esc(gr.key) + '" aria-expanded="' + !isFold + '">' +
+        '<span class="caret">▸</span><span class="nm">' + esc(gr.name) + "</span>" +
+        (gl ? '<span class="ct g">ещё +' + fmt(gl) + "</span>" : "") +
+        '<span class="ct">' + gd + " / " + gr.items.length + "</span>" +
+        '<span class="mini"><i style="width:' + (gd / gr.items.length * 100).toFixed(1) + '%"></i></span></button>';
+    }
+    if(isFold) return;
+    gr.items.forEach(a => {
+      if(shown >= aLimit){ more++; return; }
+      html += achRowHtml(db, g, a);
+      shown++;
+    });
+  });
+  list.innerHTML = html;
+  const mb = document.getElementById("achMore");
+  mb.classList.toggle("hidden", !more);
+  mb.textContent = "Показать ещё (" + fmt(more) + ")";
+}
+
+/* загрузка файла: база достижений или прогресс (UIAF и похожие списки) */
+function achParseProgress(obj){
+  let list = null;
+  if(Array.isArray(obj)) list = obj;
+  else if(obj && typeof obj === "object"){
+    list = Array.isArray(obj.list) ? obj.list
+      : Array.isArray(obj.achievements) ? obj.achievements
+      : Array.isArray(obj.done) ? obj.done
+      : Array.isArray(obj.data) ? obj.data : null;
+    if(!list){
+      const keys = Object.keys(obj).filter(k => /^\d+$/.test(k));
+      if(keys.length) list = keys.filter(k => obj[k]).map(Number);
+    }
+  }
+  const ids = [], ts = {};
+  (list || []).forEach(x => {
+    if(typeof x === "number" || (typeof x === "string" && /^\d+$/.test(x))){ ids.push(+x); return; }
+    if(!x || typeof x !== "object" || x.id == null) return;
+    const s = x.status;
+    let ok;
+    if(s == null) ok = x.done !== false && x.completed !== false && x.finished !== false;
+    else if(typeof s === "number") ok = s >= 2;
+    else if(typeof s === "boolean") ok = s;
+    else ok = /FINISH|TAKEN|DONE|COMPLETE/i.test(String(s));
+    if(!ok) return;
+    ids.push(+x.id);
+    const t = +x.timestamp || +x.time || 0;
+    if(t) ts[+x.id] = t > 1e12 ? Math.floor(t / 1000) : t;
+  });
+  const hint = obj && !Array.isArray(obj) ? (obj.game || (obj.info && obj.info.game)) : null;
+  return { ids, ts, hint, isList: !!list };
+}
+function achNote(msg){
+  const el = document.getElementById("achSrcLine");
+  const st = document.getElementById("achState");
+  const host = el && !document.getElementById("achBody").classList.contains("hidden") ? el : st;
+  if(!host) return;
+  const p = document.createElement("span");
+  p.className = "warn";
+  p.style.display = "block";
+  p.textContent = msg;
+  host.appendChild(p);
+}
+function achLoadText(text){
+  let obj;
+  try { obj = JSON.parse(text); } catch(e){ achNote("Файл не читается как JSON."); return; }
+  if(obj && Array.isArray(obj.achievements) && obj.achievements.length && obj.achievements[0] && obj.achievements[0].name != null){
+    const g = achGameById(obj.game) || achGame();
+    const err = achCheck(obj, g);
+    if(err){ achNote("База не подошла: " + err + "."); return; }
+    achSet(g.id, obj, "загружено из файла", Date.now(), true);
+    delete aErr[g.id];
+    AS.game = g.id; aLimit = 120; saveUI();
+    renderAch();
+    achNote("База " + g.name + " загружена из файла: " + fmt(obj.achievements.length) + " достижений.");
+    return;
+  }
+  const pr = achParseProgress(obj);
+  if(!pr.isList){ achNote("В файле нет ни базы достижений, ни списка полученных."); return; }
+  // к какой игре относится прогресс — по совпадению номеров с загруженными базами
+  let best = null, bestN = 0;
+  ACH_GAMES.forEach(g => {
+    const db = adb[g.id];
+    if(!db) return;
+    let n = pr.ids.filter(id => db.byId[id]).length;
+    if(pr.hint === g.id) n += 0.5;
+    if(n > bestN){ best = g; bestN = n; }
+  });
+  if(!best || bestN < 1){
+    achNote(pr.ids.length ? "Номера достижений из файла не нашлись в загруженных базах. Откройте нужную игру, чтобы её база загрузилась, и повторите." : "В файле нет полученных достижений.");
+    return;
+  }
+  const db = adb[best.id];
+  const m = aDoneMap(best.id);
+  let add = 0, had = 0, miss = 0;
+  pr.ids.forEach(id => {
+    const a = db.byId[id];
+    if(!a){ miss++; return; }
+    if(m[id]){ had++; return; }
+    aMark(best.id, db, a, true);
+    if(pr.ts[id]) m[id] = pr.ts[id];
+    add++;
+  });
+  aSave();
+  AS.game = best.id; saveUI();
+  renderAch();
+  achNote(best.name + ": отмечено новых " + add + ", уже было " + had + (miss ? ", нет в базе " + miss : "") + ".");
+}
+function achDownload(name, text){
+  try {
+    const blob = new Blob([text], { type:"application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; a.rel = "noopener"; a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+    return true;
+  } catch(e){ return false; }
+}
+
+document.getElementById("achLoadBtn").onclick = () => document.getElementById("achFile").click();
+document.getElementById("achFile").onchange = function(){
+  const f = this.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = () => achLoadText(r.result);
+  r.onerror = () => achNote("Файл не прочитался.");
+  r.readAsText(f);
+  this.value = "";
+};
+document.getElementById("achExport").onclick = () => {
+  const g = achGame(), db = adb[g.id];
+  if(!db) return;
+  const m = aDoneMap(g.id);
+  const ids = Object.keys(m).filter(id => db.byId[id]).map(Number).sort((x, y) => x - y);
+  // формат UIAF: его понимают трекеры Genshin; для остальных игр — та же структура
+  const out = {
+    info:{ export_app:"Гача Трекер", export_app_version:"1", uiaf_version:"v1.1", export_timestamp:Math.floor(Date.now() / 1000), game:g.id },
+    list: ids.map(id => ({ id, current:0, status:3, timestamp: typeof m[id] === "number" ? m[id] : 0 }))
+  };
+  if(!achDownload("achievements-" + g.file + "-" + todayKey + ".json", JSON.stringify(out, null, 1)))
+    achNote("Скачивание заблокировано браузером.");
+};
+document.getElementById("achState").onclick = e => {
+  const t = e.target.closest("[data-act]");
+  if(!t) return;
+  if(t.dataset.act === "retry") achOpen(achGame(), true);
+  else if(t.dataset.act === "file") document.getElementById("achFile").click();
+};
+document.getElementById("achSrcLine").onclick = e => {
+  const t = e.target.closest("[data-act]");
+  if(t && t.dataset.act === "refresh") achOpen(achGame(), true);
+};
+
+let achQTimer = 0;
+document.getElementById("achQ").oninput = function(){
+  const v = this.value;
+  clearTimeout(achQTimer);
+  achQTimer = setTimeout(() => {
+    AS.q = v; aLimit = 120; saveUI();
+    const g = achGame(), db = adb[g.id];
+    if(db){ renderAchList(db, g); document.getElementById("aReset").classList.toggle("hidden", !achFiltersActive()); }
+  }, 140);
+};
+document.getElementById("fSeries").onchange = function(){ pf().series = this.value; achChanged(); };
+document.getElementById("fVer").onchange = function(){ pf().ver = this.value; achChanged(); };
+document.getElementById("fStatus").onchange = function(){ AS.status = this.value; achChanged(); };
+document.getElementById("fReward").onchange = function(){ AS.reward = this.value; achChanged(); };
+document.getElementById("fDiff").onchange = function(){ AS.diff = this.value; achChanged(); };
+document.getElementById("fType").onchange = function(){ AS.type = this.value; achChanged(); };
+document.getElementById("aSort").onchange = function(){ AS.sort = this.value; AS.dir = ACH_SORT_DIR[AS.sort] || 1; achChanged(); };
+document.getElementById("aDir").onclick = () => { AS.dir = -AS.dir; achChanged(); };
+document.getElementById("aSpoil").onclick = () => { AS.spoil = !AS.spoil; aReveal.clear(); achChanged(); };
+document.getElementById("aReset").onclick = () => {
+  const p = pf();
+  AS.q = ""; p.series = ""; p.ver = ""; AS.status = ""; AS.reward = ""; AS.diff = ""; AS.type = ""; AS.flags = [];
+  achChanged();
+};
+document.getElementById("achMore").onclick = () => {
+  aLimit += 200;
+  const g = achGame(), db = adb[g.id];
+  if(db) renderAchList(db, g);
+};
+document.getElementById("achSum").onclick = e => {
+  const t = e.target.closest("[data-act]");
+  if(!t) return;
+  const g = achGame(), db = adb[g.id];
+  if(!db) return;
+  const items = achFiltered(db, g.id);
+  if(t.dataset.act === "markall"){
+    const todo = items.filter(a => aStatus(g.id, db, a) === "todo");
+    // из взаимоисключающего набора массово ничего не отмечаем — там нужен выбор
+    const pick = todo.filter(a => a.set == null);
+    const skip = todo.length - pick.length;
+    askConfirm("Отметить показанные?",
+      "Будет отмечено как полученные: " + pick.length + "." + (skip ? " Взаимоисключающие (" + skip + ") пропущены — их отметьте вручную." : ""),
+      "Отметить " + pick.length,
+      () => { pick.forEach(a => aMark(g.id, db, a, true)); aSave(); renderAch(); }, false);
+  } else if(t.dataset.act === "unmarkall"){
+    const dn = items.filter(a => isDone(g.id, a));
+    askConfirm("Снять отметки?",
+      "С " + dn.length + " показанных достижений будут сняты отметки о получении.",
+      "Снять " + dn.length,
+      () => { dn.forEach(a => aMark(g.id, db, a, false)); aSave(); renderAch(); }, false);
+  }
+};
+document.getElementById("achList").onclick = e => {
+  const t = e.target.closest("[data-act]");
+  if(!t) return;
+  const g = achGame(), db = adb[g.id];
+  if(!db) return;
+  const act = t.dataset.act;
+  if(act === "fold"){
+    const f = pf().fold, k = t.dataset.k, i = f.indexOf(k);
+    if(i === -1) f.push(k); else f.splice(i, 1);
+    saveUI();
+    renderAchList(db, g);
+    return;
+  }
+  const row = t.closest(".arow");
+  const a = row && db.byId[row.dataset.id];
+  if(!a) return;
+  if(act === "tog"){
+    aMark(g.id, db, a, !isDone(g.id, a));
+    aSave();
+    renderAch();
+  } else if(act === "hint"){
+    if(aOpenHint.has(a.id)) aOpenHint.delete(a.id); else aOpenHint.add(a.id);
+    renderAchList(db, g);
+  } else if(act === "spoil"){
+    aReveal.add(a.id);
+    t.classList.remove("spoil");
+    t.removeAttribute("data-act");
+    t.removeAttribute("title");
+  } else if(act === "ser"){
+    pf().series = String(a.series_id); achChanged();
+    document.querySelector(".achfilters").scrollIntoView({ block:"nearest", behavior:"smooth" });
+  } else if(act === "ver"){
+    pf().ver = a._vk < 0 ? "none" : achVerName(a._vk); achChanged();
+    document.querySelector(".achfilters").scrollIntoView({ block:"nearest", behavior:"smooth" });
+  }
+};
+document.getElementById("achSrc").onchange = function(){
+  ui.achSrc = this.value.trim();
+  saveUI();
+  Object.keys(aInit).forEach(k => delete aInit[k]);
+  Object.keys(aErr).forEach(k => delete aErr[k]);
+  if(ui.tab === "achievements") achOpen(achGame(), true);
+};
+document.getElementById("openSettings").addEventListener("click", () => {
+  document.getElementById("achSrc").value = ui.achSrc || "";
+});
+
 /* ── разделы ── */
-const VIEWS = { calendar:"viewCalendar", pulls:"viewPulls", history:"viewHistory" };
+const VIEWS = { calendar:"viewCalendar", pulls:"viewPulls", history:"viewHistory", achievements:"viewAchievements" };
 function setView(name){
   if(!VIEWS[name]) name = "calendar";
   document.querySelectorAll(".navitem").forEach(x => x.classList.toggle("on", x.dataset.view === name));
   Object.keys(VIEWS).forEach(v => document.getElementById(VIEWS[v]).classList.toggle("hidden", v !== name));
-  document.body.classList.remove("tab-calendar","tab-pulls","tab-history");
+  document.body.classList.remove("tab-calendar","tab-pulls","tab-history","tab-achievements");
   document.body.classList.add("tab-" + name);
   closeMenu(); closePick(); closePatchPick(); closeGamePick(); closeSide();
   if(name === "pulls") renderPulls();
   else if(name === "history"){ renderHistory(); readWatched(false); }
+  else if(name === "achievements"){ ui.tab = name; renderAch(); }
   else {
     document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";
     document.getElementById("hSub").textContent = "Zenless Zone Zero";

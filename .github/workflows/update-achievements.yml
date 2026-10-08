@@ -1,0 +1,30 @@
+# Положите в репозиторий: .github/workflows/update-achievements.yml
+# Скрипт — achievements/fetch_achievements.py, базы — achievements/data/*.json
+# Раз в неделю (и по кнопке) обновляет базы и коммитит изменения.
+name: Обновление базы достижений
+
+on:
+  schedule:
+    - cron: "17 3 * * 3"   # среда, 03:17 UTC = 10:17 по Новосибирску
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Скачать базы
+        run: python achievements/fetch_achievements.py --out achievements/data --lang ru
+      - name: Закоммитить изменения
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add achievements/data/*_achievements.json
+          git diff --cached --quiet || git commit -m "Обновление базы достижений"
+          git push

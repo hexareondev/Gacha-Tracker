@@ -608,7 +608,30 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 .tot .v small{font-size:.52em;color:var(--dim);font-weight:500;margin-left:5px;letter-spacing:0}
 #achSrcLine{margin:10px 2px 0}
 #achSrcLine .warn{color:#d9a45a}
-.achfilters{margin-top:16px;padding:16px 18px}
+.achfilters{margin-top:16px;padding:16px 18px;scroll-margin-top:92px}
+/* медали: золото +20, серебро +10, бронза +5 */
+.medal{display:inline-block;width:15px;height:15px;border-radius:50%;flex:0 0 auto;vertical-align:-2px;position:relative;
+  box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.55),0 1px 3px rgba(0,0,0,.5)}
+.medal::after{content:"";position:absolute;inset:3.5px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);background:rgba(255,255,255,.12)}
+.medal.g{background:radial-gradient(circle at 35% 30%,#fff1bf,#f0c264 45%,#a87a25)}
+.medal.s{background:radial-gradient(circle at 35% 30%,#ffffff,#c9d0d8 45%,#7c8794)}
+.medal.b{background:radial-gradient(circle at 35% 30%,#ffd7b8,#cf8a58 45%,#7e4626)}
+.medal.n{background:var(--raise)}
+.medals{display:flex;gap:6px 16px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--muted)}
+.medals span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.medals b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.medals small{color:var(--dim);font-size:12px}
+.arow .ar{display:flex;align-items:center;gap:7px;align-self:start}
+.arow .ar .medal{width:17px;height:17px}
+.arow:not(.done) .ar .medal{opacity:.7}
+.totop{position:fixed;right:22px;bottom:24px;z-index:20;width:46px;height:46px;padding:0;border-radius:50%;
+  font-size:19px;line-height:1;color:var(--gold-hot);background:var(--raise);border:1px solid rgba(240,194,100,.35);
+  box-shadow:0 10px 30px -8px rgba(0,0,0,.85);opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.totop.on{opacity:1;transform:none;pointer-events:auto}
+.totop:hover{background:#26262f;border-color:var(--gold)}
+body:not(.tab-achievements) .totop{display:none}
+@media(max-width:760px){.totop{right:14px;bottom:16px}}
+@media (prefers-reduced-motion:reduce){.totop{transition:none}}
 .qwrap{margin-top:14px}
 .achsearch::-webkit-search-cancel-button{filter:grayscale(1) brightness(1.7);cursor:pointer}
 .achsearch{width:100%;padding:11px 14px;font-size:14.5px;border-color:var(--edge)}
@@ -996,6 +1019,7 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
             <div class="v num" id="aDone">0</div>
             <div class="bar"><i id="aBar" style="width:0"></i></div>
             <div class="delta" id="aPct"></div>
+            <div class="medals" id="aMedals"></div>
           </div>
         </div>
         <div class="subs">
@@ -1052,6 +1076,7 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
       <div class="achsum" id="achSum"></div>
       <div class="alist" id="achList"></div>
       <button class="ghost amore hidden" id="achMore">Показать ещё</button>
+      <button class="totop" id="achTop" aria-label="Наверх, к поиску" title="Наверх, к поиску">↑</button>
     </div>
   </div><!-- /viewAchievements -->
 
@@ -3986,6 +4011,13 @@ function achReward(gid, db, items){
   return { got, left };
 }
 
+const ACH_MEDAL = { g:{ name:"золото", label:"Золотые" }, s:{ name:"серебро", label:"Серебряные" }, b:{ name:"бронза", label:"Бронзовые" } };
+function achMedalKind(r){ r = +r || 0; return r >= 20 ? "g" : r >= 10 ? "s" : r > 0 ? "b" : "n"; }
+function achMedal(r){
+  const k = achMedalKind(r);
+  return '<i class="medal ' + k + '"' + (ACH_MEDAL[k] ? ' title="' + ACH_MEDAL[k].name + '"' : "") + "></i>";
+}
+
 /* умный поиск: другая раскладка, окончания слов, опечатки */
 const KB_EN = "`qwertyuiop[]asdfghjkl;'zxcvbnm,./";
 const KB_RU = "ёйцукенгшщзхъфывапролджэячсмитьбю.";
@@ -4180,7 +4212,7 @@ function achFillSelects(db, g){
   const rs = Object.keys(rc).map(Number).sort((x, y) => x - y);
   if(pf().reward && !rc[pf().reward]) pf().reward = "";
   h = achOpt("", "любая", pf().reward);
-  rs.forEach(r => { h += achOpt(String(r), "+" + r + " — " + rc[r], pf().reward); });
+  rs.forEach(r => { const md = ACH_MEDAL[achMedalKind(r)]; h += achOpt(String(r), (md ? md.name + " · " : "") + "+" + r + " — " + rc[r], pf().reward); });
   const fR = document.getElementById("fReward");
   fR.innerHTML = h; fR.classList.toggle("set", !!pf().reward);
 
@@ -4290,6 +4322,11 @@ function renderAch(){
   document.getElementById("aBar").style.width = pct.toFixed(2) + "%";
   document.getElementById("aPct").textContent = (pct >= 10 || pct === 0 ? Math.round(pct) : pct.toFixed(1)) + "%" +
     (imp ? " · сейчас недоступно: " + imp : "");
+  const mc = { g:[0,0], s:[0,0], b:[0,0] };
+  all.forEach(a => { const k = achMedalKind(a.reward); if(!mc[k]) return; mc[k][1]++; if(isDone(gid, a)) mc[k][0]++; });
+  document.getElementById("aMedals").innerHTML = ["g","s","b"].filter(k => mc[k][1]).map(k =>
+    '<span title="' + ACH_MEDAL[k].label + ' медали: получено ' + mc[k][0] + " из " + mc[k][1] + '">' + achMedal(k === "g" ? 20 : k === "s" ? 10 : 5) +
+    "<b>" + fmt(mc[k][0]) + "</b><small>/ " + fmt(mc[k][1]) + "</small></span>").join("");
   document.getElementById("aGotK").textContent = "Получено " + g.cur;
   document.getElementById("aGot").innerHTML = fmt(rw.got) + "<small>/ " + fmt(rw.got + rw.left) + "</small>";
   document.getElementById("aLeft").textContent = fmt(rw.left);
@@ -4325,6 +4362,7 @@ function renderAch(){
   document.getElementById("aReset").classList.toggle("hidden", !achFiltersActive());
 
   renderAchList(db, g);
+  achTopCheck();
 }
 
 function achRowHtml(db, g, a){
@@ -4356,7 +4394,7 @@ function achRowHtml(db, g, a){
     '<div class="amain"><div class="an">' + achMark(a._n) + "</div>" +
     (a._d ? '<div class="ad' + (spoil ? ' spoil" data-act="spoil" title="Скрытое достижение — нажмите, чтобы прочитать' : "") + '">' + achMark(a._d) + "</div>" : "") +
     "</div>" +
-    '<div class="ar">+' + (a.reward || 0) + "</div>" +
+    '<div class="ar">' + achMedal(a.reward) + '<span>+' + (a.reward || 0) + "</span></div>" +
     '<div class="ameta">' + m.join("") + "</div>" +
     (ho && a.hint ? '<div class="ahint">' + achMark(a.hint) + "</div>" : "") +
     "</div>";
@@ -4643,6 +4681,25 @@ document.getElementById("achList").onclick = e => {
     document.querySelector(".achfilters").scrollIntoView({ block:"nearest", behavior:"smooth" });
   }
 };
+/* кнопка «наверх, к поиску» */
+function achTopCheck(){
+  const btn = document.getElementById("achTop");
+  const q = document.getElementById("achQ");
+  const on = ui.tab === "achievements" && !document.getElementById("achBody").classList.contains("hidden") &&
+    q.getBoundingClientRect().bottom < 0;
+  btn.classList.toggle("on", on);
+}
+window.addEventListener("scroll", achTopCheck, { passive:true });
+window.addEventListener("resize", achTopCheck);
+document.getElementById("achTop").onclick = () => {
+  const q = document.getElementById("achQ");
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  q.closest(".achfilters").scrollIntoView({ block:"start", behavior: reduce ? "auto" : "smooth" });
+  // на телефоне не открываем клавиатуру сами — только прокручиваем
+  const touch = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+  if(!touch) setTimeout(() => q.focus({ preventScroll:true }), reduce ? 0 : 350);
+};
+
 document.getElementById("achSrc").onchange = function(){
   ui.achSrc = this.value.trim();
   saveUI();

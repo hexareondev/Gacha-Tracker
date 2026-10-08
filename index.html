@@ -609,7 +609,12 @@ textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 #achSrcLine{margin:10px 2px 0}
 #achSrcLine .warn{color:#d9a45a}
 .achfilters{margin-top:16px;padding:16px 18px}
-.achsearch{width:100%;margin-bottom:12px}
+.qwrap{margin-top:14px}
+.achsearch::-webkit-search-cancel-button{filter:grayscale(1) brightness(1.7);cursor:pointer}
+.achsearch{width:100%;padding:11px 14px;font-size:14.5px;border-color:var(--edge)}
+.qnote{margin:8px 2px 0;font-size:12.5px;color:var(--muted)}
+.qnote b{color:var(--gold-hot);font-weight:500}
+.arow mark{background:rgba(240,194,100,.22);color:var(--gold-hot);border-radius:3px;padding:0 1px}
 .fgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .fgrid label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--dim);min-width:0}
 .fgrid select{width:100%;padding:8px 10px;font-size:13.5px}
@@ -1002,7 +1007,6 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
       <p class="hint" id="achSrcLine"></p>
 
       <div class="card achfilters">
-        <input id="achQ" class="achsearch" type="search" placeholder="Поиск по названию, описанию и подсказке" autocomplete="off" spellcheck="false">
         <div class="fgrid">
           <label>Категория<select id="fSeries"></select></label>
           <label>Версия<select id="fVer"></select></label>
@@ -1038,6 +1042,10 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
           <span class="grow"></span>
           <button class="chip" id="aSpoil" title="Размывать описание скрытых, пока они не получены">Без спойлеров</button>
           <button class="linkbtn" id="aReset">Сбросить фильтры</button>
+        </div>
+        <div class="qwrap">
+          <input id="achQ" class="achsearch" type="search" placeholder="Поиск: название, описание, подсказка — можно с опечатками и в другой раскладке" autocomplete="off" spellcheck="false" enterkeyhint="search">
+          <p class="qnote hidden" id="achQNote"></p>
         </div>
       </div>
 
@@ -3780,20 +3788,24 @@ const ACH_DIR = "achievements/data/";
 const AS = (ui.ach && typeof ui.ach === "object") ? ui.ach : {};
 ui.ach = AS;
 if(!ACH_GAMES.some(g => g.id === AS.game)) AS.game = "gi";
-["q","status","reward","diff","type"].forEach(k => { if(typeof AS[k] !== "string") AS[k] = ""; });
-if(!Array.isArray(AS.flags)) AS.flags = [];
-if(!ACH_SORT_DIR[AS.sort]) AS.sort = "game";
-if(AS.dir !== 1 && AS.dir !== -1) AS.dir = ACH_SORT_DIR[AS.sort];
-if(["none","series","version"].indexOf(AS.group) === -1) AS.group = "series";
 AS.spoil = !!AS.spoil;
 if(!AS.pg || typeof AS.pg !== "object") AS.pg = {};
 // категория, версия и свёрнутые группы — у каждой игры свои
-function pf(){
-  let p = AS.pg[AS.game];
-  if(!p || typeof p !== "object") p = AS.pg[AS.game] = {};
-  if(typeof p.series !== "string") p.series = "";
-  if(typeof p.ver !== "string") p.ver = "";
-  if(!Array.isArray(p.fold)) p.fold = [];
+// поиск, фильтры, сортировка и группы — у каждой игры свои
+function pf(gid){
+  gid = gid || AS.game;
+  let p = AS.pg[gid];
+  if(!p || typeof p !== "object") p = AS.pg[gid] = {};
+  if(!p._ok){
+    ["series","ver","q","status","reward","diff","type"].forEach(k => { if(typeof p[k] !== "string") p[k] = ""; });
+    if(!Array.isArray(p.flags)) p.flags = [];
+    if(!Array.isArray(p.fold)) p.fold = [];
+    // сортировку и группы берём из прежних общих настроек, если были
+    if(!ACH_SORT_DIR[p.sort]) p.sort = ACH_SORT_DIR[AS.sort] ? AS.sort : "game";
+    if(p.dir !== 1 && p.dir !== -1) p.dir = (AS.dir === 1 || AS.dir === -1) && p.sort === AS.sort ? AS.dir : ACH_SORT_DIR[p.sort];
+    if(["none","series","version"].indexOf(p.group) === -1) p.group = ["none","series","version"].indexOf(AS.group) !== -1 ? AS.group : "series";
+    Object.defineProperty(p, "_ok", { value:true, enumerable:false });
+  }
   return p;
 }
 
@@ -3846,7 +3858,8 @@ function achPrep(doc, g){
     a._d = achText(a.description, g);
     a._v = String(a.version == null ? "" : a.version).trim();
     a._vk = achVerKey(a._v);
-    a._s = achNorm(a._n + " " + a._d + " " + (a.hint || "") + " " + a.id);
+    a._s = " " + achClean(a._n + " " + a._d + " " + (a.hint || "") + " " + a.id) + " ";
+    a._w = Array.from(new Set(a._s.split(" ").filter(w => w.length >= 2)));
     if(!ser[a.series_id]) ser[a.series_id] = { id:a.series_id, name:"Категория " + a.series_id, ord:1000 + i };
     if(a.set != null) (sets[a.set] = sets[a.set] || []).push(a);
     byId[a.id] = a;
@@ -3973,32 +3986,122 @@ function achReward(gid, db, items){
   return { got, left };
 }
 
+/* умный поиск: другая раскладка, окончания слов, опечатки */
+const KB_EN = "`qwertyuiop[]asdfghjkl;'zxcvbnm,./";
+const KB_RU = "ёйцукенгшщзхъфывапролджэячсмитьбю.";
+const KB_E2R = {}, KB_R2E = {};
+for(let i = 0; i < KB_EN.length; i++){ KB_E2R[KB_EN[i]] = KB_RU[i]; KB_R2E[KB_RU[i]] = KB_EN[i]; }
+Object.assign(KB_E2R, { "~":"ё", "{":"х", "}":"ъ", ":":"ж", '"':"э", "<":"б", ">":"ю" });
+function kbConv(s, map){ let o = ""; for(const c of s) o += map[c] || c; return o; }
+function achClean(s){ return achNorm(s).replace(/[^a-zа-я0-9]+/g, " "); }
+const RU_END = ["иями","ями","ами","ого","его","ому","ему","ыми","ими","ией","ий","ый","ой","ая","яя","ое","ее","ые","ие","ых","их","ую","юю","ов","ев","ей","ам","ям","ах","ях","ом","ем","ью","а","я","о","е","ы","и","у","ю","ь","й"];
+const EN_END = ["ing","ed","es","s"];
+// основа слова без окончания: «диких» и «дикое» находят друг друга
+function achStem(w){
+  if(w.length < 4) return w;
+  const ends = /[а-я]/.test(w) ? RU_END : /^[a-z]+$/.test(w) ? EN_END : [];
+  for(const e of ends) if(w.length - e.length >= 3 && w.endsWith(e)) return w.slice(0, -e.length);
+  return w;
+}
+function achEdit(a, b, max){
+  if(Math.abs(a.length - b.length) > max) return max + 1;
+  let prev2 = null, prev = [];
+  for(let j = 0; j <= b.length; j++) prev.push(j);
+  for(let i = 1; i <= a.length; i++){
+    const cur = [i];
+    let low = i;
+    for(let j = 1; j <= b.length; j++){
+      let v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if(prev2 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, prev2[j - 2] + 1);
+      cur.push(v);
+      if(v < low) low = v;
+    }
+    if(low > max) return max + 1;
+    prev2 = prev; prev = cur;
+  }
+  return prev[b.length];
+}
+// слово похоже на начало какого-нибудь слова текста с 1–2 опечатками
+function achFuzzy(q, words){
+  const max = q.length >= 7 ? 2 : q.length >= 4 ? 1 : 0;
+  if(!max) return false;
+  for(const w of words){
+    if(w.length < q.length - max) continue;
+    for(let L = Math.max(1, q.length - max); L <= Math.min(w.length, q.length + max); L++)
+      if(achEdit(q, w.slice(0, L), max) <= max) return true;
+  }
+  return false;
+}
+// разбор запроса: для каждого слова — как набрано, в другой раскладке и его основа.
+// Другая раскладка берётся, только если набранное как есть ничего не находит.
+function achQuery(q, list){
+  const out = [];
+  String(q || "").toLowerCase().split(/\s+/).filter(Boolean).forEach(t => {
+    const clean = v => achNorm(v).replace(/[^a-zа-я0-9]+/g, "");
+    const own = clean(t);
+    const conv = [clean(kbConv(t, KB_E2R)), clean(kbConv(t, KB_R2E))].filter(v => v && v !== own);
+    const needles = v => { const s = achStem(v); return s !== v && s.length >= 3 ? [v, s] : [v]; };
+    let use = own ? needles(own) : [];
+    let swapped = "";
+    if(!use.length || !list.some(a => use.some(n => a._s.indexOf(n) !== -1))){
+      const alt = conv.find(v => list.some(a => needles(v).some(n => a._s.indexOf(n) !== -1)));
+      if(alt){ use = needles(alt); swapped = alt; }
+    }
+    if(!use.length && !conv.length) return;
+    out.push({ needles:use, fuzzy:[own].concat(conv).filter(v => v && v.length >= 4), swapped });
+  });
+  return out;
+}
+let aSearch = { fuzzy:false, swapped:"", re:null };
+function achSearch(items, q){
+  aSearch = { fuzzy:false, swapped:"", re:null };
+  const terms = achQuery(q, items);
+  if(!terms.length) return q && q.trim() ? [] : items;
+  const exact = items.filter(a => terms.every(t => t.needles.some(n => a._s.indexOf(n) !== -1)));
+  aSearch.swapped = terms.filter(t => t.swapped).map(t => t.swapped).join(" ");
+  if(exact.length){
+    const all = [];
+    terms.forEach(t => t.needles.forEach(n => { if(all.indexOf(n) === -1) all.push(n); }));
+    all.sort((x, y) => y.length - x.length);
+    const src = all.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/е/g, "[её]")).join("|");
+    try { aSearch.re = new RegExp("(" + src + ")", "gi"); } catch(e){ aSearch.re = null; }
+    return exact;
+  }
+  aSearch.fuzzy = true;
+  return items.filter(a => terms.every(t =>
+    t.needles.some(n => a._s.indexOf(n) !== -1) || t.fuzzy.some(f => achFuzzy(f, a._w))));
+}
+function achMark(text){
+  const re = aSearch.re;
+  if(!re || !text) return esc(text);
+  return String(text).split(re).map((part, i) => i % 2 ? "<mark>" + esc(part) + "</mark>" : esc(part)).join("");
+}
+
 function achFiltered(db, gid){
   const p = pf();
-  const words = achNorm(AS.q).split(/\s+/).filter(Boolean);
-  const flags = AS.flags.map(k => ACH_FLAGS.find(f => f.k === k)).filter(Boolean);
+  const flags = pf().flags.map(k => ACH_FLAGS.find(f => f.k === k)).filter(Boolean);
   const vMaj = /^(\d+)\.x$/.exec(p.ver);
-  return db.list.filter(a => {
+  const out = db.list.filter(a => {
     if(p.series !== "" && String(a.series_id) !== p.series) return false;
     if(p.ver){
       if(p.ver === "none"){ if(a._vk >= 0) return false; }
       else if(vMaj){ if(a._vk < 0 || Math.floor(a._vk / 1000) !== +vMaj[1]) return false; }
       else if(achVerName(a._vk) !== p.ver) return false;
     }
-    if(AS.status){
+    if(pf().status){
       const s = aStatus(gid, db, a);
-      if(AS.status === "notdone" ? s === "done" : s !== AS.status) return false;
+      if(pf().status === "notdone" ? s === "done" : s !== pf().status) return false;
     }
-    if(AS.reward && String(a.reward || 0) !== AS.reward) return false;
-    if(AS.diff){
-      if(AS.diff === "none" ? !!a.difficulty : a.difficulty !== AS.diff) return false;
+    if(pf().reward && String(a.reward || 0) !== pf().reward) return false;
+    if(pf().diff){
+      if(pf().diff === "none" ? !!a.difficulty : a.difficulty !== pf().diff) return false;
     }
-    if(AS.type === "hidden" && !a.hidden) return false;
-    if(AS.type === "open" && a.hidden) return false;
+    if(pf().type === "hidden" && !a.hidden) return false;
+    if(pf().type === "open" && a.hidden) return false;
     for(const f of flags) if(!f.test(a)) return false;
-    for(const w of words) if(a._s.indexOf(w) === -1) return false;
     return true;
   });
+  return achSearch(out, p.q);
 }
 function achSorted(db, gid, arr){
   const byGame = (a, b) => (db.ser[a.series_id].ord - db.ser[b.series_id].ord) || (a._o - b._o);
@@ -4010,24 +4113,24 @@ function achSorted(db, gid, arr){
     name: (a, b) => a._n.localeCompare(b._n, "ru"),
     diff: (a, b) => (ACH_DORD[a.difficulty] || 0) - (ACH_DORD[b.difficulty] || 0),
     status: (a, b) => SORD[aStatus(gid, db, a)] - SORD[aStatus(gid, db, b)]
-  }[AS.sort] || byGame;
-  return arr.slice().sort((a, b) => (AS.dir * prim(a, b)) || byGame(a, b));
+  }[pf().sort] || byGame;
+  return arr.slice().sort((a, b) => (pf().dir * prim(a, b)) || byGame(a, b));
 }
 function achGroups(db, items){
-  if(AS.group === "none") return [{ key:"", name:"", items }];
+  if(pf().group === "none") return [{ key:"", name:"", items }];
   const map = {}, out = [];
   items.forEach(a => {
-    const k = AS.group === "series" ? "s:" + a.series_id : "v:" + a._vk;
+    const k = pf().group === "series" ? "s:" + a.series_id : "v:" + a._vk;
     if(!map[k]){
-      map[k] = AS.group === "series"
+      map[k] = pf().group === "series"
         ? { key:k, name:db.ser[a.series_id].name, ord:db.ser[a.series_id].ord, items:[] }
         : { key:k, name:a._vk < 0 ? "Без версии" : "Версия " + achVerName(a._vk), ord:a._vk, items:[] };
       out.push(map[k]);
     }
     map[k].items.push(a);
   });
-  if(AS.group === "series") out.sort((x, y) => (AS.sort === "game" ? AS.dir : 1) * (x.ord - y.ord));
-  else out.sort((x, y) => (AS.sort === "version" ? AS.dir : -1) * (x.ord - y.ord));
+  if(pf().group === "series") out.sort((x, y) => (pf().sort === "game" ? pf().dir : 1) * (x.ord - y.ord));
+  else out.sort((x, y) => (pf().sort === "version" ? pf().dir : -1) * (x.ord - y.ord));
   return out;
 }
 
@@ -4075,25 +4178,25 @@ function achFillSelects(db, g){
   const rc = {};
   db.list.forEach(a => { const r = a.reward || 0; rc[r] = (rc[r] || 0) + 1; });
   const rs = Object.keys(rc).map(Number).sort((x, y) => x - y);
-  if(AS.reward && !rc[AS.reward]) AS.reward = "";
-  h = achOpt("", "любая", AS.reward);
-  rs.forEach(r => { h += achOpt(String(r), "+" + r + " — " + rc[r], AS.reward); });
+  if(pf().reward && !rc[pf().reward]) pf().reward = "";
+  h = achOpt("", "любая", pf().reward);
+  rs.forEach(r => { h += achOpt(String(r), "+" + r + " — " + rc[r], pf().reward); });
   const fR = document.getElementById("fReward");
-  fR.innerHTML = h; fR.classList.toggle("set", !!AS.reward);
+  fR.innerHTML = h; fR.classList.toggle("set", !!pf().reward);
 
   const dc = {};
   db.list.forEach(a => { const d = ACH_DIFF[a.difficulty] ? a.difficulty : "none"; dc[d] = (dc[d] || 0) + 1; });
-  if(AS.diff && !dc[AS.diff]) AS.diff = "";
-  h = achOpt("", "любая", AS.diff);
-  ["easy","medium","hard"].forEach(d => { if(dc[d]) h += achOpt(d, ACH_DIFF[d] + " — " + dc[d], AS.diff); });
-  if(dc.none) h += achOpt("none", "без оценки — " + dc.none, AS.diff);
+  if(pf().diff && !dc[pf().diff]) pf().diff = "";
+  h = achOpt("", "любая", pf().diff);
+  ["easy","medium","hard"].forEach(d => { if(dc[d]) h += achOpt(d, ACH_DIFF[d] + " — " + dc[d], pf().diff); });
+  if(dc.none) h += achOpt("none", "без оценки — " + dc.none, pf().diff);
   const fD = document.getElementById("fDiff");
-  fD.innerHTML = h; fD.classList.toggle("set", !!AS.diff);
+  fD.innerHTML = h; fD.classList.toggle("set", !!pf().diff);
 
   const fSt = document.getElementById("fStatus");
-  fSt.value = AS.status; fSt.classList.toggle("set", !!AS.status);
+  fSt.value = pf().status; fSt.classList.toggle("set", !!pf().status);
   const fT = document.getElementById("fType");
-  fT.value = AS.type; fT.classList.toggle("set", !!AS.type);
+  fT.value = pf().type; fT.classList.toggle("set", !!pf().type);
 
   // особые признаки — показываем только те, что есть в базе этой игры
   const box = document.getElementById("fFlags");
@@ -4102,20 +4205,20 @@ function achFillSelects(db, g){
     const n = db.list.filter(f.test).length;
     if(!n){ return; }
     const b = document.createElement("button");
-    b.className = "chip" + (AS.flags.indexOf(f.k) !== -1 ? " on" : "");
+    b.className = "chip" + (pf().flags.indexOf(f.k) !== -1 ? " on" : "");
     b.innerHTML = esc(f.label(g)) + "<i>" + n + "</i>";
     b.onclick = () => {
-      const i = AS.flags.indexOf(f.k);
-      if(i === -1) AS.flags.push(f.k); else AS.flags.splice(i, 1);
+      const i = pf().flags.indexOf(f.k);
+      if(i === -1) pf().flags.push(f.k); else pf().flags.splice(i, 1);
       achChanged();
     };
     box.appendChild(b);
   });
-  AS.flags = AS.flags.filter(k => ACH_FLAGS.some(f => f.k === k && db.list.some(f.test)));
+  pf().flags = pf().flags.filter(k => ACH_FLAGS.some(f => f.k === k && db.list.some(f.test)));
 }
 function achFiltersActive(){
   const p = pf();
-  return !!(AS.q || p.series || p.ver || AS.status || AS.reward || AS.diff || AS.type || AS.flags.length);
+  return !!(pf().q || p.series || p.ver || pf().status || pf().reward || pf().diff || pf().type || pf().flags.length);
 }
 function achChanged(){
   aLimit = 120;
@@ -4202,20 +4305,20 @@ function renderAch(){
   if(aErr[gid]) s += '<br><span class="warn">Обновить не вышло: ' + esc(aErr[gid].tried.map(t => t.why).join("; ")) + ". Показана сохранённая копия.</span>";
   document.getElementById("achSrcLine").innerHTML = s;
 
-  document.getElementById("achQ").value = AS.q;
+  document.getElementById("achQ").value = pf().q;
   achFillSelects(db, g);
-  document.getElementById("aSort").value = AS.sort;
+  document.getElementById("aSort").value = pf().sort;
   const dir = document.getElementById("aDir");
-  dir.textContent = AS.dir === 1 ? "↑" : "↓";
-  dir.title = AS.dir === 1 ? "По возрастанию — нажмите, чтобы развернуть" : "По убыванию — нажмите, чтобы развернуть";
+  dir.textContent = pf().dir === 1 ? "↑" : "↓";
+  dir.title = pf().dir === 1 ? "По возрастанию — нажмите, чтобы развернуть" : "По убыванию — нажмите, чтобы развернуть";
   dir.setAttribute("aria-label", dir.title);
   const gs = document.getElementById("aGroup");
   gs.innerHTML = "";
   [["none","нет"],["series","категории"],["version","версии"]].forEach(o => {
     const b = document.createElement("button");
-    b.className = AS.group === o[0] ? "on" : "";
+    b.className = pf().group === o[0] ? "on" : "";
     b.textContent = o[1];
-    b.onclick = () => { AS.group = o[0]; achChanged(); };
+    b.onclick = () => { pf().group = o[0]; achChanged(); };
     gs.appendChild(b);
   });
   document.getElementById("aSpoil").classList.toggle("on", AS.spoil);
@@ -4229,8 +4332,8 @@ function achRowHtml(db, g, a){
   const st = aStatus(gid, db, a);
   const spoil = AS.spoil && a.hidden && st !== "done" && !aReveal.has(a.id);
   const m = [];
-  if(AS.group !== "series") m.push('<button class="am" data-act="ser" title="Показать только эту категорию">' + esc(db.ser[a.series_id].name) + "</button>");
-  if(AS.group !== "version") m.push('<button class="am" data-act="ver" title="Показать только эту версию">' + (a._vk < 0 ? "без версии" : "версия " + esc(a._v)) + "</button>");
+  if(pf().group !== "series") m.push('<button class="am" data-act="ser" title="Показать только эту категорию">' + esc(db.ser[a.series_id].name) + "</button>");
+  if(pf().group !== "version") m.push('<button class="am" data-act="ver" title="Показать только эту версию">' + (a._vk < 0 ? "без версии" : "версия " + esc(a._v)) + "</button>");
   if(a.hidden) m.push('<span class="am hid">скрытое</span>');
   if(ACH_DIFF[a.difficulty]) m.push('<span class="am d-' + a.difficulty + '">' + ACH_DIFF[a.difficulty] + "</span>");
   if(a.stages > 1) m.push('<span class="am">ступень ' + (a.stage || 1) + " из " + a.stages + "</span>");
@@ -4250,12 +4353,12 @@ function achRowHtml(db, g, a){
   const tip = st === "done" ? "Снять отметку" : "Отметить как полученное";
   return '<div class="arow' + (st === "done" ? " done" : st === "blocked" ? " blocked" : "") + '" data-id="' + esc(a.id) + '">' +
     '<button class="achk" data-act="tog" title="' + tip + '" aria-label="' + tip + ": " + esc(a._n) + '" aria-pressed="' + (st === "done") + '">' + (st === "done" ? "✓" : "") + "</button>" +
-    '<div class="amain"><div class="an">' + esc(a._n) + "</div>" +
-    (a._d ? '<div class="ad' + (spoil ? ' spoil" data-act="spoil" title="Скрытое достижение — нажмите, чтобы прочитать' : "") + '">' + esc(a._d) + "</div>" : "") +
+    '<div class="amain"><div class="an">' + achMark(a._n) + "</div>" +
+    (a._d ? '<div class="ad' + (spoil ? ' spoil" data-act="spoil" title="Скрытое достижение — нажмите, чтобы прочитать' : "") + '">' + achMark(a._d) + "</div>" : "") +
     "</div>" +
     '<div class="ar">+' + (a.reward || 0) + "</div>" +
     '<div class="ameta">' + m.join("") + "</div>" +
-    (ho && a.hint ? '<div class="ahint">' + esc(a.hint) + "</div>" : "") +
+    (ho && a.hint ? '<div class="ahint">' + achMark(a.hint) + "</div>" : "") +
     "</div>";
 }
 
@@ -4273,6 +4376,15 @@ function renderAchList(db, g){
       (nd ? '<button class="linkbtn" data-act="unmarkall">снять отметки с показанных</button>' : "") + "</span>";
   }
   document.getElementById("achSum").innerHTML = sum;
+  const qn = document.getElementById("achQNote");
+  const qs = [];
+  if(pf().q.trim()){
+    if(aSearch.swapped) qs.push("Искал в другой раскладке: <b>" + esc(aSearch.swapped) + "</b>");
+    if(aSearch.fuzzy && items.length) qs.push("Точных совпадений нет — показаны похожие");
+    qs.push(items.length ? "Найдено: " + fmt(items.length) : "Ничего не нашлось");
+  }
+  qn.innerHTML = qs.join(" · ");
+  qn.classList.toggle("hidden", !qs.length);
 
   const list = document.getElementById("achList");
   if(!items.length){
@@ -4444,26 +4556,27 @@ document.getElementById("achSrcLine").onclick = e => {
 
 let achQTimer = 0;
 document.getElementById("achQ").oninput = function(){
-  const v = this.value;
+  const v = this.value, gid = AS.game;
   clearTimeout(achQTimer);
   achQTimer = setTimeout(() => {
-    AS.q = v; aLimit = 120; saveUI();
+    pf(gid).q = v; aLimit = 120; saveUI();
+    if(AS.game !== gid) return;
     const g = achGame(), db = adb[g.id];
     if(db){ renderAchList(db, g); document.getElementById("aReset").classList.toggle("hidden", !achFiltersActive()); }
   }, 140);
 };
 document.getElementById("fSeries").onchange = function(){ pf().series = this.value; achChanged(); };
 document.getElementById("fVer").onchange = function(){ pf().ver = this.value; achChanged(); };
-document.getElementById("fStatus").onchange = function(){ AS.status = this.value; achChanged(); };
-document.getElementById("fReward").onchange = function(){ AS.reward = this.value; achChanged(); };
-document.getElementById("fDiff").onchange = function(){ AS.diff = this.value; achChanged(); };
-document.getElementById("fType").onchange = function(){ AS.type = this.value; achChanged(); };
-document.getElementById("aSort").onchange = function(){ AS.sort = this.value; AS.dir = ACH_SORT_DIR[AS.sort] || 1; achChanged(); };
-document.getElementById("aDir").onclick = () => { AS.dir = -AS.dir; achChanged(); };
+document.getElementById("fStatus").onchange = function(){ pf().status = this.value; achChanged(); };
+document.getElementById("fReward").onchange = function(){ pf().reward = this.value; achChanged(); };
+document.getElementById("fDiff").onchange = function(){ pf().diff = this.value; achChanged(); };
+document.getElementById("fType").onchange = function(){ pf().type = this.value; achChanged(); };
+document.getElementById("aSort").onchange = function(){ pf().sort = this.value; pf().dir = ACH_SORT_DIR[pf().sort] || 1; achChanged(); };
+document.getElementById("aDir").onclick = () => { pf().dir = -pf().dir; achChanged(); };
 document.getElementById("aSpoil").onclick = () => { AS.spoil = !AS.spoil; aReveal.clear(); achChanged(); };
 document.getElementById("aReset").onclick = () => {
   const p = pf();
-  AS.q = ""; p.series = ""; p.ver = ""; AS.status = ""; AS.reward = ""; AS.diff = ""; AS.type = ""; AS.flags = [];
+  pf().q = ""; p.series = ""; p.ver = ""; pf().status = ""; pf().reward = ""; pf().diff = ""; pf().type = ""; pf().flags = [];
   achChanged();
 };
 document.getElementById("achMore").onclick = () => {

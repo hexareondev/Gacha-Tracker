@@ -1911,8 +1911,10 @@ const GAMES = {
     banners:{
       "2":{ n:"Эксклюзивный",       s:"агенты",           pity:90, pool:"limited", ord:1 },
       "3":{ n:"Амплификаторы",       s:"оружие",           pity:80, pool:"limited", ord:2 },
-      "5":{ n:"Банбу",              s:"бангбу",           pity:80, pool:"limited", ord:3 },
-      "1":{ n:"Стандартный",        s:"постоянный",       pity:90, pool:"standard", ord:4 }
+      "102":{ n:"Повтор: агенты",   s:"агент на выбор",   pity:90, ord:3 },
+      "103":{ n:"Повтор: амплификаторы", s:"амплификатор на выбор", pity:80, ord:4 },
+      "5":{ n:"Банбу",              s:"бангбу",           pity:80, pool:"limited", ord:5 },
+      "1":{ n:"Стандартный",        s:"постоянный",       pity:90, pool:"standard", ord:6 }
     }}
 };
 function gameInfo(g){ return GAMES[g] || { name:g, top:"5", mid:"4", topName:"редких", banners:{} }; }

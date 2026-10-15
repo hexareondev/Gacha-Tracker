@@ -59,6 +59,11 @@ function iso(y,m,d){ return y+"-"+pad(m+1)+"-"+pad(d); }
 function daysIn(y,m){ return new Date(y, m+1, 0).getDate(); }
 function firstDow(y,m){ return (new Date(y,m,1).getDay()+6)%7; }
 function isGuar(d){ return GUAR.indexOf(d) !== -1; }
+// ширина графика: на узком экране рисуем в реальных пикселях, чтобы подписи не мельчали
+function chartW(host){
+  const w = host ? host.clientWidth : 0;
+  return w && w < 640 ? Math.max(290, Math.round(w)) : 720;
+}
 function fmt(n){ return n.toLocaleString("ru-RU"); }
 function fmtK(n){ return n >= 1000 ? Math.round(n/1000)+"k" : ""+n; }
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }

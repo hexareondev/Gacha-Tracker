@@ -21,7 +21,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;max-width:100%}
-html{overflow-x:clip}
+html,body{overflow-x:clip}
 body{
   background:var(--bg);
   color:var(--text);
@@ -104,7 +104,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .got.master{color:var(--crimson)}
 
 /* ── сетка дней ── */
-.grid-head,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.grid-head,.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
 .grid-head{margin-bottom:8px}
 .grid-head div{font-size:11px;color:var(--dim);text-align:center;letter-spacing:.03em}
 .grid-head div:nth-child(n+6){color:#4b4955}
@@ -774,3 +774,55 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .syncbar span{flex:1;min-width:0}
 .syncbar .sm{flex:0 0 auto;white-space:nowrap}
 #syncBarClose{width:34px;padding:0}
+
+/* ── телефон: шапка, календарь, таблицы ── */
+.cell .vs{display:none}
+@media(max-width:760px){
+  .month{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nav{flex-wrap:wrap}
+  body.tab-history .nav,body.tab-achievements .nav{width:auto;margin-left:auto}
+  .hleft{flex:1 1 auto}
+  body.game-custom #navGame{flex:1 1 100%}
+  body.game-custom #navGame .pickwrap,body.game-custom #gameLabel{width:100%;max-width:none}
+  .cell.d .vf{display:none}
+  .cell.d .vs{display:inline}
+  .cell .val{font-size:14px}
+  .cell.p4 .val{font-size:15px}
+  .cell.d .val{font-size:13px}
+  th,td{padding-left:8px;padding-right:8px}
+  td{padding-top:10px;padding-bottom:10px}
+  th{font-size:11px}
+}
+@media(max-width:380px){
+  .cell .val{font-size:13px}
+  .cell.d .val{font-size:12px}
+  .cell .dn{font-size:11px}
+}
+@media(max-width:760px){
+  .navgroup,.nav .pickwrap{min-width:0}
+  #toToday{flex:0 0 auto;padding:0 14px}
+  #menuBtn{flex:0 0 auto}
+  #fiftyStats .v{font-size:17px}
+}
+#monthLabel .ms{display:none}
+@media(max-width:420px){
+  #monthLabel .ml{display:none}
+  #monthLabel .ms{display:inline}
+  #toToday{padding:0 12px;font-size:13.5px}
+  .nav{gap:6px}
+}
+@media(max-width:340px){
+  h1{font-size:19px}
+}
+@media(max-width:360px){
+  body{padding:0 10px 70px}
+  .grid,.grid-head{gap:3px}
+  .cell{padding:5px 4px;min-width:0;min-height:44px}
+  .subs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .subs .tot{padding:11px 10px;min-width:0}
+  .subs .v{font-size:17px}
+  .tot .k{font-size:11.5px}
+}
+@media(max-width:760px){
+  .card svg text{font-size:11px}
+}

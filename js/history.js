@@ -925,8 +925,8 @@ function renderBannerChart(b, tops, limited){
   if(tops.length < 2){ card.classList.add("hidden"); return; }
   card.classList.remove("hidden");
 
-  const list = tops.slice(-40);
-  const W = 720, H = 210, L = 30, R = 8, T = 16, B = 40;
+  const W = chartW(host), H = 210, L = 30, R = 8, T = 16, B = 40;
+  const list = tops.slice(W < 500 ? -24 : -40);   // на узком экране — последние выпадения
   const iw = W - L - R, ih = H - T - B;
   const step = iw / list.length, bw = Math.min(step - 5, 26);
   const cap = b.info.pity;
@@ -1082,7 +1082,7 @@ function renderPityHist(done, pmf, m){
   const obs = new Array(nb).fill(0), expd = new Array(nb).fill(0);
   done.forEach(x => { obs[Math.min(nb - 1, Math.floor((Math.min(x.pulls, m.hard) - 1) / bw))]++; });
   for(let i = 1; i < pmf.length; i++) expd[Math.floor((i - 1) / bw)] += pmf[i] * done.length;
-  const W = 720, H = 200, L = 30, R = 8, T = 14, B = 34;
+  const W = chartW(host), H = 200, L = 30, R = 8, T = 14, B = 34;
   const iw = W - L - R, ih = H - T - B, step = iw / nb, bwid = Math.min(step - 10, 52);
   const top = Math.max(1, ...obs, ...expd);
   const max = top * 1.12;
@@ -1103,7 +1103,7 @@ function renderPityHist(done, pmf, m){
       obs[i] + " из " + done.length + " · ожидалось " + fmtP(expd[i]) + "</title></rect>";
     if(obs[i]) s += '<text x="' + cx.toFixed(1) + '" y="' + (T + ih - hh - 5).toFixed(1) + '" fill="#a09ca8" font-size="10" text-anchor="middle">' + obs[i] + "</text>";
     line += (i ? " L" : "M") + cx.toFixed(1) + " " + y(expd[i]).toFixed(1);
-    s += '<text x="' + cx.toFixed(1) + '" y="' + (H - 14) + '" fill="#5e5c68" font-size="10" text-anchor="middle">' + (i * bw + 1) + "–" + Math.min(m.hard, (i + 1) * bw) + "</text>";
+    s += '<text x="' + cx.toFixed(1) + '" y="' + (H - 14) + '" fill="#5e5c68" font-size="10" text-anchor="middle">' + (W >= 500 ? (i * bw + 1) + "–" + Math.min(m.hard, (i + 1) * bw) : "≤" + Math.min(m.hard, (i + 1) * bw)) + "</text>";
   }
   s += '<path d="' + line + '" fill="none" stroke="#8794a1" stroke-width="1.6" stroke-dasharray="4 4"/>';
   for(let i = 0; i < nb; i++) s += '<circle cx="' + (L + (i + .5) * step).toFixed(1) + '" cy="' + y(expd[i]).toFixed(1) + '" r="2.6" fill="#8794a1"/>';

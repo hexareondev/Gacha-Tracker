@@ -150,11 +150,22 @@ function setNav(game, view){
   } else {
     document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";
     document.getElementById("hSub").textContent = "Zenless Zone Zero";
+    render();                          // графики подстраиваются под ширину видимого раздела
   }
   saveUI();
   renderSide();
 }
 function setView(name){ setNav(curNav(), name); }
+// при повороте телефона или смене ширины окна перерисовываем текущий раздел — графики и подписи
+let navW = window.innerWidth, navWT = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(navWT);
+  navWT = setTimeout(() => {
+    if(Math.abs(window.innerWidth - navW) < 40) return;
+    navW = window.innerWidth;
+    setNav(curNav(), ui.tab);
+  }, 250);
+});
 // прежние версии запоминали только раздел — догадываемся, какая игра была открыта
 (function migrateNav(){
   if(ui.game) return;

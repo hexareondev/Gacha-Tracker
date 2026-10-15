@@ -384,7 +384,7 @@ function renderPatchChart(g){
   const host = document.getElementById("patchChart");
   const list = sortedPatches(g).slice(-12);
   if(list.length < 2){ host.innerHTML = ""; return; }
-  const W = 720, H = 190, L = 34, R = 6, T = 16, B = 34;
+  const W = chartW(host), H = 190, L = 34, R = 6, T = 16, B = 34;
   const iw = W - L - R, ih = H - T - B;
   const step = iw / list.length, bw = Math.min(step - 16, 34);
   const stats = list.map(p => patchStats(g, p));

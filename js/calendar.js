@@ -14,7 +14,7 @@ function render(){
 }
 
 function renderHeader(){
-  document.getElementById("monthLabel").textContent = MONTHS[view.m] + " " + view.y;
+  document.getElementById("monthLabel").innerHTML = '<span class="ml">' + MONTHS[view.m] + '</span><span class="ms">' + MONTHS_SHORT[view.m] + "</span> " + view.y;
   document.getElementById("yLabel1").textContent = view.y;
   document.getElementById("yLabel2").textContent = view.y;
 }
@@ -73,7 +73,9 @@ function renderGrid(){
     cell.type = "button";
     cell.innerHTML =
       '<span class="dn">' + d + '</span>' +
-      (e ? '<span class="val">' + (e.t === "d" ? fmt(e.v) : e.v) + '</span>' +
+      (e ? '<span class="val">' + (e.t === "d"
+            ? '<span class="vf">' + fmt(e.v) + '</span><span class="vs">' + String(Math.round(e.v / 100) / 10).replace(".", ",") + "к</span>"
+            : e.v) + '</span>' +
            '<span class="sub">' + (e.t === "p" ? "полихромы" : e.t === "m" ? "мастер-диски" : "денни") + '</span>'
          : '<span class="sub">' + (future ? "" : "не отмечено") + '</span>');
     if(future){ cell.disabled = true; }
@@ -120,7 +122,7 @@ function renderTotals(){
 /* ── график месяца ── */
 function renderMonthChart(){
   const n = daysIn(view.y, view.m);
-  const W = 720, H = 190, L = 26, R = 6, T = 16, B = 34;
+  const W = chartW(document.getElementById("chartMonth")), H = 190, L = 26, R = 6, T = 16, B = 34;
   const iw = W - L - R, ih = H - T - B;
   const step = iw / n, bw = Math.min(step - 4, 16);
   const max = 60;
@@ -154,7 +156,7 @@ function renderMonthChart(){
     if(isGuar(d)){
       s += '<circle cx="' + cx.toFixed(1) + '" cy="' + (T+ih+9) + '" r="2" fill="#7e6226"/>';
     }
-    if(d === 1 || d % 5 === 0 || d === n){
+    if(d === 1 || (d % 5 === 0 && (n - d >= 2 || W >= 500)) || d === n){
       s += '<text x="' + cx.toFixed(1) + '" y="' + (H-9) + '" fill="#5e5c68" font-size="10" text-anchor="middle">' + d + '</text>';
     }
   }
@@ -164,7 +166,7 @@ function renderMonthChart(){
 
 /* ── график года ── */
 function renderYearChart(){
-  const W = 720, H = 210, L = 30, R = 6, T = 18, B = 46;
+  const W = chartW(document.getElementById("chartYear")), H = 210, L = 30, R = 6, T = 18, B = 46;
   const iw = W - L - R, ih = H - T - B;
   const step = iw / 12, bw = Math.min(step - 16, 30);
   const vals = [];
@@ -202,8 +204,11 @@ function renderYearChart(){
       s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih-h-7).toFixed(1) + '" fill="' + (cur ? "#ffdf95" : "#7d7a86") +
            '" font-size="10.5" font-weight="500" text-anchor="middle">' + st.poly + '</text>';
     }
-    s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih+17) + '" fill="' + (cur ? "#eceae5" : "#5e5c68") + '" font-size="10.5" text-anchor="middle">' + MONTHS_SHORT[m] + '</text>';
-    s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih+31) + '" fill="#45434e" font-size="9.5" text-anchor="middle">' + (st.denny ? fmtK(st.denny) : "") + '</text>';
+    // на узком экране подписываем через месяц, чтобы названия не слипались; текущий — всегда
+    if(W >= 500 || cur || (m % 2 === 0 && Math.abs(m - view.m) > 1))
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih+17) + '" fill="' + (cur ? "#eceae5" : "#5e5c68") + '" font-size="10.5" text-anchor="middle">' + MONTHS_SHORT[m] + '</text>';
+    if(W >= 500 || cur)
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (T+ih+31) + '" fill="#45434e" font-size="9.5" text-anchor="middle">' + (st.denny ? fmtK(st.denny) : "") + '</text>';
     s += '</g>';
   }
   s += '</svg>';

@@ -10,7 +10,15 @@ const sstore = makeStore(SYNC_KEY);
 const sync = sstore.load() || {};
 const GIST_FILE = "gacha-tracker.json";
 const GIST_DESC = "Гача Трекер — резервная копия";
+if(typeof sync.auto !== "boolean") sync.auto = true;
+const SYNC_EVERY = 5 * 60 * 1000;
 function syncSave(){ sstore.save(sync); }
+// быстрый отпечаток данных: по нему видно, менялось ли что-то с последней синхронизации
+function textHash(s){
+  let h = 0x811c9dc5;
+  for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return (h >>> 0).toString(36) + ":" + s.length;
+}
 function backupText(){ return JSON.stringify({ v:3, rewards:data, pulls:pdata, gacha:hdata, ach:adata }); }
 
 async function gh(path, opts){
@@ -44,15 +52,28 @@ async function findGist(){
   }
   return null;
 }
-async function syncPush(){
-  const files = {}; files[GIST_FILE] = { content: backupText() };
+/* Защита от перезаписи: если копию в GitHub с тех пор, как это устройство видело её
+   в последний раз, обновило другое устройство, без явного согласия не отправляем. */
+function newerRemote(g){
+  return !!g && (!sync.remoteAt || g.updated_at > sync.remoteAt);
+}
+async function syncPush(force){
+  const text = backupText();
+  const files = {}; files[GIST_FILE] = { content: text };
   const body = JSON.stringify({ description: GIST_DESC, files });
   const g = await findGist();
+  if(!force && newerRemote(g)){
+    const e = new Error("в GitHub копия новее — её отправило другое устройство");
+    e.status = "conflict"; e.updated = g.updated_at;
+    throw e;
+  }
   const res = g
     ? await gh("/gists/" + g.id, { method:"PATCH", body })
     : await gh("/gists", { method:"POST", body: JSON.stringify({ description: GIST_DESC, public:false, files }) });
   sync.gist = res.id;
   sync.pushed = Date.now();
+  sync.remoteAt = res.updated_at;
+  sync.hash = textHash(text);
   syncSave();
 }
 async function syncPull(){
@@ -79,17 +100,32 @@ function renderSync(msg, bad){
   document.getElementById("menuSyncSep").classList.toggle("hidden", !on);
   const st = document.getElementById("syncStatus");
   st.classList.toggle("bad", !!bad);
+  document.getElementById("syncAuto").checked = !!sync.auto;
   st.textContent = msg || (on
     ? "Токен сохранён в этом браузере." + (sync.pushed ? " Последняя отправка с этого устройства: " + syncWhen(sync.pushed) + "." : "") +
-      (sync.pulled ? " Последняя загрузка: " + syncWhen(sync.pulled) + "." : "")
+      (sync.pulled ? " Последняя загрузка: " + syncWhen(sync.pulled) + "." : "") +
+      (sync.auto ? (syncPaused ? " Автоотправка на паузе: в GitHub копия новее." : " Изменения отправляются сами раз в 5 минут.") : "")
     : "Не настроено.");
 }
-let syncBusy = false;
-async function doSyncPush(){
+let syncBusy = false, syncPaused = false;
+async function doSyncPush(force){
   if(syncBusy) return;
   syncBusy = true; renderSync("Отправляю…");
-  try { await syncPush(); renderSync("Отправлено " + syncWhen(sync.pushed) + "."); note("Копия отправлена в GitHub."); }
-  catch(e){ renderSync("Не отправлено: " + e.message + ".", true); note("Не отправлено: " + e.message + "."); }
+  try {
+    await syncPush(force === true);
+    syncPaused = false; hideSyncBar();
+    renderSync("Отправлено " + syncWhen(sync.pushed) + "."); note("Копия отправлена в GitHub.");
+  } catch(e){
+    if(e.status === "conflict"){
+      syncBusy = false; renderSync();
+      askConfirm("В GitHub копия новее",
+        "Её отправило другое устройство " + syncWhen(e.updated) + ". Если отправить отсюда, она заменится данными этого устройства. " +
+        "Обычно правильнее сначала загрузить её.",
+        "Всё равно отправить", () => doSyncPush(true), false);
+      return;
+    }
+    renderSync("Не отправлено: " + e.message + ".", true); note("Не отправлено: " + e.message + ".");
+  }
   syncBusy = false;
 }
 async function doSyncPull(){
@@ -106,7 +142,13 @@ async function doSyncPull(){
     "Загрузить",
     () => {
       if(merge(got.text)){
-        sync.pulled = Date.now(); syncSave();
+        sync.pulled = Date.now();
+        sync.remoteAt = got.updated;
+        // после объединения календаря и достижений данные могут отличаться от копии —
+        // тогда автоотправка выгрузит объединённый вариант
+        sync.hash = textHash(got.text);
+        syncPaused = false; hideSyncBar();
+        syncSave();
         renderSync("Загружено " + syncWhen(sync.pulled) + ".");
         setNav(curNav(), ui.tab);
       }
@@ -118,16 +160,55 @@ document.getElementById("syncSaveToken").onclick = () => {
   sync.token = v; sync.gist = null; syncSave();
   document.getElementById("syncToken").value = "";
   renderSync();
+  checkRemote();
 };
-document.getElementById("syncPush").onclick = doSyncPush;
+document.getElementById("syncPush").onclick = () => doSyncPush();
+document.getElementById("syncAuto").onchange = function(){ sync.auto = this.checked; syncSave(); renderSync(); };
 document.getElementById("syncPull").onclick = () => { closeSettings(); doSyncPull(); };
-document.getElementById("menuSyncPush").onclick = () => { doSyncPush(); };
+document.getElementById("menuSyncPush").onclick = () => { closeMenu(); doSyncPush(); };
 document.getElementById("menuSyncPull").onclick = () => { closeMenu(); doSyncPull(); };
 document.getElementById("syncForget").onclick = () => {
   delete sync.token; delete sync.gist; delete sync.pushed; delete sync.pulled;
   syncSave(); renderSync("Токен удалён из этого браузера. Сама копия в GitHub осталась.");
 };
 document.getElementById("openSettings").addEventListener("click", () => renderSync());
+
+/* плашка «в GitHub копия новее» */
+function showSyncBar(updated){
+  document.getElementById("syncBarText").textContent =
+    "В GitHub копия новее · " + new Date(updated).toLocaleString("ru-RU", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+  document.getElementById("syncBar").classList.remove("hidden");
+}
+function hideSyncBar(){ document.getElementById("syncBar").classList.add("hidden"); }
+document.getElementById("syncBarPull").onclick = () => { hideSyncBar(); doSyncPull(); };
+document.getElementById("syncBarClose").onclick = hideSyncBar;
+
+/* автоотправка: раз в 5 минут и при уходе со страницы — только если данные изменились */
+async function autoSync(){
+  if(!sync.token || !sync.auto || syncBusy || syncPaused) return;
+  if(textHash(backupText()) === sync.hash) return;
+  syncBusy = true;
+  try { await syncPush(false); renderSync(); }
+  catch(e){
+    if(e.status === "conflict"){ syncPaused = true; showSyncBar(e.updated); }
+    renderSync(e.status === "conflict" ? null : "Автоотправка не удалась: " + e.message + ".", e.status !== "conflict");
+  }
+  syncBusy = false;
+}
+// при открытии смотрим, не обновило ли копию другое устройство
+async function checkRemote(){
+  if(!sync.token) return;
+  try {
+    const g = await findGist();
+    if(newerRemote(g)){ syncPaused = true; showSyncBar(g.updated_at); renderSync(); }
+  } catch(e){}
+}
+setInterval(autoSync, SYNC_EVERY);
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden) autoSync();
+  else if(sync.token && Date.now() - (sync.checked || 0) > SYNC_EVERY){ sync.checked = Date.now(); checkRemote(); }
+});
+setTimeout(() => { sync.checked = Date.now(); checkRemote(); }, 1500);
 renderSync();
 
 /* ── установка как приложение ── */

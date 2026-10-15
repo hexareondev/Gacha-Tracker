@@ -512,10 +512,13 @@
       <div class="editrow"><span>Токен</span><input id="syncToken" type="password" autocomplete="off" spellcheck="false" placeholder="ghp_… или github_pat_…"><button class="mark sm" id="syncSaveToken">Сохранить</button></div>
       <p class="hint" style="margin:6px 0 0">Токен с правом <b>gist</b> создаётся на GitHub: <a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=%D0%93%D0%B0%D1%87%D0%B0%20%D0%A2%D1%80%D0%B5%D0%BA%D0%B5%D1%80" target="_blank" rel="noopener">создать токен</a>. Другие права ему не нужны.</p>
     </div>
-    <div class="row hidden" id="syncActs" style="justify-content:flex-start;flex-wrap:wrap;margin-top:4px">
-      <button class="mark sm" id="syncPush">Отправить копию</button>
-      <button class="ghost sm" id="syncPull">Загрузить копию</button>
-      <button class="linkbtn" id="syncForget">забыть токен</button>
+    <div class="hidden" id="syncActs">
+      <div class="syncbtns">
+        <button class="mark sm" id="syncPush">Отправить</button>
+        <button class="ghost sm" id="syncPull">Загрузить</button>
+        <button class="linkbtn" id="syncForget">забыть токен</button>
+      </div>
+      <label class="synccheck"><input type="checkbox" id="syncAuto"> Отправлять изменения автоматически — раз в 5 минут</label>
     </div>
     <p class="hint synctxt" id="syncStatus" style="margin:8px 0 0"></p>
     <div class="row" style="margin-top:16px"><button class="ghost" id="closeSettings">Готово</button></div>
@@ -547,6 +550,11 @@
   </div>
 </div>
 
+<div class="syncbar hidden" id="syncBar" role="status">
+  <span id="syncBarText"></span>
+  <button class="mark sm" id="syncBarPull">Загрузить</button>
+  <button class="ghost sm" id="syncBarClose" aria-label="Скрыть">✕</button>
+</div>
 <script src="js/core.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/history.js"></script>

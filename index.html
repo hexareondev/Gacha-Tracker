@@ -235,9 +235,29 @@ td.master{color:var(--crimson)}
 .shell{display:flex;gap:26px;max-width:1240px;margin:0 auto;align-items:flex-start}
 .shell .wrap{flex:1;min-width:0;margin:0}
 .side{
-  position:sticky;top:18px;z-index:20;width:186px;flex:0 0 186px;
+  position:sticky;top:18px;z-index:20;width:196px;flex:0 0 196px;
   padding:18px 0 0;display:flex;flex-direction:column;gap:22px;
+  max-height:calc(100vh - 18px);overflow:auto;scrollbar-width:thin;
 }
+.sgame{display:flex;flex-direction:column;gap:1px}
+.sgame + .sgame{margin-top:10px}
+.navhead{display:flex;align-items:center;gap:8px;width:100%;border:none;background:none;border-radius:8px;text-align:left;
+  font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);padding:5px 14px;font-weight:600;cursor:pointer}
+.navhead span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navhead:hover{color:var(--muted);background:rgba(255,255,255,.03)}
+.navhead .caret{font-style:normal;font-size:9px;transform:rotate(90deg);transition:transform .15s ease;opacity:.8}
+.sgame.fold .navhead .caret{transform:none}
+.sitems{display:flex;flex-direction:column;gap:1px;margin-top:2px}
+.sgame.fold .sitems{display:none}
+.sgame.cur .navhead{color:#b8933f}
+.sgame .navitem{padding:7px 14px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sgame .navitem.on::before{top:8px;bottom:8px}
+.navadd{border:none;background:none;text-align:left;padding:7px 14px;color:var(--dim);font-size:13px;border-radius:10px}
+.navadd:hover{color:var(--gold-hot);background:rgba(255,255,255,.04)}
+.navform{display:flex;gap:6px;padding:4px 4px 0 8px}
+.navform input{flex:1;min-width:0;padding:7px 9px;font-size:13px}
+.navform .sm{height:32px;padding:0 10px}
+.navnote{font-size:11px;color:var(--dim);margin:6px 14px 0;line-height:1.4}
 .burger{display:none;width:38px;height:38px;padding:0;border-radius:10px;font-size:18px;line-height:1;color:var(--muted)}
 .scrim{position:fixed;inset:0;z-index:29;display:none;background:rgba(5,5,8,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 body.menu-open .scrim{display:block}
@@ -257,7 +277,8 @@ body.menu-open .scrim{display:block}
 .sidegroup .linkbtn{align-self:flex-start;margin:8px 0 0 14px;font-size:12.5px}
 .sidegroup .inline{margin:8px 0 0 0;flex-wrap:nowrap}
 .sidegroup .inline input{min-width:0}
-body:not(.tab-pulls) #navGame{display:none}
+body:not(.tab-pulls) #navGame,body:not(.game-custom) #navGame{display:none}
+#achGameSeg{display:none}
 #gameLabel{min-width:120px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #navGame{padding:3px 4px}
 body:not(.tab-calendar) #navMonth,body:not(.tab-calendar) #toToday{display:none}
@@ -708,12 +729,7 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 
 <aside class="side">
   <div class="brand">Гача <span>Трекер</span></div>
-  <nav class="sidenav">
-    <button class="navitem on" data-view="calendar">Календарь</button>
-    <button class="navitem" data-view="pulls">Крутки</button>
-    <button class="navitem" data-view="history">История</button>
-    <button class="navitem" data-view="achievements">Достижения</button>
-  </nav>
+  <nav class="sidenav" id="sideNav"></nav>
 </aside>
 
 <div class="wrap">
@@ -745,12 +761,14 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
           <button class="month num" id="gameLabel" aria-haspopup="true" aria-expanded="false">—</button>
           <div class="mpick" id="gamePicker">
             <div class="editrow"><span>Название</span><input id="gameRename" maxlength="40"></div>
-            <div class="sep"></div>
+            <button class="linkbtn danger" id="gameDel" style="margin:6px 0 4px 8px">Удалить профиль игры</button>
+            <div class="hidden">
             <div class="mpick-head"><span>Игры</span><button class="linkbtn" id="addGame">+ новая игра</button></div>
             <div class="plist" id="gameChips"></div>
             <div class="inline hidden" id="gameForm">
               <input id="gameName" placeholder="Название игры" maxlength="40" style="flex:1 1 140px">
               <button class="mark sm" id="gameSave">Создать</button>
+            </div>
             </div>
           </div>
         </div>
@@ -2285,7 +2303,11 @@ function attachIcon(td, game, r){
 }
 
 function hSave(){ hstore.save(hdata); }
-function HA(){ return hdata.accounts.find(a => a.key === hdata.active) || hdata.accounts[0] || null; }
+function HA(){
+  const gk = typeof histGameKey === "function" ? histGameKey() : null;
+  const list = gk ? hdata.accounts.filter(a => a.game === gk) : hdata.accounts;
+  return list.find(a => a.key === hdata.active) || list[0] || null;
+}
 // прежние версии хранили "win" как статус выпадения — переносим в пометку разыгрываемого
 (function migrateMarks(){
   let touched = false;
@@ -2484,6 +2506,7 @@ function renderPreview(){
 
 function applyImport(){
   if(!pending) return;
+  const manual = document.getElementById("importOverlay").classList.contains("on");
   const enrich = document.getElementById("impEnrich").value === "1";
   const mark = document.getElementById("impMark").value;
   let added = 0, enr = 0, accs = 0;
@@ -2516,8 +2539,14 @@ function applyImport(){
 
   Object.keys(runsCache).forEach(k => { delete runsCache[k]; });
   hSave();
+  const gotGames = pending.rows.filter(r => r.on).map(r => r.src.game);
   pending = null;
   document.getElementById("importOverlay").classList.remove("on");
+  const gk = histGameKey();
+  if(manual && gotGames.length && gotGames.indexOf(gk) === -1){
+    const n = navByHist(gotGames[0]);
+    if(n) setNav(n.id, "history");
+  }
   renderHistory();
   document.getElementById("histNote").textContent =
     "Загружено " + added + " новых записей" +
@@ -2553,14 +2582,17 @@ function renderHistory(){
   const acc = HA();
   const g = acc ? gameInfo(acc.game) : null;
   document.getElementById("hTitle").childNodes[0].nodeValue = "История круток";
-  document.getElementById("hSub").textContent = acc ? g.name + " · " + acc.uid : "файл не загружен";
+  const gk = histGameKey();
+  document.getElementById("hSub").textContent = acc ? g.name + " · UID " + acc.uid : (gk ? gameInfo(gk).name + " · " : "") + "файл не загружен";
 
   const box = document.getElementById("histAccounts");
   box.innerHTML = "";
-  hdata.accounts.forEach(a => {
+  const mine = hdata.accounts.filter(a => !gk || a.game === gk);
+  box.classList.toggle("hidden", mine.length < 2);
+  mine.forEach(a => {
     const b = document.createElement("button");
     b.className = "chip" + (acc && a.key === acc.key ? " on" : "");
-    b.textContent = gameInfo(a.game).name + " · " + a.uid;
+    b.textContent = "UID " + a.uid;
     b.onclick = () => { hdata.active = a.key; histBanner = null; histPage = 0; hSave(); renderHistory(); };
     box.appendChild(b);
   });
@@ -3027,7 +3059,8 @@ document.getElementById("clearHist").onclick = () => {
     "Удалить",
     () => {
       hdata.accounts = hdata.accounts.filter(a => a.key !== acc.key);
-      hdata.active = hdata.accounts[0] ? hdata.accounts[0].key : null;
+      const rest = hdata.accounts.filter(a => a.game === acc.game);
+      hdata.active = rest[0] ? rest[0].key : (hdata.accounts[0] ? hdata.accounts[0].key : null);
       hSave();
       renderHistory();
     });
@@ -3367,7 +3400,17 @@ function renderGames(){
   if(document.activeElement !== ren) ren.value = g.name;
   ren.onchange = () => {
     const v = ren.value.trim();
-    if(v){ g.name = v; pSave(); renderPulls(); } else { ren.value = g.name; }
+    if(v){ g.name = v; pSave(); renderPulls(); renderSide(); } else { ren.value = g.name; }
+  };
+  document.getElementById("gameDel").onclick = () => {
+    closeGamePick();
+    if(g.key) return;
+    askConfirm("Удалить профиль?", "«" + g.name + "» со всеми патчами и валютой будет удалена.", "Удалить", () => {
+      pdata.games = pdata.games.filter(y => y.id !== g.id);
+      pSave();
+      const next = customGames()[0];
+      setNav(next ? "c:" + next.id : "zzz", "pulls");
+    });
   };
   const box = document.getElementById("gameChips");
   box.innerHTML = "";
@@ -4511,8 +4554,7 @@ function achLoadText(text){
     if(err){ achNote("База не подошла: " + err + "."); return; }
     achSet(g.id, obj, "загружено из файла", Date.now(), true);
     delete aErr[g.id];
-    AS.game = g.id; aLimit = 120; saveUI();
-    renderAch();
+    setNav(g.id, "achievements");
     achNote("База " + g.name + " загружена из файла: " + fmt(obj.achievements.length) + " достижений.");
     return;
   }
@@ -4543,8 +4585,7 @@ function achLoadText(text){
     add++;
   });
   aSave();
-  AS.game = best.id; saveUI();
-  renderAch();
+  setNav(best.id, "achievements");
   achNote(best.name + ": отмечено новых " + add + ", уже было " + had + (miss ? ", нет в базе " + miss : "") + ".");
 }
 function achDownload(name, text){
@@ -4713,28 +4754,164 @@ document.getElementById("openSettings").addEventListener("click", () => {
   document.getElementById("achSrc").value = ui.achSrc || "";
 });
 
-/* ── разделы ── */
+/* ── навигация: игры и их разделы ── */
+const NAV_GAMES = [
+  { id:"gi",  name:"Genshin Impact",    hist:"hk4e",  views:["pulls","history","achievements"] },
+  { id:"hsr", name:"Honkai: Star Rail", hist:"hkrpg", views:["pulls","history","achievements"] },
+  { id:"zzz", name:"Zenless Zone Zero", hist:"nap",   views:["calendar","pulls","history","achievements"] }
+];
+const VIEW_NAMES = { calendar:"Календарь", pulls:"Крутки", history:"История", achievements:"Достижения" };
 const VIEWS = { calendar:"viewCalendar", pulls:"viewPulls", history:"viewHistory", achievements:"viewAchievements" };
-function setView(name){
-  if(!VIEWS[name]) name = "calendar";
-  document.querySelectorAll(".navitem").forEach(x => x.classList.toggle("on", x.dataset.view === name));
-  Object.keys(VIEWS).forEach(v => document.getElementById(VIEWS[v]).classList.toggle("hidden", v !== name));
-  document.body.classList.remove("tab-calendar","tab-pulls","tab-history","tab-achievements");
-  document.body.classList.add("tab-" + name);
+const PULL_MATCH = { gi:/genshin|геншин|гэншин/i, hsr:/star\s*rail|\bhsr\b|хср/i, zzz:/zenless|\bzzz\b|ззз|зенлес/i };
+const PULL_DEFAULT = {
+  gi:  [["Переплетающиеся судьбы",1],["Примогемы",160]],
+  hsr: [["Особый проездной",1],["Звёздный нефрит",160]],
+  zzz: [["Мастер-ленты",1],["Полихромы",160]]
+};
+function navGame(id){ return NAV_GAMES.find(x => x.id === id) || null; }
+function curNav(){ return ui.game || "zzz"; }
+function histGameKey(){ const g = navGame(curNav()); return g ? g.hist : null; }
+function navByHist(h){ return NAV_GAMES.find(x => x.hist === h) || null; }
+// игры из раздела «Крутки», созданные раньше, узнаём по названию и привязываем к встроенным
+function pClaim(){
+  let ch = false;
+  NAV_GAMES.forEach(n => {
+    if(pdata.games.some(x => x.key === n.id)) return;
+    const g = pdata.games.find(x => !x.key && PULL_MATCH[n.id].test(x.name || ""));
+    if(g){ g.key = n.id; ch = true; }
+  });
+  if(ch) pSave();
+}
+function pGameFor(key){
+  pClaim();
+  let g = pdata.games.find(x => x.key === key);
+  if(!g){
+    g = { id:uid(), key, name:navGame(key).name, patch:null, patches:[],
+      types:[{ id:uid(), name:"Ивентовые", currencies:PULL_DEFAULT[key].map(c => ({ id:uid(), name:c[0], rate:c[1], amount:0 })) }] };
+    pdata.games.push(g);
+    pSave();
+  }
+  return g;
+}
+function customGames(){ return pdata.games.filter(x => !x.key); }
+
+function renderSide(){
+  pClaim();
+  const game = curNav(), view = ui.tab;
+  let h = "";
+  const fold = navFold();
+  NAV_GAMES.forEach(g => {
+    const f = !!fold[g.id];
+    h += '<div class="sgame' + (g.id === game ? " cur" : "") + (f ? " fold" : "") + '">' +
+      '<button class="navhead" data-fold="' + g.id + '" aria-expanded="' + !f + '"><span>' + esc(g.name) + '</span><i class="caret">▸</i></button><div class="sitems">';
+    g.views.forEach(v => {
+      h += '<button class="navitem' + (g.id === game && v === view ? " on" : "") + '" data-game="' + g.id + '" data-view="' + v + '">' + VIEW_NAMES[v] + "</button>";
+    });
+    h += "</div></div>";
+  });
+  const fc = !!fold.custom;
+  h += '<div class="sgame' + (/^c:/.test(game) ? " cur" : "") + (fc ? " fold" : "") + '">' +
+    '<button class="navhead" data-fold="custom" aria-expanded="' + !fc + '"><span>Другие игры</span><i class="caret">▸</i></button><div class="sitems">';
+  customGames().forEach(c => {
+    h += '<button class="navitem' + (game === "c:" + c.id ? " on" : "") + '" data-game="c:' + esc(c.id) + '" data-view="pulls" title="Только калькулятор круток">' + esc(c.name) + "</button>";
+  });
+  h += '<button class="navadd" data-act="add">+ другая игра</button>' +
+    '<div class="navform hidden" id="navForm"><input id="navGameName" placeholder="Название игры" maxlength="40">' +
+    '<button class="mark sm" data-act="create">Создать</button></div>' +
+    '<p class="navnote">Для своих игр доступен только калькулятор круток.</p></div></div>';
+  document.getElementById("sideNav").innerHTML = h;
+}
+function navFold(){
+  if(!ui.navFold || typeof ui.navFold !== "object") ui.navFold = {};
+  return ui.navFold;
+}
+function navCreate(){
+  const inp = document.getElementById("navGameName");
+  const nm = inp && inp.value.trim();
+  if(!nm){ if(inp) inp.focus(); return; }
+  const g = { id:uid(), name:nm, patch:null, patches:[],
+    types:[{ id:uid(), name:"Обычные", currencies:[{ id:uid(), name:"Крутки", rate:1, amount:0 }] }] };
+  pdata.games.push(g);
+  pSave();
+  setNav("c:" + g.id, "pulls");
+}
+document.getElementById("sideNav").addEventListener("click", e => {
+  const t = e.target.closest("button");
+  if(!t) return;
+  if(t.dataset.fold){
+    const f = navFold(), k = t.dataset.fold;
+    if(f[k]) delete f[k]; else f[k] = 1;
+    saveUI();
+    renderSide();
+    return;
+  }
+  if(t.dataset.act === "add"){
+    const f = document.getElementById("navForm");
+    f.classList.remove("hidden");
+    t.classList.add("hidden");
+    document.getElementById("navGameName").focus();
+    return;
+  }
+  if(t.dataset.act === "create"){ navCreate(); return; }
+  if(t.dataset.game) setNav(t.dataset.game, t.dataset.view);
+});
+document.getElementById("sideNav").addEventListener("keydown", e => {
+  if(e.target.id !== "navGameName") return;
+  if(e.key === "Enter") navCreate();
+  if(e.key === "Escape") renderSide();
+});
+
+function setNav(game, view){
+  const ng = navGame(game);
+  let cg = null;
+  if(!ng){
+    const id = String(game || "").replace(/^c:/, "");
+    cg = customGames().find(x => x.id === id);
+    if(!cg){ game = "zzz"; view = view || "calendar"; }
+    else view = "pulls";
+  }
+  const nav = navGame(game);
+  if(nav && nav.views.indexOf(view) === -1) view = nav.views.indexOf("pulls") !== -1 ? "pulls" : nav.views[0];
+  const changed = ui.game !== game;
+  ui.game = game;
+  ui.tab = view;
+  Object.keys(VIEWS).forEach(v => document.getElementById(VIEWS[v]).classList.toggle("hidden", v !== view));
+  document.body.classList.remove("tab-calendar","tab-pulls","tab-history","tab-achievements","game-gi","game-hsr","game-zzz","game-custom");
+  document.body.classList.add("tab-" + view, cg ? "game-custom" : "game-" + game);
   closeMenu(); closePick(); closePatchPick(); closeGamePick(); closeSide();
-  if(name === "pulls") renderPulls();
-  else if(name === "history"){ renderHistory(); readWatched(false); }
-  else if(name === "achievements"){ ui.tab = name; renderAch(); }
-  else {
+  if(view === "pulls"){
+    pdata.active = (cg || pGameFor(game)).id;
+    pSave();
+    renderPulls();
+  } else if(view === "history"){
+    if(changed){ histBanner = null; histPage = 0; }
+    renderHistory(); readWatched(false);
+  } else if(view === "achievements"){
+    AS.game = game;
+    aLimit = 120;
+    renderAch();
+  } else {
     document.getElementById("hTitle").childNodes[0].nodeValue = "Ежедневные награды";
     document.getElementById("hSub").textContent = "Zenless Zone Zero";
   }
-  ui.tab = name;
   saveUI();
+  renderSide();
 }
-document.querySelectorAll(".navitem").forEach(t => {
-  t.onclick = () => setView(t.dataset.view);
-});
+function setView(name){ setNav(curNav(), name); }
+// прежние версии запоминали только раздел — догадываемся, какая игра была открыта
+(function migrateNav(){
+  if(ui.game) return;
+  if(ui.tab === "achievements" && navGame(AS.game)) ui.game = AS.game;
+  else if(ui.tab === "history"){
+    const a = hdata.accounts.find(x => x.key === hdata.active);
+    const n = a && navByHist(a.game);
+    ui.game = n ? n.id : "zzz";
+  } else if(ui.tab === "pulls"){
+    pClaim();
+    const g = pdata.games.find(x => x.id === pdata.active);
+    ui.game = g ? (g.key || "c:" + g.id) : "zzz";
+  } else ui.game = "zzz";
+})();
 
 setInterval(() => { if(refreshToday()) render(); }, 60000);
 document.addEventListener("visibilitychange", () => {
@@ -4744,7 +4921,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 render();
-setView(ui.tab || "calendar");
+setNav(curNav(), ui.tab || "calendar");
 restoreWatch();
 })();
 </script>

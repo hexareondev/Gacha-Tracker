@@ -1,6 +1,6 @@
 "use strict";
 /* ══ шансы: модель гаранта и калькулятор «хватит ли на персонажа» ══
-   Вероятность топового выпадения на i-й крутке после прошлого: базовая до мягкого
+   Вероятность S-ранга (5★) на i-й крутке после прошлого: базовая до мягкого
    гаранта, затем растёт на шаг с каждой круткой, на жёстком гаранте — 100%.
    Это общепринятая модель сообщества, а не официальные цифры: игры их не публикуют. */
 const PITY_MODEL = {
@@ -44,8 +44,14 @@ const ODDS = {
     weap:{ ch:"3", model:"wen",  win:.75, what:"амплификатор", unit:"",  from:1, max:5 }
   }
 };
+// как называть топовое выпадение в каждой игре
+const TOP_WORD = {
+  gi:  { nom:"5★", gen:"5★", loc:"5★" },
+  hsr: { nom:"5★", gen:"5★", loc:"5★" },
+  zzz: { nom:"S-ранг", gen:"S-ранга", loc:"S-ранге" }
+};
 const ODDS_NOTE = {
-  gi:"У персонажей Genshin шанс 50/50 взят ровно 50% — механика «Захватывающего сияния» его немного повышает, так что на деле шансы чуть выше. У оружия учтён путь воплощения: после промаха следующее топовое — выбранное.",
+  gi:"У персонажей Genshin шанс 50/50 взят ровно 50% — механика «Захватывающего сияния» его немного повышает, так что на деле шансы чуть выше. У оружия учтён путь воплощения: после промаха следующее 5★ оружие — выбранное.",
   hsr:"Шанс 50/50 у персонажей — 50%, у конусов 75/25.",
   zzz:"Шанс 50/50 у агентов — 50%, у амплификаторов 75/25."
 };
@@ -170,12 +176,15 @@ function renderOdds(){
   if(document.activeElement !== pityIn) pityIn.value = pity;
   const gb = document.getElementById("oddsGuar");
   gb.classList.toggle("on", guar);
-  gb.textContent = guar ? "Следующий — гарантированный" : "Следующий — 50/50";
-  if(cfg.win !== .5) gb.textContent = guar ? "Следующий — гарантированный" : "Следующий — " + Math.round(cfg.win * 100) + "/" + Math.round(100 - cfg.win * 100);
+  const tw = TOP_WORD[game];
+  document.getElementById("oddsPityLbl").textContent = "Круток после последнего " + tw.gen;
+  const odds = Math.round(cfg.win * 100) + "/" + Math.round(100 - cfg.win * 100);
+  gb.textContent = guar ? "Следующий " + tw.nom + " гарантирован" : "Следующий " + tw.nom + ": " + odds;
+  gb.title = "Нажмите, чтобы переключить: был ли проигран 50/50 на последнем " + tw.loc;
   const manual = typeof o.pity === "number" || typeof o.guar === "boolean";
   let srcNote;
   if(manual) srcNote = 'Гарант задан вручную · <button class="linkbtn" id="oddsReset">взять из истории</button>';
-  else if(hist) srcNote = "Гарант " + esc(hist.note) + (hist.unknown ? " · последнее топовое не размечено как 50/50 — считаю, что гаранта нет" : "");
+  else if(hist) srcNote = "Гарант " + esc(hist.note) + (hist.unknown ? " · последний " + TOP_WORD[game].nom + " не размечен в истории как выигрыш или проигрыш 50/50 — считаю, что гаранта нет" : "");
   else srcNote = "Историю круток этой игры ещё не загружали — укажите гарант вручную.";
   document.getElementById("oddsFrom").innerHTML = srcNote;
   const rb = document.getElementById("oddsReset");
@@ -198,6 +207,16 @@ function renderOdds(){
   document.getElementById("oddsMain").innerHTML =
     '<span class="v num">' + oddsPct(main) + "</span>" +
     '<span class="t">шанс получить ' + (K === 1 ? cfg.what : cfg.what + " до " + oddsLabel(cfg, K)) + " за " + fmt(pulls) + " " + pullWord(pulls) + "</span>";
+  // то же самое словами: сколько круток нужно и сколько не хватает
+  const cx = r.cross[K], goal = K === 1 && cfg.from === 0 ? cfg.what + " (" + oddsLabel(cfg, K) + ")" : oddsLabel(cfg, K);
+  let ex = "Чтобы получить " + goal + ": с шансом 50% нужно <b>" + fmt(cx.p50) + "</b> " + pullsNom(cx.p50) +
+    ", с шансом 90% — <b>" + fmt(cx.p90) + "</b>, гарантированно — <b>" + fmt(cx.p100) + "</b>. ";
+  ex += "В запасе " + fmt(pulls) + " — " + (
+    pulls < cx.p50 ? "до 50% не хватает " + fmt(cx.p50 - pulls) + "." :
+    pulls < cx.p90 ? "до 90% не хватает " + fmt(cx.p90 - pulls) + "." :
+    pulls < cx.p100 ? "до гарантии не хватает " + fmt(cx.p100 - pulls) + "." :
+    "этого хватает даже в худшем случае.");
+  document.getElementById("oddsExplain").innerHTML = ex;
   let rows = "";
   for(let k = 1; k <= K; k++){
     const x = r.cross[k], v = r.atN[k];
@@ -207,6 +226,10 @@ function renderOdds(){
   }
   document.getElementById("oddsBody").innerHTML = rows;
   document.getElementById("oddsNote").textContent = ODDS_NOTE[game];
+}
+function pullsNom(n){
+  const a = n % 10, b = n % 100;
+  return a === 1 && b !== 11 ? "крутка" : a >= 2 && a <= 4 && (b < 12 || b > 14) ? "крутки" : "круток";
 }
 function pullWord(n){
   const a = n % 10, b = n % 100;

@@ -826,3 +826,11 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 @media(max-width:760px){
   .card svg text{font-size:11px}
 }
+
+/* ── шансы: пояснение словами и двухстрочная шапка таблицы ── */
+.oddsexplain{margin:0 2px 4px;font-size:13.5px;line-height:1.55;color:var(--muted)}
+.oddsexplain b{color:var(--text);font-weight:600}
+.oddstable thead th{vertical-align:bottom}
+.oddstable th.grp{text-align:center;border-bottom:1px solid var(--edge-soft);padding-bottom:6px}
+.oddstable thead tr:nth-child(2) th{padding-top:6px}
+.oddstable thead tr:nth-child(2) th{text-align:right}

@@ -2,7 +2,7 @@
    Свои файлы берутся из сети, если она есть (так всегда открывается свежая версия),
    и сохраняются в кеш; без сети страница открывается из кеша. Шрифты — из кеша
    с фоновым обновлением. Остальные внешние адреса (портреты, базы) не трогаем. */
-const CACHE = "gacha-tracker-v3";
+const CACHE = "gacha-tracker-v4";
 const SHELL = [
   "./", "index.html", "css/style.css",
   "js/core.js", "js/calendar.js", "js/history.js", "js/backup.js", "js/settings.js",

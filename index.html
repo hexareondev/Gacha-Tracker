@@ -204,7 +204,7 @@
       <div class="sechead">
         <div>
           <h2>Хватит ли на персонажа</h2>
-          <p class="hint">Шанс получить нужное с текущим запасом — с учётом гаранта и 50/50 из истории круток.</p>
+          <p class="hint">Какой шанс получить персонажа с вашим запасом круток и сколько круток нужно до уверенного результата. Гарант и 50/50 берутся из истории.</p>
         </div>
         <div class="seg" id="oddsKind"></div>
       </div>
@@ -215,7 +215,7 @@
             <button class="linkbtn hidden" id="oddsStockBtn"></button></span>
           </label>
           <label>Считать запас из<select id="oddsSrc"></select></label>
-          <label>Круток с прошлого топового
+          <label><span id="oddsPityLbl">Круток после последнего S-ранга</span>
             <span class="oddsrow"><input id="oddsPity" type="number" min="0" step="1" inputmode="numeric">
             <button class="chip" id="oddsGuar"></button></span>
           </label>
@@ -223,8 +223,12 @@
         <p class="hint oddsfrom" id="oddsFrom"></p>
         <div class="oddsk"><span class="lbl">Цель</span><div class="seg" id="oddsCopies"></div></div>
         <div class="oddsmain" id="oddsMain"></div>
+        <p class="oddsexplain" id="oddsExplain"></p>
         <table class="oddstable">
-          <thead><tr><th>Копий</th><th>Шанс с запасом</th><th>На 50%</th><th>На 90%</th><th>Наверняка</th></tr></thead>
+          <thead>
+            <tr><th rowspan="2">Цель</th><th rowspan="2">Шанс с запасом</th><th colspan="3" class="grp">Сколько круток нужно для шанса</th></tr>
+            <tr><th>50%</th><th>90%</th><th>100%</th></tr>
+          </thead>
           <tbody id="oddsBody"></tbody>
         </table>
         <p class="hint" id="oddsNote" style="margin:12px 2px 2px"></p>
@@ -336,7 +340,7 @@
           <div class="tip hidden" id="chartTip"></div>
         </div>
         <div class="card chartcard hidden" id="pityHistCard" style="margin-top:8px">
-          <p class="group" style="margin:0 2px 6px">На какой крутке выпадало топовое</p>
+          <p class="group" style="margin:0 2px 6px" id="pityHistTitle">На какой крутке выпадал S-ранг</p>
           <div id="pityHist"></div>
         </div>
         <div class="card" id="rareTableCard" style="padding-bottom:6px;margin-top:8px">

@@ -1042,6 +1042,8 @@ function renderLuck(acc, b, tops, limited){
   const box = document.getElementById("luckBox");
   const hist = document.getElementById("pityHistCard");
   const mname = (CHANNEL_MODEL[acc.game] || {})[b.k];
+  const tw = acc.game === "nap" ? "S-ранг" : "5★";
+  document.getElementById("pityHistTitle").textContent = "На какой крутке выпадал " + tw;
   // первое выпадение могло начаться до начала выгрузки — его круток не видно целиком
   const done = tops.slice(1);
   if(!mname || done.length < 3){
@@ -1056,8 +1058,8 @@ function renderLuck(acc, b, tops, limited){
   const share = sumLuck(pmf, done.length, sum);
   const cls = share >= .5 ? "good" : "bad";
   let h = '<div class="luckmain ' + cls + '"><span class="v num">' + fmtP(avg) + '</span>' +
-    '<span class="t">круток в среднем на топовое при ожидаемых ' + fmtP(exp) + " — <b>" + luckWord(share) +
-    "</b> · по " + done.length + " выпадениям</span></div>";
+    '<span class="t">круток в среднем на один ' + tw + " (обычно " + fmtP(exp) + ") — <b>" + luckWord(share) +
+    "</b> · посчитано по " + done.length + " " + (done.length % 10 === 1 && done.length % 100 !== 11 ? "выпадению" : "выпадениям") + "</span></div>";
   if(limited){
     const play = done.filter(x => x.st === "win" || x.st === "lose");
     if(play.length >= 3){
@@ -1068,12 +1070,12 @@ function renderLuck(acc, b, tops, limited){
         Math.round(p * 100) + "%) — " + luckWord(cs) + "</div>";
     }
   }
-  h += '<div class="lucknote">Первое выпадение канала не учитывается: часть круток до него могла не попасть в выгрузку. Модель гаранта — общепринятая оценка сообщества.</div>';
+  h += '<div class="lucknote">Первый ' + tw + ' канала не учитывается: часть круток до него могла не попасть в выгрузку. Модель гаранта — общепринятая оценка сообщества.</div>';
   box.innerHTML = h;
   box.classList.remove("hidden");
   renderPityHist(done, pmf, PITY_MODEL[mname]);
 }
-// на какой крутке выпадали топовые: ваши выпадения против ожидаемых по модели
+// на какой крутке выпадал S-ранг (5★): ваши выпадения против ожидаемых по модели
 function renderPityHist(done, pmf, m){
   const card = document.getElementById("pityHistCard");
   const host = document.getElementById("pityHist");
@@ -1101,12 +1103,24 @@ function renderPityHist(done, pmf, m){
     const hh = obs[i] / max * ih;
     s += '<rect x="' + (cx - bwid / 2).toFixed(1) + '" y="' + (T + ih - hh).toFixed(1) + '" width="' + bwid.toFixed(1) + '" height="' + Math.max(hh, obs[i] ? 2 : 0).toFixed(1) + '" rx="3" fill="url(#bw2)"><title>' +
       obs[i] + " из " + done.length + " · ожидалось " + fmtP(expd[i]) + "</title></rect>";
-    if(obs[i]) s += '<text x="' + cx.toFixed(1) + '" y="' + (T + ih - hh - 5).toFixed(1) + '" fill="#a09ca8" font-size="10" text-anchor="middle">' + obs[i] + "</text>";
     line += (i ? " L" : "M") + cx.toFixed(1) + " " + y(expd[i]).toFixed(1);
     s += '<text x="' + cx.toFixed(1) + '" y="' + (H - 14) + '" fill="#5e5c68" font-size="10" text-anchor="middle">' + (W >= 500 ? (i * bw + 1) + "–" + Math.min(m.hard, (i + 1) * bw) : "≤" + Math.min(m.hard, (i + 1) * bw)) + "</text>";
   }
   s += '<path d="' + line + '" fill="none" stroke="#8794a1" stroke-width="1.6" stroke-dasharray="4 4"/>';
   for(let i = 0; i < nb; i++) s += '<circle cx="' + (L + (i + .5) * step).toFixed(1) + '" cy="' + y(expd[i]).toFixed(1) + '" r="2.6" fill="#8794a1"/>';
+  // подписи — поверх линии и с тёмной обводкой; если рядом точка ожидания, подпись уходит
+  // внутрь высокого столбца или поднимается над точкой, чтобы ничего не перекрывалось
+  for(let i = 0; i < nb; i++){
+    if(!obs[i]) continue;
+    const cx = L + (i + .5) * step, hh = obs[i] / max * ih, dot = y(expd[i]);
+    let ly = T + ih - hh - 6, fill = "#c9c5d1", halo = "#101015";
+    if(Math.abs(ly - 3.5 - dot) < 11){
+      if(hh > 24){ ly = T + ih - hh + 15; fill = "#2a1f06"; halo = "#f3cc7c"; }
+      else ly = Math.min(ly, dot - 8);
+    }
+    s += '<text x="' + cx.toFixed(1) + '" y="' + ly.toFixed(1) + '" fill="' + fill + '" font-size="10.5" font-weight="600" text-anchor="middle"' +
+      ' stroke="' + halo + '" stroke-width="3" paint-order="stroke">' + obs[i] + "</text>";
+  }
   s = s.replace('<svg ', '<svg ') + '<defs><linearGradient id="bw2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffdf95"/><stop offset="100%" stop-color="#c59a3c"/></linearGradient></defs></svg>';
   host.innerHTML = s + '<div class="legend"><span><i style="background:linear-gradient(180deg,#ffdf95,#c59a3c)"></i>ваши выпадения</span>' +
     '<span><i style="background:#8794a1;border-radius:50%"></i>ожидаемо по модели</span>' +

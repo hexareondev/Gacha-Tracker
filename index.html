@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=11">
+<link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
 <div class="shell">
@@ -533,6 +533,15 @@
     <div class="editrow"><span>Смена дня</span><input id="resetTime" type="time"></div>
     <p class="hint" id="resetInfo" style="margin:10px 0 0"></p>
     <div class="sep"></div>
+    <p class="group">Имена персонажей и оружия</p>
+    <div class="editrow"><span>Язык</span><select id="nameLang">
+      <option value="auto">как в системе</option>
+      <option value="ru">русский</option>
+      <option value="en">английский</option>
+      <option value="file">как в файле истории</option>
+    </select></div>
+    <p class="hint" style="margin:8px 0 0">Выгрузчики пишут имена на разных языках. Трекер узнаёт предмет по коду и показывает все имена на одном языке.</p>
+    <div class="sep"></div>
     <p class="group">Портреты в истории круток</p>
     <div class="editrow"><span>Источник</span><select id="iconMode">
       <option value="auto">автоматически: открытые базы и папка assets</option>
@@ -666,18 +675,18 @@
   <button class="mark sm" id="syncBarPull">Загрузить</button>
   <button class="ghost sm" id="syncBarClose" aria-label="Скрыть">✕</button>
 </div>
-<script src="js/core.js?v=11"></script>
-<script src="js/calendar.js?v=11"></script>
-<script src="js/history.js?v=11"></script>
-<script src="js/pools.js?v=11"></script>
-<script src="js/collection.js?v=11"></script>
-<script src="js/backup.js?v=11"></script>
-<script src="js/settings.js?v=11"></script>
-<script src="js/pulls.js?v=11"></script>
-<script src="js/achievements.js?v=11"></script>
-<script src="js/odds.js?v=11"></script>
-<script src="js/share.js?v=11"></script>
-<script src="js/sync.js?v=11"></script>
-<script src="js/nav.js?v=11"></script>
+<script src="js/core.js?v=12"></script>
+<script src="js/calendar.js?v=12"></script>
+<script src="js/history.js?v=12"></script>
+<script src="js/pools.js?v=12"></script>
+<script src="js/collection.js?v=12"></script>
+<script src="js/backup.js?v=12"></script>
+<script src="js/settings.js?v=12"></script>
+<script src="js/pulls.js?v=12"></script>
+<script src="js/achievements.js?v=12"></script>
+<script src="js/odds.js?v=12"></script>
+<script src="js/share.js?v=12"></script>
+<script src="js/sync.js?v=12"></script>
+<script src="js/nav.js?v=12"></script>
 </body>
 </html>

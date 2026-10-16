@@ -87,9 +87,34 @@ function recItemId(game, r){
   const ids = hits.map(k => db.byName[k]).filter((v, i, a) => a.indexOf(v) === i);
   return db.fuzzy[n] = ids.length === 1 ? ids[0] : "";
 }
+/* язык имён: как в системе (по умолчанию), русский, английский или как записано в файле истории.
+   Разные выгрузчики пишут имена на разных языках — по коду предмета показываем их одинаково. */
+function nameLang(){
+  const m = ui.nameLang || "auto";
+  if(m !== "auto") return m;
+  const l = (navigator.languages && navigator.languages[0]) || navigator.language || "ru";
+  return /^(ru|uk|be|kk)/i.test(l) ? "ru" : "en";
+}
+function dbName(it){ return it ? (nameLang() === "en" ? (it.en || it.n) : (it.n || it.en)) : ""; }
+function dispName(game, r){
+  if(!r) return "";
+  if(nameLang() === "file") return r.n || (r.i ? "#" + r.i : "");
+  if(!itemsDb[game]){ ensureItems(game, namesArrived); return r.n || (r.i ? "#" + r.i : ""); }
+  const id = recItemId(game, r);
+  return dbName(itemsDb[game].items[id]) || r.n || (r.i ? "#" + r.i : "");
+}
+// база пришла позже, чем отрисовался раздел, — перерисовываем, чтобы имена стали единообразными
+let namesT = 0;
+function namesArrived(){
+  clearTimeout(namesT);
+  namesT = setTimeout(() => {
+    if(document.body.classList.contains("tab-history")) renderHistory();
+    if(document.body.classList.contains("tab-collection") && typeof renderCollection === "function") renderCollection();
+  }, 50);
+}
 function itemName(game, id, fallback){
   const it = itemsDb[game] && itemsDb[game].items[id];
-  return it ? it.n : (fallback || "предмет " + id);
+  return it ? dbName(it) : (fallback || "предмет " + id);
 }
 
 /* итоговый пул: встроенный список + ваши правки + то, что вы сами получали на стандартном баннере */
@@ -291,3 +316,18 @@ document.getElementById("stdAddBtn").onclick = () => {
   document.getElementById("stdAddDate").value = "";
 };
 document.getElementById("stdAddName").addEventListener("keydown", e => { if(e.key === "Enter") document.getElementById("stdAddBtn").click(); });
+
+/* настройка языка имён */
+(function(){
+  const sel = document.getElementById("nameLang");
+  sel.value = ui.nameLang || "auto";
+  document.getElementById("openSettings").addEventListener("click", () => { sel.value = ui.nameLang || "auto"; });
+  sel.onchange = () => {
+    ui.nameLang = sel.value === "auto" ? undefined : sel.value;
+    if(!ui.nameLang) delete ui.nameLang;
+    saveUI();
+    const t = ui.tab;
+    if(t === "history") renderHistory();
+    else if(t === "collection") renderCollection();
+  };
+})();

@@ -45,6 +45,7 @@ function shareData(acc){
   });
   recent.sort((a, c) => (c.rec.t || "").localeCompare(a.rec.t || "") || byId(c.rec, a.rec));
   recent = recent.slice(0, 10);
+  recent.forEach(x => { x.nm = dispName(acc.game, x.rec); });
   return { acc:acc, g:g, total:total, tops:tops, avg: tops ? total / tops : 0,
     from: times[0] || "", to: times[times.length - 1] || "", luck:luck, recent:recent,
     word: acc.game === "nap" ? "S-ранг" : "5★", wordMany: acc.game === "nap" ? "S-рангов" : "5★" };
@@ -206,7 +207,7 @@ function drawShare(d, imgs, hideUid){
       ctx.drawImage(img, cx - img.width * s / 2, cy - img.height * s / 2, img.width * s, img.height * s);
     } else {
       ctx.fillStyle = C.gold; ctx.font = "600 44px " + SF; ctx.textAlign = "center";
-      ctx.fillText((x.rec.n || "?").charAt(0).toUpperCase(), cx, cy + 16);
+      ctx.fillText((x.nm || "?").charAt(0).toUpperCase(), cx, cy + 16);
     }
     ctx.restore();
     const ring = x.st === "lose" ? C.crimson : x.st === "std" ? C.steel : C.gold;
@@ -220,7 +221,7 @@ function drawShare(d, imgs, hideUid){
     ctx.fillStyle = x.pulls <= 40 && x.pulls < x.soft ? "#1a1305" : "#fff";
     ctx.fillText(t, cx, cy + ph / 2 + 8);
     ctx.fillStyle = C.text; ctx.font = "500 21px " + IF;
-    ctx.fillText(fitText(ctx, x.rec.n || "—", cw - 14), cx, cy + ph / 2 + 50);
+    ctx.fillText(fitText(ctx, x.nm || "—", cw - 14), cx, cy + ph / 2 + 50);
     ctx.fillStyle = x.st === "lose" ? C.crimson : C.dim; ctx.font = "400 18px " + IF;
     ctx.fillText(fitText(ctx, recTag(x), cw - 14), cx, cy + ph / 2 + 76);
     ctx.textAlign = "left";
@@ -299,9 +300,9 @@ function renderSharePreview(){
   }
   h += '<div class="sc-rh">Последние ' + (d.acc.game === "nap" ? "S-ранги" : "5★") + '</div><div class="sc-rec">';
   d.recent.forEach(x => {
-    h += '<div class="sc-it ' + x.st + '"><div class="sc-pic"><span>' + esc((x.rec.n || "?").charAt(0).toUpperCase()) + '</span></div>' +
+    h += '<div class="sc-it ' + x.st + '"><div class="sc-pic"><span>' + esc((x.nm || "?").charAt(0).toUpperCase()) + '</span></div>' +
       '<div class="sc-n ' + pullTone(x) + '">' + (x.first ? "≥" : "") + x.pulls + '</div>' +
-      '<div class="sc-nm">' + esc(x.rec.n || "—") + '</div><div class="sc-tg">' + recTag(x) + '</div></div>';
+      '<div class="sc-nm">' + esc(x.nm || "—") + '</div><div class="sc-tg">' + recTag(x) + '</div></div>';
   });
   if(!d.recent.length) h += '<div class="sc-none">Пока ни одного.</div>';
   h += '</div><div class="sc-foot"><span>hexareondev.github.io/Gacha-Tracker</span><span>модель гаранта — оценка сообщества</span></div>';

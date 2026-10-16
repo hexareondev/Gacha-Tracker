@@ -49,7 +49,7 @@ function colItems(game, acc){
   const get = (id, rec) => {
     if(!map[id]){
       const it = db && db.items[id];
-      map[id] = { id, name: it ? it.n : (rec ? rec.n : id), en: it ? it.en : "", r: it ? String(it.r) : (rec ? rec.r : ""),
+      map[id] = { id, name: it ? (nameLang() === "file" && rec ? rec.n : dbName(it)) : (rec ? rec.n : id), en: it ? (nameLang() === "en" ? it.n : it.en) : "", r: it ? String(it.r) : (rec ? rec.r : ""),
         t: itemKindOf(game, id, rec), icon: it ? it.i : "", hist: [], extra: 0, extraDate: "" };
     }
     return map[id];

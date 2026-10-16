@@ -883,7 +883,7 @@ function renderRareTable(acc, banners){
       const nm = document.createElement("div");
       nm.className = "nm2";
       const nmIn = document.createElement("span");
-      nmIn.textContent = x.rec.n || "#" + x.rec.i;
+      nmIn.textContent = dispName(acc.game, x.rec);
       nm.appendChild(nmIn);
       const pl = document.createElement("div");
       pl.className = "pl num " + pullsClass(x.pulls);
@@ -905,7 +905,7 @@ function renderRareTable(acc, banners){
       tr.innerHTML =
         '<td style="color:var(--dim)">' + esc(x.rec.t.slice(0,10).split("-").reverse().join(".")) + '</td>' +
         '<td class="pic"></td>' +
-        '<td class="rare">' + esc(x.rec.n || "#" + x.rec.i) + '</td>' +
+        '<td class="rare">' + esc(dispName(acc.game, x.rec)) + '</td>' +
         '<td>' + esc(typeRu(x.rec.y, b.info.s)) + '</td>' +
         '<td class="' + pullsClass(x.pulls) + '">' + x.pulls + '</td>';
       attachIcon(tr.children[1], acc.game, x.rec);
@@ -994,7 +994,7 @@ function renderBannerChart(b, tops, limited){
   host.querySelectorAll(".cbar").forEach(rect => {
     const x = list[+rect.dataset.i];
     const show = () => {
-      tip.innerHTML = '<b>' + esc(x.rec.n || "#" + x.rec.i) + '</b>' +
+      tip.innerHTML = '<b>' + esc(dispName(HA() ? HA().game : "", x.rec)) + '</b>' +
         x.pulls + " круток · " + esc(x.rec.t.slice(0,10).split("-").reverse().join(".")) +
         (limited ? '<br><span class="st-' + x.st + '">' + label[x.st] + '</span>' : "");
       tip.style.left = rect.dataset.x + "%";

@@ -351,6 +351,7 @@
         </div>
         <div class="rowline" style="margin:0 0 12px;gap:10px">
           <button class="ghost sm" id="winDefault"></button>
+          <button class="ghost sm" id="stdPoolBtn">Пул проигрыша</button>
           <p class="hint" id="markHint" style="margin:0;flex:1 1 260px"></p>
         </div>
         <div class="luck hidden" id="luckBox"></div>
@@ -494,6 +495,7 @@
       </select></div>
       <div class="editrow"><span>Разметка</span><select id="impMark">
         <option value="keep">не менять текущий режим</option>
+        <option value="std">авторазметка по пулу проигрыша</option>
         <option value="win">неразмеченные считать выигрышем</option>
         <option value="manual">только ручная разметка</option>
       </select></div>
@@ -549,6 +551,31 @@
   </div>
 </div>
 
+<div class="overlay" id="stdOverlay">
+  <div class="sheet wide stdsheet" role="dialog" aria-modal="true" aria-labelledby="stdTitle">
+    <h3 id="stdTitle">Пул проигрыша 50/50</h3>
+    <p class="sub">По этому списку размечаются 50/50: если на ивентовом баннере выпал предмет из пула проигрыша, 50/50 проигран. Пул проигрыша — это стандартный пул плюс лимитированные, которые игра со временем добавляет только в проигрыш. Дата «с» — с какого дня предмет может так выпасть: выпадения до неё считаются выигрышем. Правки хранятся у вас и попадают в резервную копию.</p>
+    <p class="hint stdgame" id="stdGameNote"></p>
+    <div class="stdlist" id="stdList"></div>
+    <p class="group" style="margin-top:16px">Добавить или перенести</p>
+    <div class="stdadd">
+      <input id="stdAddName" list="stdAddList" placeholder="Имя персонажа или оружия" autocomplete="off">
+      <datalist id="stdAddList"></datalist>
+      <input id="stdAddDate" type="date" title="В пуле с этой даты; пусто — с выхода игры">
+      <select id="stdAddKind" title="Куда добавить">
+        <option value="lose">только в пул проигрыша</option>
+        <option value="std">в стандартный пул</option>
+      </select>
+      <button class="mark sm" id="stdAddBtn">Добавить</button>
+    </div>
+    <p class="hint" id="stdNote" style="margin:8px 0 0"></p>
+    <div class="row" style="margin-top:16px">
+      <button class="ghost" id="stdReset">Сбросить мои правки</button>
+      <button class="ghost" id="stdClose">Готово</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="shareOverlay">
   <div class="sheet wide sharesheet" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
     <h3 id="shareTitle">Карточка удачи</h3>
@@ -600,6 +627,7 @@
 <script src="js/core.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/history.js"></script>
+<script src="js/pools.js"></script>
 <script src="js/backup.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/pulls.js"></script>

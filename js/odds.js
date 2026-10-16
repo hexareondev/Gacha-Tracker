@@ -156,8 +156,9 @@ function accountLuck(cfg){
   const done = tops.slice(1);            // первое выпадение могло начаться до выгрузки
   if(done.length < 3) return null;
   const avg = done.reduce((s, x) => s + x.pulls, 0) / done.length;
-  // выигрыш «по умолчанию» (режим «неразмеченные считать выигрышем») — это допущение, а не данные
-  const plays = done.filter(x => x.st === "lose" || (x.st === "win" && !x.auto));
+  // выигрыш «по умолчанию» (режим «неразмеченные считать выигрышем») — это допущение, а не данные;
+  // разметка по стандартному пулу — уже данные
+  const plays = done.filter(x => x.st === "lose" || (x.st === "win" && (!x.auto || x.src === "std")));
   const wins = plays.filter(x => x.st === "win").length;
   // по нескольким разметкам долю выигрышей слегка тянем к обычной, чтобы 2 из 2 не давали 100%
   const win = plays.length >= 3 ? Math.min(.95, Math.max(.05, (wins + 2 * cfg.win) / (plays.length + 2))) : cfg.win;

@@ -962,3 +962,29 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
   .sheet .row.sharebtns{display:grid;grid-template-columns:1fr 1fr}
   .sharebtns #shareSave{order:-1;grid-column:1/-1}
 }
+
+/* ── стандартный пул ── */
+.stdsheet{max-width:620px;max-height:calc(100vh - 32px);overflow:auto}
+.stdgame{margin:-8px 0 14px;color:var(--gold);opacity:.85}
+.stdgame:empty{display:none}
+.stdlist{display:flex;flex-direction:column;gap:2px}
+.stdgrp{font-size:12px;color:var(--dim);margin:12px 2px 4px;text-transform:uppercase;letter-spacing:.06em}
+.stdgrp:first-child{margin-top:0}
+.stdrow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--rs);background:rgba(255,255,255,.025)}
+.stdrow .nm{flex:1 1 auto;min-width:0;font-size:13.5px}
+.stdrow .nm small{display:block;font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stdrow .nm small.user{color:var(--gold)}
+.stdrow input[type=date],.stdrow .since{width:150px;flex:0 0 auto;padding:5px 8px;font-size:12.5px}
+.stdrow .since{height:32px;color:var(--muted)}
+.stdrow .x{flex:0 0 auto;width:30px;height:30px;padding:0;border-radius:50%;color:var(--dim);background:none;border:none;font-size:16px}
+.stdrow .x:hover{color:var(--crimson);background:rgba(224,87,111,.08)}
+.stdrow.off{opacity:.55}
+.stdrow.off .nm{text-decoration:line-through}
+.stdadd{display:flex;gap:8px;flex-wrap:wrap}
+.stdadd #stdAddName{flex:1 1 200px;min-width:0}
+.stdadd #stdAddDate{flex:0 0 150px}
+.stdadd #stdAddKind{flex:1 1 180px;min-width:0}
+@media (max-width:640px){
+  .stdrow input[type=date],.stdrow .since{width:128px}
+  .stdadd #stdAddDate{flex:1 1 120px}
+}

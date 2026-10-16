@@ -99,22 +99,26 @@ function nextMark(acc, x){
 function resolveTops(acc, b){
   const ov = acc.fifty || {};
   const useRuns = runsUsable(acc);
-  const optimistic = !!acc.winDefault;
+  const mode = markMode(acc);
+  const pool = mode === "std" && (STD_ELIGIBLE[acc.game] || {})[b.k] ? stdPool(acc.game) : null;
+  // у баннеров со своим пулом (банбу) стандарт не поможет — там как «неразмеченные: выигрыш»
+  const optimistic = mode === "win" || (mode === "std" && !pool);
   let guaranteed = false;
   return b.tops.map(x => {
     const run = useRuns ? runKey(x.rec) : "";
     const key = itemKey(x.rec);
     const mark = savedMark(acc, x);
     const feat = featStatus(acc, run, key, x.rec.id);
-    let st, auto = false;
+    let st, auto = false, src = "";
     if(mark === "lose") st = "lose";
     else if(guaranteed){ st = "guard"; auto = mark !== "win"; }   // гарант перебивает всё
     else if(feat === true) st = "win";
     else if(feat === false){ st = "lose"; auto = true; }
-    else if(optimistic){ st = "win"; auto = true; }
+    else if(pool){ st = isStdAt(acc.game, x.rec, pool) ? "lose" : "win"; auto = true; src = "std"; }
+    else if(optimistic){ st = "win"; auto = true; src = "def"; }
     else st = "none";
     guaranteed = st === "lose";
-    return { rec:x.rec, pulls:x.pulls, st:st, run:run, key:key, auto:auto,
+    return { rec:x.rec, pulls:x.pulls, st:st, run:run, key:key, auto:auto, src:src,
       featured: feat === true, fixed: mark !== "none" };
   });
 }
@@ -631,8 +635,7 @@ function applyImport(){
       added++;
     });
     acc.records.sort(byId);
-    if(mark === "win") acc.winDefault = true;
-    else if(mark === "manual") acc.winDefault = false;
+    if(mark === "std" || mark === "win" || mark === "manual") acc.mark50 = mark;
     hdata.active = hdata.active || acc.key;
   });
 
@@ -760,7 +763,10 @@ function makeTag(acc, x){
     ? "Разыгрываемый персонаж, но перед ним проигрыш — значит это гарант."
     : x.fixed
       ? "Отмечено вручную. Нажмите: разыгрываемый → проигрыш → без метки."
-      : "Определено автоматически. Нажмите, чтобы отметить вручную.";
+      : x.src === "std"
+        ? (x.st === "lose" ? "Из пула проигрыша на эту дату — значит 50/50 проигран." : "Не из пула проигрыша — значит 50/50 выигран.") +
+          " Нажмите, чтобы отметить вручную."
+        : "Определено автоматически. Нажмите, чтобы отметить вручную.";
   tag.onclick = () => {
     markTop(acc, x, nextMark(acc, x));
     renderHistory();
@@ -786,17 +792,25 @@ function renderRareTable(acc, banners){
   const hint = document.getElementById("markHint");
   const wd = document.getElementById("winDefault");
   wd.classList.toggle("hidden", !limited);
+  document.getElementById("stdPoolBtn").classList.toggle("hidden", !limited || !STD_POOL[acc.game]);
   if(limited){
     const un = tops.filter(x => x.st === "none").length;
-    wd.textContent = acc.winDefault ? "Неразмеченные: выигрыш" : "Неразмеченные: без статуса";
-    wd.onclick = () => { acc.winDefault = !acc.winDefault; hSave(); renderHistory(); };
+    const mode = markMode(acc);
+    const mi = MARK_MODES.findIndex(m => m.id === mode);
+    wd.textContent = MARK_MODES[mi].btn;
+    wd.title = "Нажмите, чтобы сменить режим разметки 50/50";
+    wd.onclick = () => { acc.mark50 = MARK_MODES[(mi + 1) % MARK_MODES.length].id; hSave(); renderHistory(); };
+    if(mode === "std" && !itemsDb[acc.game]) ensureItems(acc.game, () => { if(document.body.classList.contains("tab-history")) renderHistory(); });
     const withRun = tops.filter(x => x.run).length;
     const runsPart = runsUsable(acc)
       ? " Отметка применяется ко всему прогону баннера" +
         (withRun < tops.length ? " — прогон известен у " + withRun + " из " + tops.length + " выпадений." : ".")
       : "";
-    hint.textContent = acc.winDefault
-      ? "Отмечайте только проигрыши — остальное считается выигранным, а выпадение после проигрыша становится гарантом." + runsPart
+    const stdOk = !!(STD_ELIGIBLE[acc.game] || {})[b.k];
+    hint.textContent = mode === "std" && stdOk
+      ? "Если выпал персонаж или оружие из пула проигрыша (стандартные и добавленные к ним) — 50/50 проигран, иначе выигран; после проигрыша — гарант. Ручные отметки важнее." + runsPart
+      : mode === "win" || mode === "std"
+      ? (mode === "std" ? "У этого баннера свой пул, поэтому неразмеченные считаются выигранными. " : "") + "Отмечайте только проигрыши — остальное считается выигранным, а выпадение после проигрыша становится гарантом." + runsPart
       : (un ? "Не размечено выпадений: " + un + ". Клик по метке: выигран → проигран → без метки."
             : "Все выпадения размечены.") + runsPart;
   } else { hint.textContent = ""; }

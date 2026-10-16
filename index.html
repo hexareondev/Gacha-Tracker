@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=10">
+<link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
 <div class="shell">
@@ -377,6 +377,24 @@
 
   </div><!-- /viewHistory -->
 
+  <div id="viewCollection" class="hidden">
+    <div class="rowline" id="colAccounts"></div>
+    <div class="coltot" id="colTotals"></div>
+    <div class="coltools">
+      <div class="seg" id="colKind"></div>
+      <div class="seg" id="colRank"></div>
+      <div class="seg" id="colOwn"></div>
+      <select id="colSort" title="Порядок">
+        <option value="date">сначала новые получения</option>
+        <option value="copies">по числу копий</option>
+        <option value="name">по имени</option>
+      </select>
+    </div>
+    <input class="achsearch colsearch" id="colSearch" type="search" placeholder="Поиск по имени" autocomplete="off">
+    <p class="hint" id="colNote"></p>
+    <div class="colgrid" id="colGrid"></div>
+  </div><!-- /viewCollection -->
+
   <div id="viewAchievements" class="hidden">
     <div class="achtop">
       <div class="seg" id="achGameSeg"></div>
@@ -551,6 +569,30 @@
   </div>
 </div>
 
+<div class="overlay" id="colOverlay">
+  <div class="sheet colsheet" role="dialog" aria-modal="true" aria-labelledby="colItemName">
+    <div class="colhead">
+      <div class="colpic big" id="colItemPic"></div>
+      <div>
+        <h3 id="colItemName">—</h3>
+        <p class="sub" id="colItemSub" style="margin:4px 0 0">—</p>
+      </div>
+    </div>
+    <div class="collevel" id="colItemLevel"></div>
+    <p class="group">Получено вне истории</p>
+    <p class="hint" style="margin:0 0 8px">Копии, которых нет в файле истории: выпали до начала выгрузки, получены за события, в магазине или через выбор персонажа.</p>
+    <div class="colextra">
+      <button class="ghost" id="colMinus" aria-label="Меньше">−</button>
+      <b class="num" id="colExtra">0</b>
+      <button class="ghost" id="colPlus" aria-label="Больше">+</button>
+      <label>впервые <input type="date" id="colExtraDate"></label>
+    </div>
+    <p class="group" style="margin-top:16px">Из истории круток</p>
+    <div class="colevents" id="colEvents"></div>
+    <div class="row" style="margin-top:16px"><button class="ghost" id="colClose">Готово</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="stdOverlay">
   <div class="sheet wide stdsheet" role="dialog" aria-modal="true" aria-labelledby="stdTitle">
     <h3 id="stdTitle">Пул проигрыша 50/50</h3>
@@ -624,17 +666,18 @@
   <button class="mark sm" id="syncBarPull">Загрузить</button>
   <button class="ghost sm" id="syncBarClose" aria-label="Скрыть">✕</button>
 </div>
-<script src="js/core.js?v=10"></script>
-<script src="js/calendar.js?v=10"></script>
-<script src="js/history.js?v=10"></script>
-<script src="js/pools.js?v=10"></script>
-<script src="js/backup.js?v=10"></script>
-<script src="js/settings.js?v=10"></script>
-<script src="js/pulls.js?v=10"></script>
-<script src="js/achievements.js?v=10"></script>
-<script src="js/odds.js?v=10"></script>
-<script src="js/share.js?v=10"></script>
-<script src="js/sync.js?v=10"></script>
-<script src="js/nav.js?v=10"></script>
+<script src="js/core.js?v=11"></script>
+<script src="js/calendar.js?v=11"></script>
+<script src="js/history.js?v=11"></script>
+<script src="js/pools.js?v=11"></script>
+<script src="js/collection.js?v=11"></script>
+<script src="js/backup.js?v=11"></script>
+<script src="js/settings.js?v=11"></script>
+<script src="js/pulls.js?v=11"></script>
+<script src="js/achievements.js?v=11"></script>
+<script src="js/odds.js?v=11"></script>
+<script src="js/share.js?v=11"></script>
+<script src="js/sync.js?v=11"></script>
+<script src="js/nav.js?v=11"></script>
 </body>
 </html>

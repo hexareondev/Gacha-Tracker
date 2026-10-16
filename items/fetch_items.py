@@ -39,6 +39,13 @@ def name(locs, key):
     return ru or en, en or ru
 
 
+def gi_icon(name):
+    # в справочнике бывает и «UI_AvatarIcon_Side_X», и уже готовый путь «/ui/….png»
+    if not name:
+        return ""
+    return name if name.startswith("/") else "/ui/" + name + ".png"
+
+
 def genshin(store):
     locs = load(store, "gi/locs.json")
     out = {}
@@ -50,7 +57,7 @@ def genshin(store):
             continue
         ru, en = name(locs, a.get("NameTextMapHash"))
         if ru:
-            out[iid] = {"n": ru, "en": en, "r": r, "t": "c", "i": "/ui/" + a["SideIconName"] + ".png" if a.get("SideIconName") else ""}
+            out[iid] = {"n": ru, "en": en, "r": r, "t": "c", "i": gi_icon(a.get("SideIconName", ""))}
     for iid, w in load(store, "gi/weapons.json").items():
         if w.get("Rarity", 0) < 4:
             continue

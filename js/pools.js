@@ -58,7 +58,7 @@ function ensureItems(game, cb){
   fetch("items/data/" + game + ".json", { cache:"no-cache" })
     .then(r => r.ok ? r.json() : Promise.reject(r.status))
     .then(j => {
-      const db = { items: j.items || {}, updated: j.updated || "", byName: {} };
+      const db = { items: j.items || {}, updated: j.updated || "", byName: {}, fuzzy: {} };
       Object.keys(db.items).forEach(id => {
         const it = db.items[id];
         [it.n, it.en].forEach(n => { if(n) db.byName[normName(n)] = id; });
@@ -78,7 +78,14 @@ function normName(n){ return String(n || "").replace(/\s+/g, " ").trim().toLower
 function recItemId(game, r){
   if(r.i) return String(r.i);
   const db = itemsDb[game];
-  return db ? db.byName[normName(r.n)] || "" : "";
+  if(!db) return "";
+  const n = normName(r.n);
+  if(db.byName[n]) return db.byName[n];
+  // имена в игре и в базе иногда расходятся («Куки Синобу» и «Синобу») — ищем по целому слову
+  if(db.fuzzy[n] !== undefined) return db.fuzzy[n];
+  const hits = Object.keys(db.byName).filter(k => k.length >= 3 && (n.endsWith(" " + k) || n.startsWith(k + " ") || k.endsWith(" " + n) || k.startsWith(n + " ")));
+  const ids = hits.map(k => db.byName[k]).filter((v, i, a) => a.indexOf(v) === i);
+  return db.fuzzy[n] = ids.length === 1 ? ids[0] : "";
 }
 function itemName(game, id, fallback){
   const it = itemsDb[game] && itemsDb[game].items[id];

@@ -216,69 +216,113 @@ function renderShowcase(){
     b.className = "sc-tab" + (id === ui.scAgent ? " on" : "") + (inShow ? "" : " old");
     b.title = scName("c", id) + (inShow ? "" : " — сейчас не в витрине, сборка от " + u.agents[id].at.slice(0, 10).split("-").reverse().join("."));
     const info = sbuild.avatars[id] || {};
-    b.innerHTML = '<span>' + esc(scName("c", id).charAt(0)) + '</span>' + (info.img ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(scImg(info.img).replace("IconRole", "IconRoleCircle")) + '" onerror="this.remove()">' : "");
+    b.innerHTML = '<span>' + esc(scName("c", id).charAt(0)) + '</span>' + ((info.circle || info.img) ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(scImg(info.circle || info.img)) + '" onerror="this.remove()">' : "");
     b.onclick = () => { ui.scAgent = id; saveUI(); renderShowcase(); };
     tabs.appendChild(b);
   });
   scRenderCard(card, u, ui.scAgent);
 }
 
+const SC_EL_COLOR = { Fire:"#ff7a45", Ice:"#8fd8ff", Elec:"#5fa8ff", Physics:"#f2c14e", Ether:"#ff5fc8", Wind:"#6fe0b0",
+  FireFrost:"#ffb38a", AuricEther:"#ffd36b", Lumen:"#fff1a8", ZhenZhenAssault:"#f2c14e" };
+// ценные дополнительные характеристики: крит всегда, остальное — по главным характеристикам агента
+function scValuable(hl){
+  const v = { "20103":1, "21103":1 };
+  hl.forEach(p => {
+    if(p === "12101") { v["12102"] = 1; }
+    if(p === "11101") { v["11102"] = 1; }
+    if(p === "13101") { v["13102"] = 1; }
+    if(p === "31201" || p === "31401") { v["31203"] = 1; }
+    if(p === "23101" || p === "23201") { v["23203"] = 1; }
+    if(p === "12201") { v["12102"] = 1; }
+  });
+  return v;
+}
+function scPips(n, max, cls){
+  let h = '<span class="sc-pips ' + (cls || "") + '">';
+  for(let i = 1; i <= max; i++) h += '<i class="' + (i <= n ? "on" : "") + '"></i>';
+  return h + "</span>";
+}
 function scRenderCard(card, u, id){
   const rec = u.agents[id], av = rec.a, c = scCompute(av), info = c.info;
   const inShow = (u.shown || []).indexOf(id) !== -1;
-  const el = (info.el || []).map(e => SC_ELEMENT[e] || e).join(", ");
-  const statRows = [
-    ["HP", c.total.hp, "11103"], [scPropName("12101"), c.total.atk, "12103"], [scPropName("13101"), c.total.def, "13103"],
-    [scPropName("12201"), c.total.impact, "12203"], [scPropName("20103"), c.total.crit, "20103"], [scPropName("21103"), c.total.critdmg, "21103"],
-    [scPropName("31401"), c.total.am, "31403"], [scPropName("31203"), c.total.ap, "31203"], [scPropName("23103"), c.total.penr, "23103"],
-    [scPropName("23203"), c.total.pen, "23203"], [scPropName("30503"), c.total.er, "30503"]
-  ].concat(Object.keys(c.total.dmg).map(b => [scPropName(b), c.total.dmg[b], b]));
+  const el = (info.el || [])[0] || "";
+  const accent = SC_EL_COLOR[el] || info.color || "#f0c264";
   const hl = (info.hl || []).map(String);
-  let h = '<div class="sc-hero" style="--accent:' + esc(info.color || "#f0c264") + '">' +
-    '<div class="sc-art">' + (info.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(info.img)) + '" onerror="this.remove()">' : "") + '</div>' +
-    '<div class="sc-head"><h2>' + esc(scName("c", id)) + '</h2>' +
-    '<div class="sc-meta"><b>Ур. ' + c.lvl + '</b><b class="m">M' + c.m + '</b>' + (el ? '<span>' + esc(el) + '</span>' : "") +
-    (info.pro ? '<span>' + esc(SC_PRO[info.pro] || info.pro) + '</span>' : "") + '</div>' +
-    '<div class="sc-skills">' + c.skills.map(s => '<span title="' + esc(SC_SKILL[s.i]) + '"><i>' + esc(SC_SKILL[s.i]) + '</i><b>' + s.lv + '</b></span>').join("") +
-    '<span title="Базовый навык: открытые улучшения"><i>Улучшения ядра</i><b>' + "ABCDEF".slice(0, c.core) + (c.core ? "" : "—") + '</b></span></div>' +
-    '<p class="sc-when">' + (inShow ? "В витрине сейчас" : "Не в витрине — сборка от ") + (inShow ? "" : rec.at.slice(0, 10).split("-").reverse().join(".")) +
-    ' · обновлено ' + new Date(u.at).toLocaleString("ru-RU", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) + '</p></div></div>';
+  const valuable = scValuable(hl);
+  const nm = scName("c", id);
 
-  h += '<div class="sc-cols"><div class="sc-stats">' + statRows.map(r =>
-    '<div class="sc-stat' + (hl.indexOf(String(r[2]).replace(/03$/, "01")) !== -1 ? " hl" : "") + '"><span>' + esc(r[0]) + '</span><b>' + esc(scPropVal(r[2], r[1])) + '</b></div>').join("") + '</div>';
+  // критовая ценность дисков: 2 × шанс + урон, по доп. характеристикам
+  let cv = 0;
+  c.discs.forEach(d => d.subs.forEach(s => { if(s[0] === "20103") cv += 2 * s[1]; if(s[0] === "21103") cv += s[1]; }));
 
-  // амплификатор
+  const key = [["ATK", scPropName("12101"), c.total.atk, "12103"], ["CRIT", scPropName("20103"), c.total.crit, "20103"], ["CDMG", scPropName("21103"), c.total.critdmg, "21103"]];
+  if(hl.indexOf("31401") !== -1 || hl.indexOf("31201") !== -1) key[0] = ["AP", scPropName("31203"), c.total.ap, "31203"];
+  if(hl.indexOf("12201") !== -1) key[0] = ["IMP", scPropName("12201"), c.total.impact, "12203"];
+  const rows = [
+    ["11101", "HP", c.total.hp, "11103"], ["12101", scPropName("12101"), c.total.atk, "12103"], ["13101", scPropName("13101"), c.total.def, "13103"],
+    ["12201", scPropName("12201"), c.total.impact, "12203"], ["20101", scPropName("20103"), c.total.crit, "20103"], ["21101", scPropName("21103"), c.total.critdmg, "21103"],
+    ["31401", scPropName("31401"), c.total.am, "31403"], ["31201", scPropName("31203"), c.total.ap, "31203"], ["23101", scPropName("23103"), c.total.penr, "23103"],
+    ["23201", scPropName("23203"), c.total.pen, "23203"], ["30501", scPropName("30503"), c.total.er, "30503"]
+  ].concat(Object.keys(c.total.dmg).map(b => [b, scPropName(b), c.total.dmg[b], String(Number(b) + 2)]));
+
+  let h = '<div class="sc-hero" style="--accent:' + esc(accent) + '">' +
+    '<div class="sc-art"><span class="sc-art-letter">' + esc(nm.charAt(0)) + '</span>' +
+    (info.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(info.img)) + '" onerror="this.remove()">' : "") + '</div>' +
+    '<div class="sc-head">' +
+      '<div class="sc-kicker">' + esc([(info.el || []).map(e => SC_ELEMENT[e] || e).join(" · "), SC_PRO[info.pro] || info.pro].filter(Boolean).join("  /  ")) + '</div>' +
+      '<h2>' + esc(nm) + '</h2>' +
+      '<div class="sc-lvl"><span class="num">' + c.lvl + '</span><small>/ 60</small><div class="sc-lvlbar"><i style="width:' + Math.min(100, c.lvl / 60 * 100) + '%"></i></div></div>' +
+      '<div class="sc-mind"><span>Кинограмма</span>' + scPips(c.m, 6, "m") + '<b>M' + c.m + '</b></div>' +
+      '<div class="sc-keys">' + key.map(k => '<div><span>' + esc(k[1]) + '</span><b class="num">' + esc(scPropVal(k[3], k[2])) + '</b></div>').join("") + '</div>' +
+      '<div class="sc-skills">' + c.skills.map(s => '<span title="' + esc(SC_SKILL[s.i]) + ': ' + s.lv + '"><i>' + esc(SC_SKILL[s.i]) + '</i><b>' + s.lv + '</b></span>').join("") +
+        '<span title="Открытые улучшения базового навыка"><i>Ядро</i><b>' + (c.core ? "ABCDEF".slice(0, c.core).slice(-1) : "—") + '</b></span></div>' +
+      '<p class="sc-when">' + (inShow ? "В витрине сейчас" : "Сборка от " + rec.at.slice(0, 10).split("-").reverse().join(".") + ", сейчас не в витрине") +
+        ' · обновлено ' + new Date(u.at).toLocaleString("ru-RU", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) + '</p>' +
+    '</div></div>';
+
+  // характеристики + амплификатор и комплекты
+  h += '<div class="sc-cols"><div class="sc-panel"><div class="sc-ptitle">Характеристики</div><div class="sc-stats">' + rows.map(r => {
+      const add = r[2] - (c.base[r[0]] || 0);
+      const showAdd = /^(11101|12101|13101|12201|31401)$/.test(r[0]) && add > 0;
+      return '<div class="sc-stat' + (hl.indexOf(r[0]) !== -1 ? " hl" : "") + '"><span>' + esc(r[1]) + '</span><b class="num">' + esc(scPropVal(r[3], r[2])) +
+        (showAdd ? '<small>' + esc(scPropVal(r[3], c.base[r[0]] || 0)) + ' <em>+' + esc(scPropVal(r[3], add)) + '</em></small>' : "") + '</b></div>';
+    }).join("") + '</div></div>';
+
   h += '<div class="sc-side">';
   if(c.weapon){
     const w = c.weapon;
-    h += '<div class="sc-weapon r' + w.r + '"><div class="sc-wimg">' + (w.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(w.img)) + '" onerror="this.remove()">' : "") + '</div>' +
-      '<div><div class="sc-wname">' + esc(scName("w", w.id)) + '</div><div class="sc-wmeta">Ур. ' + w.lvl + ' · P' + w.phase + '</div>' +
-      (w.main ? '<div class="sc-wstat"><span>' + esc(scPropName(w.main[0])) + '</span><b>' + esc(scPropVal(w.main[0], w.main[1])) + '</b></div>' : "") +
-      (w.sub ? '<div class="sc-wstat"><span>' + esc(scPropName(w.sub[0])) + '</span><b>' + esc(scPropVal(w.sub[0], w.sub[1])) + '</b></div>' : "") +
-      '</div></div>';
-  } else h += '<div class="sc-weapon none">Без амплификатора</div>';
-  if(c.sets.length){
-    h += '<div class="sc-sets">' + c.sets.map(s => {
+    h += '<div class="sc-panel sc-weapon r' + w.r + '"><div class="sc-ptitle">Амплификатор</div><div class="sc-wbody">' +
+      '<div class="sc-wimg"><span>' + (w.r === 4 ? "S" : w.r === 3 ? "A" : "B") + '</span>' + (w.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(w.img)) + '" onerror="this.remove()">' : "") + '</div>' +
+      '<div class="sc-winfo"><div class="sc-wname">' + esc(scName("w", w.id)) + '</div>' +
+      '<div class="sc-wmeta"><span>Ур. ' + w.lvl + '</span>' + scPips(w.phase, 5, "p") + '<b>P' + w.phase + '</b></div>' +
+      (w.main ? '<div class="sc-wstat"><span>' + esc(scPropName(w.main[0])) + '</span><b class="num">' + esc(scPropVal(w.main[0], w.main[1])) + '</b></div>' : "") +
+      (w.sub ? '<div class="sc-wstat"><span>' + esc(scPropName(w.sub[0])) + '</span><b class="num">' + esc(scPropVal(w.sub[0], w.sub[1])) + '</b></div>' : "") +
+      '</div></div></div>';
+  } else h += '<div class="sc-panel sc-weapon none"><div class="sc-ptitle">Амплификатор</div>Не экипирован</div>';
+  h += '<div class="sc-panel"><div class="sc-ptitle">Комплекты</div>' + (c.sets.length ? '<div class="sc-sets">' + c.sets.map(s => {
       const su = sbuild.suits[s.id] || {};
-      return '<span>' + (su.icon ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(su.icon)) + '" onerror="this.remove()">' : "") + esc(scName("suit", s.id)) + ' <b>×' + s.n + '</b></span>';
-    }).join("") + '</div>';
-  }
+      return '<div class="sc-set' + (s.n >= 4 ? " full" : "") + '">' + (su.icon ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(su.icon)) + '" onerror="this.remove()">' : '<i></i>') +
+        '<span>' + esc(scName("suit", s.id)) + '</span><b>' + (s.n >= 4 ? "4" : "2") + '</b></div>';
+    }).join("") + '</div>' : '<p class="sc-none">Нет собранных комплектов</p>') +
+    '<div class="sc-cv"><span>Крит. ценность дисков</span><b class="num">' + (Math.round(cv / 10) / 10).toLocaleString("ru-RU") + '</b></div></div>';
   h += '</div></div>';
 
   // диски
-  h += '<div class="sc-discs">';
+  h += '<div class="sc-ptitle sc-dtitle">Диски</div><div class="sc-discs">';
   for(let slot = 1; slot <= 6; slot++){
     const d = c.discs.find(x => x.slot === slot);
-    if(!d){ h += '<div class="sc-disc none"><div class="sc-dhead"><i>' + slot + '</i><span>пусто</span></div></div>'; continue; }
+    if(!d){ h += '<div class="sc-disc none"><em class="sc-slot">' + slot + '</em><p>Пусто</p></div>'; continue; }
     const su = sbuild.suits[d.suit] || {};
-    h += '<div class="sc-disc r' + d.rar + '"><div class="sc-dhead"><i>' + slot + '</i>' +
-      (su.icon ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(su.icon)) + '" onerror="this.remove()">' : "") +
-      '<span>' + esc(scName("suit", d.suit)) + '</span><em>+' + d.lvl + '</em></div>' +
-      (d.main ? '<div class="sc-dmain"><span>' + esc(scPropName(d.main[0])) + '</span><b>' + esc(scPropVal(d.main[0], d.main[1])) + '</b></div>' : "") +
-      d.subs.map(s => '<div class="sc-dsub' + (s[2] > 1 ? " up" : "") + '"><span>' + esc(scPropName(s[0])) + (s[2] > 1 ? ' <i>+' + (s[2] - 1) + '</i>' : "") +
-        '</span><b>' + esc(scPropVal(s[0], s[1])) + '</b></div>').join("") + '</div>';
+    h += '<div class="sc-disc r' + d.rar + '">' +
+      (su.icon ? '<img class="sc-dmark" alt="" referrerpolicy="no-referrer" src="' + esc(scImg(su.icon)) + '" onerror="this.remove()">' : "") +
+      '<div class="sc-dhead"><em class="sc-slot">' + slot + '</em><span>' + esc(scName("suit", d.suit)) + '</span><i>+' + d.lvl + '</i></div>' +
+      (d.main ? '<div class="sc-dmain"><span>' + esc(scPropName(d.main[0])) + '</span><b class="num">' + esc(scPropVal(d.main[0], d.main[1])) + '</b></div>' : "") +
+      '<div class="sc-dsubs">' + d.subs.map(s => '<div class="sc-dsub' + (valuable[s[0]] ? " val" : "") + '"><span>' + esc(scPropName(s[0])) +
+        '</span>' + (s[2] > 1 ? '<i title="Усилений: ' + (s[2] - 1) + '">' + "•".repeat(Math.min(5, s[2] - 1)) + '</i>' : "<i></i>") +
+        '<b class="num">' + esc(scPropVal(s[0], s[1])) + '</b></div>').join("") + '</div></div>';
   }
-  h += '</div><p class="hint sc-foot">Характеристики посчитаны по формулам Enka: агент, амплификатор, диски и бонусы комплектов за 2 предмета. Пассивки амплификатора, эффекты за 4 предмета и баффы в бою не учитываются, поэтому цифры могут немного отличаться от окна агента в игре.</p>';
+  h += '</div><p class="hint sc-foot">Характеристики посчитаны по формулам Enka: агент, амплификатор, диски и бонусы комплектов за 2 предмета. Пассивки амплификатора, эффекты за 4 предмета и баффы в бою не учитываются, поэтому цифры могут немного отличаться от окна агента в игре. Точки у характеристик диска — сколько раз она усиливалась; золотом — полезные этому агенту.</p>';
   card.innerHTML = h;
 }
 

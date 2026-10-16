@@ -117,7 +117,7 @@ def zenless_build(store):
             "base": a.get("BaseProps", {}), "grow": a.get("GrowthProps", {}),
             "promo": a.get("PromotionProps", []), "core": a.get("CoreEnhancementProps", []),
             "el": a.get("ElementTypes", []), "pro": a.get("ProfessionType", ""),
-            "img": a.get("Image", ""), "hl": a.get("HighlightProps", []),
+            "img": a.get("Image", ""), "circle": a.get("CircleIcon", ""), "hl": a.get("HighlightProps", []),
             "color": (a.get("Colors") or {}).get("Accent", ""),
         }
     weapons = {}

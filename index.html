@@ -215,15 +215,17 @@
             <button class="linkbtn hidden" id="oddsStockBtn"></button></span>
           </label>
           <label>Считать запас из<select id="oddsSrc"></select></label>
-          <label><span id="oddsPityLbl">Круток после последнего S-ранга</span>
-            <span class="oddsrow"><input id="oddsPity" type="number" min="0" step="1" inputmode="numeric">
-            <button class="chip" id="oddsGuar"></button></span>
-          </label>
+          <label>Удача<select id="oddsLuck">
+            <option value="avg">как у всех игроков</option>
+            <option value="acc">как на вашем аккаунте</option>
+          </select></label>
         </div>
+        <div class="pityrows" id="oddsPityRows"></div>
         <p class="hint oddsfrom" id="oddsFrom"></p>
-        <div class="oddsk"><span class="lbl">Цель</span><div class="seg" id="oddsCopies"></div></div>
+        <div id="oddsTargets"></div>
         <div class="oddsmain" id="oddsMain"></div>
         <p class="oddsexplain" id="oddsExplain"></p>
+        <p class="luckscen hidden" id="oddsLuckNote"></p>
         <table class="oddstable">
           <thead>
             <tr><th rowspan="2">Цель</th><th rowspan="2">Шанс с запасом</th><th colspan="3" class="grp">Сколько круток нужно для шанса</th></tr>

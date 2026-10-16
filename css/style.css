@@ -1325,10 +1325,10 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .hx-rm b{color:var(--gold-hot)}
 .hx-rm span,.hx-rs span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hx-rs{color:var(--dim)}
-.hx-rs i{font-style:normal;font-size:10px;color:var(--muted);padding:0 4px;border-radius:999px;background:rgba(255,255,255,.07)}
+.hx-rs i:not(.xi){font-style:normal;font-size:10px;color:var(--muted);padding:0 4px;border-radius:999px;background:rgba(255,255,255,.07)}
 .hx-rs.val{color:var(--text)}
 .hx-rs.val b{color:var(--gold-hot)}
-.hx-rs.val i{background:rgba(240,194,100,.18);color:var(--gold-hot)}
+.hx-rs.val i:not(.xi){background:rgba(240,194,100,.18);color:var(--gold-hot)}
 .hx-rm b,.hx-rs b{font-family:var(--display)}
 /* ZZZ — широкая карточка в духе Enka: арт, кинограммы столбцом, характеристики, диски справа */
 .zx{position:relative;display:grid;grid-template-columns:minmax(0,240px) 46px minmax(0,1fr) minmax(0,310px);grid-template-rows:auto auto;

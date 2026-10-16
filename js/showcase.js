@@ -450,6 +450,7 @@ function renderShowcase(){
   });
   const cur = ui.scAgentG[game], vm = vms[cur];
   if(!vm){ card.innerHTML = '<div class="sc-empty">Не удалось разобрать сборку этого персонажа — возможно, он новее справочника. Справочник обновляется раз в неделю.</div>'; return; }
+  scLayoutSeg(game);
   if(scAltWanted(game)) scRenderAlt(card, game, vm, uid);
   else scRenderCard(card, u, cur, vm);
 }

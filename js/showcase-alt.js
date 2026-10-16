@@ -125,9 +125,24 @@ function zxCard(vm, uid){
 }
 
 // переключатель вида
-// пока «игровой» вид включён только для Star Rail; раскладки Genshin и ZZZ готовы, но не используются
-const SC_ALT_GAMES = { hkrpg:1 };
-function scAltWanted(game){ return !!SC_ALT_GAMES[game]; }
+// вид карточки выбирается отдельно для каждой игры; по умолчанию «как в игре» только у Star Rail
+const SC_ALT_DEFAULT = { hkrpg:1 };
+function scAltWanted(game){
+  const v = (ui.scLayoutG || {})[game];
+  return v ? v === "game" : !!SC_ALT_DEFAULT[game];
+}
+function scLayoutSeg(game){
+  const box = document.getElementById("scLayout");
+  box.innerHTML = "";
+  const cur = scAltWanted(game) ? "game" : "tracker";
+  [["tracker", "Трекер"], ["game", "Как в игре"]].forEach(([v, t]) => {
+    const b = document.createElement("button");
+    b.textContent = t;
+    b.className = v === cur ? "on" : "";
+    b.onclick = () => { ui.scLayoutG = ui.scLayoutG || {}; ui.scLayoutG[game] = v; saveUI(); renderShowcase(); };
+    box.appendChild(b);
+  });
+}
 function scRenderAlt(card, game, vm, uid){
   card.innerHTML = game === "hk4e" ? gxCard(vm) : game === "hkrpg" ? hxCard(vm) : zxCard(vm, uid);
 }

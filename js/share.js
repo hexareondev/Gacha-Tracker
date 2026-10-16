@@ -2,7 +2,7 @@
 /* ── карточка удачи: PNG из истории круток, рисуется на canvas прямо в браузере ── */
 
 const SHARE_W = 1080, SHARE_H = 1350;
-let shareBlob = null, shareSeq = 0;
+let shareBlob = null;
 
 // удача канала — то же, что в блоке «Удача» истории: первый топ канала не учитывается
 function channelLuck(acc, b){
@@ -22,12 +22,15 @@ function channelLuck(acc, b){
   return o;
 }
 
+// какие баннеры попадают на карточку — выбор хранится отдельно для каждой игры
+function shareOff(game){ return ((ui.shareOff || {})[game] || []).slice(); }
 function shareData(acc){
   const g = gameInfo(acc.game);
-  const banners = accountBanners(acc);
-  const total = acc.records.length;
+  const off = shareOff(acc.game);
+  const banners = accountBanners(acc).filter(b => off.indexOf(b.k) === -1);
+  const total = banners.reduce((s, b) => s + b.total, 0);
   const tops = banners.reduce((s, b) => s + b.tops.length, 0);
-  const times = acc.records.map(r => r.t).filter(Boolean).sort();
+  const times = banners.reduce((a, b) => a.concat([b.first, b.last]), []).filter(Boolean).sort();
   // главные каналы: ивентовый персонажей и оружейный — у них есть 50/50
   const main = banners.filter(b => b.info.pool === "limited" && (CHANNEL_MODEL[acc.game] || {})[b.k] && b.info.s !== "бангбу");
   const pick = kind => main.filter(b => (kind === "char") === (CHANNEL_MODEL[acc.game][b.k] === "char"))
@@ -176,8 +179,7 @@ function drawShare(d, imgs, hideUid){
       ctx.fillStyle = col; ctx.font = "600 25px " + IF;
       ctx.fillText(fitText(ctx, luckWord(l.share).replace(/^./, c => c.toUpperCase()), lw - 52), x + 26, y + 220);
       ctx.fillStyle = C.muted; ctx.font = "400 21px " + IF;
-      const fifty = l.play ? "50/50: выиграно " + l.win + " из " + l.play + " (" + Math.round(l.win / l.play * 100) + "%)" : "50/50 не размечены";
-      ctx.fillText(fitText(ctx, fifty, lw - 52), x + 26, y + 262);
+      ctx.fillText(fitText(ctx, fiftyText(l), lw - 52), x + 26, y + 262);
     });
   } else {
     rr(ctx, P, y, SHARE_W - 2 * P, 120, 22);
@@ -220,8 +222,7 @@ function drawShare(d, imgs, hideUid){
     ctx.fillStyle = C.text; ctx.font = "500 21px " + IF;
     ctx.fillText(fitText(ctx, x.rec.n || "—", cw - 14), cx, cy + ph / 2 + 50);
     ctx.fillStyle = x.st === "lose" ? C.crimson : C.dim; ctx.font = "400 18px " + IF;
-    const tag = x.st === "lose" ? "проигрыш 50/50" : x.st === "win" ? "победа 50/50" : x.st === "guard" ? "гарант" : dmyFull(x.rec.t);
-    ctx.fillText(fitText(ctx, tag, cw - 14), cx, cy + ph / 2 + 76);
+    ctx.fillText(fitText(ctx, recTag(x), cw - 14), cx, cy + ph / 2 + 76);
     ctx.textAlign = "left";
   });
   if(!d.recent.length){
@@ -238,36 +239,115 @@ function drawShare(d, imgs, hideUid){
   return cv;
 }
 
-async function buildShare(){
+/* превью — обычная разметка, повторяющая картинку; PNG рисуется только по кнопке */
+function pullTone(x){ return x.pulls >= x.soft ? "bad" : x.pulls <= 40 ? "good" : "mid"; }
+function recTag(x){ return x.st === "lose" ? "проигрыш 50/50" : x.st === "win" ? "победа 50/50" : x.st === "guard" ? "гарант" : dmyFull(x.rec.t); }
+function fiftyText(l){ return l.play ? "50/50: выиграно " + l.win + " из " + l.play + " (" + Math.round(l.win / l.play * 100) + "%)" : "50/50 не размечены"; }
+let shareD = null;
+function renderShareChips(acc){
+  const box = document.getElementById("shareChans");
+  const all = accountBanners(acc), off = shareOff(acc.game);
+  box.innerHTML = "";
+  all.forEach(b => {
+    const on = off.indexOf(b.k) === -1;
+    const c = document.createElement("button");
+    c.className = "chip" + (on ? " on" : "");
+    c.textContent = b.info.n;
+    c.title = b.info.s + " · " + b.total.toLocaleString("ru-RU") + " круток";
+    c.setAttribute("aria-pressed", on);
+    c.onclick = () => {
+      let o = shareOff(acc.game);
+      if(on){
+        if(all.length - o.length <= 1) return;     // хотя бы один баннер должен остаться
+        o.push(b.k);
+      } else o = o.filter(k => k !== b.k);
+      ui.shareOff = ui.shareOff || {};
+      ui.shareOff[acc.game] = o;
+      saveUI();
+      renderSharePreview();
+    };
+    box.appendChild(c);
+  });
+}
+function renderSharePreview(){
   const acc = HA();
   if(!acc) return;
-  const my = ++shareSeq;
+  renderShareChips(acc);
+  const d = shareD = shareData(acc);
   const hide = document.getElementById("shareHideUid").checked;
-  const img = document.getElementById("shareImg");
-  const wait = document.getElementById("shareWait");
-  wait.textContent = "Рисую…";
-  wait.classList.remove("hidden");
-  const d = shareData(acc);
+  let h = '<div class="sc-brand">ГАЧА ТРЕКЕР · УДАЧА</div>' +
+    '<div class="sc-game">' + esc(d.g.name) + '</div>' +
+    '<div class="sc-sub">' + (hide ? "" : "UID " + esc(d.acc.uid) + "&nbsp; · &nbsp;") + (d.from ? "с " + dmyFull(d.from) + " по " + dmyFull(d.to) : "") + '</div>' +
+    '<div class="sc-stats">' +
+      '<div class="sc-box hot"><div class="k">Всего круток</div><div class="v">' + d.total.toLocaleString("ru-RU") + '</div></div>' +
+      '<div class="sc-box"><div class="k">Выпало ' + d.wordMany + '</div><div class="v">' + d.tops + '</div></div>' +
+      '<div class="sc-box"><div class="k">В среднем на один</div><div class="v">' + (d.tops ? fmtP(d.avg) : "—") + '</div></div>' +
+    '</div>';
+  if(d.luck.length){
+    h += '<div class="sc-luck">';
+    d.luck.forEach(l => {
+      const tone = l.share >= .5 ? "good" : "bad";
+      h += '<div class="sc-box ' + tone + '"><div class="sc-lh"><span>' + esc(l.b.info.n) + '</span><em>' + l.n + ' шт.</em></div>' +
+        '<div class="sc-avg"><b>' + fmtP(l.avg) + '</b><span>' + (d.luck.length === 1 ? "круток на один " + d.word + " · обычно " + fmtP(l.exp) : "круток на " + d.word + "<br>обычно " + fmtP(l.exp)) + '</span></div>' +
+        '<div class="sc-gauge"><i style="left:' + (Math.max(.02, Math.min(.98, l.share)) * 100).toFixed(1) + '%"></i></div>' +
+        '<div class="sc-word">' + luckWord(l.share).replace(/^./, c => c.toUpperCase()) + '</div>' +
+        '<div class="sc-fifty">' + fiftyText(l) + '</div></div>';
+    });
+    h += '</div>';
+  } else {
+    h += '<div class="sc-box sc-none">Для оценки удачи нужно хотя бы 4 выпадения ' + d.wordMany + ' в ивентовом канале.</div>';
+  }
+  h += '<div class="sc-rh">Последние ' + (d.acc.game === "nap" ? "S-ранги" : "5★") + '</div><div class="sc-rec">';
+  d.recent.forEach(x => {
+    h += '<div class="sc-it ' + x.st + '"><div class="sc-pic"><span>' + esc((x.rec.n || "?").charAt(0).toUpperCase()) + '</span></div>' +
+      '<div class="sc-n ' + pullTone(x) + '">' + (x.first ? "≥" : "") + x.pulls + '</div>' +
+      '<div class="sc-nm">' + esc(x.rec.n || "—") + '</div><div class="sc-tg">' + recTag(x) + '</div></div>';
+  });
+  if(!d.recent.length) h += '<div class="sc-none">Пока ни одного.</div>';
+  h += '</div><div class="sc-foot"><span>hexareondev.github.io/Gacha-Tracker</span><span>модель гаранта — оценка сообщества</span></div>';
+  const card = document.getElementById("shareCard");
+  card.innerHTML = h;
+  if(iconMode() !== "off") card.querySelectorAll(".sc-pic").forEach((el, i) => attachIcon(el, acc.game, d.recent[i].rec));
+  fitSharePreview();
+  shareBlob = null; shareKey = "";
+  document.getElementById("shareSend").classList.toggle("hidden", !(navigator.canShare && navigator.canShare({ files:[new File([""], "a.png", { type:"image/png" })] })));
+  document.getElementById("shareCopy").classList.toggle("hidden", !(navigator.clipboard && window.ClipboardItem));
+  document.getElementById("shareNote").textContent = d.luck.length
+    ? "Удача — какая доля игроков получила " + d.wordMany + " медленнее вас при тех же шансах. Первый " + d.word + " каждого канала не учитывается."
+    : "";
+}
+function fitSharePreview(){
+  const box = document.getElementById("sharePre"), card = document.getElementById("shareCard");
+  const k = box.clientWidth / SHARE_W;
+  card.style.transform = "scale(" + k + ")";
+  box.style.height = (SHARE_H * k) + "px";
+}
+window.addEventListener("resize", () => { if(document.getElementById("shareOverlay").classList.contains("on")) fitSharePreview(); });
+
+// PNG — по требованию; пока данные и галочка те же, готовая картинка переиспользуется
+let shareKey = "";
+async function makeShareBlob(){
+  const acc = HA();
+  if(!acc || !shareD) return null;
+  const hide = document.getElementById("shareHideUid").checked;
+  const key = acc.key + ":" + acc.records.length + ":" + hide + ":" + shareOff(acc.game).join(",");
+  if(shareBlob && shareKey === key) return shareBlob;
+  const d = shareD;
   try { if(document.fonts && document.fonts.load) await Promise.all([document.fonts.load('600 60px "Space Grotesk"'), document.fonts.load('500 20px "Inter"'), document.fonts.load('600 20px "Inter"')]); } catch(e){}
   const imgs = iconMode() === "off" ? [] : await Promise.all(d.recent.map(x => loadShareImg(shareIconUrls(acc.game, x.rec))));
-  if(my !== shareSeq) return;
   let cv = drawShare(d, imgs, hide);
   let blob = await new Promise(res => { try { cv.toBlob(b => res(b), "image/png"); } catch(e){ res(null); } });
   if(!blob){                                    // холст «испорчен» чужой картинкой — рисуем без портретов
     cv = drawShare(d, [], hide);
     blob = await new Promise(res => cv.toBlob(b => res(b), "image/png"));
   }
-  if(my !== shareSeq) return;
-  shareBlob = blob;
-  if(img.src) URL.revokeObjectURL(img.src);
-  img.src = URL.createObjectURL(blob);
-  wait.classList.add("hidden");
-  const file = shareFile();
-  document.getElementById("shareSend").classList.toggle("hidden", !(navigator.canShare && navigator.canShare({ files:[file] })));
-  document.getElementById("shareCopy").classList.toggle("hidden", !(navigator.clipboard && window.ClipboardItem));
-  document.getElementById("shareNote").textContent = d.luck.length
-    ? "Удача — какая доля игроков получила " + d.wordMany + " медленнее вас при тех же шансах. Первый " + d.word + " каждого канала не учитывается."
-    : "";
+  shareBlob = blob; shareKey = key;
+  return blob;
+}
+async function shareBusy(btn, fn){
+  const t = btn.textContent;
+  btn.disabled = true; btn.textContent = "Рисую…";
+  try { await fn(); } finally { btn.disabled = false; if(btn.textContent === "Рисую…") btn.textContent = t; }
 }
 function shareFile(){
   const acc = HA();
@@ -278,32 +358,36 @@ function shareFile(){
 function openShare(){
   document.getElementById("shareOverlay").classList.add("on");
   document.getElementById("shareHideUid").checked = !!ui.shareHideUid;
-  buildShare();
+  renderSharePreview();
 }
-function closeShare(){ document.getElementById("shareOverlay").classList.remove("on"); shareSeq++; }
+function closeShare(){ document.getElementById("shareOverlay").classList.remove("on"); }
 
 document.getElementById("shareLuck").onclick = openShare;
 document.getElementById("shareClose").onclick = closeShare;
 document.getElementById("shareOverlay").addEventListener("mousedown", e => { if(e.target.id === "shareOverlay") closeShare(); });
-document.getElementById("shareHideUid").onchange = e => { ui.shareHideUid = e.target.checked; saveUI(); buildShare(); };
-document.getElementById("shareSave").onclick = () => {
-  if(!shareBlob) return;
+document.getElementById("shareHideUid").onchange = e => {
+  ui.shareHideUid = e.target.checked; saveUI();
+  const sub = document.querySelector("#shareCard .sc-sub");
+  if(sub) renderSharePreview();
+};
+document.getElementById("shareSave").onclick = e => shareBusy(e.currentTarget, async () => {
+  if(!await makeShareBlob()) return;
   const f = shareFile(), a = document.createElement("a");
   a.href = URL.createObjectURL(f); a.download = f.name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-};
-document.getElementById("shareSend").onclick = () => {
-  if(!shareBlob) return;
-  navigator.share({ files:[shareFile()], title:"Моя удача в гаче" }).catch(() => {});
-};
-document.getElementById("shareCopy").onclick = async () => {
-  if(!shareBlob) return;
-  const b = document.getElementById("shareCopy");
+});
+document.getElementById("shareSend").onclick = e => shareBusy(e.currentTarget, async () => {
+  if(!await makeShareBlob()) return;
+  await navigator.share({ files:[shareFile()], title:"Моя удача в гаче" }).catch(() => {});
+});
+document.getElementById("shareCopy").onclick = async e => {
+  const b = e.currentTarget;
   try {
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": shareBlob })]);
+    // промис в ClipboardItem: Safari требует вызвать write сразу по нажатию
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": makeShareBlob() })]);
     b.textContent = "Скопировано";
-  } catch(e){ b.textContent = "Не вышло"; }
+  } catch(err){ b.textContent = "Не вышло"; }
   setTimeout(() => { b.textContent = "Копировать"; }, 1800);
 };
 document.addEventListener("keydown", e => {

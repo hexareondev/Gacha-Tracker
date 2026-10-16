@@ -834,3 +834,4 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .oddstable th.grp{text-align:center;border-bottom:1px solid var(--edge-soft);padding-bottom:6px}
 .oddstable thead tr:nth-child(2) th{padding-top:6px}
 .oddstable thead tr:nth-child(2) th{text-align:right}
+#oddsSection .sechead > .seg{flex:0 0 auto;min-width:auto}

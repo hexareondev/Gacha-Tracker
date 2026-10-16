@@ -852,7 +852,7 @@ function renderRareTable(acc, banners){
   }
 
   const rows = tops.slice().reverse();
-  const per = 20;
+  const per = rarePer(asGrid);
   const pages = Math.max(1, Math.ceil(rows.length / per));
   if(histPage > pages - 1) histPage = pages - 1;
   const from = histPage * per;
@@ -1084,7 +1084,7 @@ function renderPityHist(done, pmf, m){
   const obs = new Array(nb).fill(0), expd = new Array(nb).fill(0);
   done.forEach(x => { obs[Math.min(nb - 1, Math.floor((Math.min(x.pulls, m.hard) - 1) / bw))]++; });
   for(let i = 1; i < pmf.length; i++) expd[Math.floor((i - 1) / bw)] += pmf[i] * done.length;
-  const W = chartW(host), H = 200, L = 30, R = 8, T = 14, B = 34;
+  const W = chartW(host), H = 210, L = 30, R = 8, T = 26, B = 34;
   const iw = W - L - R, ih = H - T - B, step = iw / nb, bwid = Math.min(step - 10, 52);
   const top = Math.max(1, ...obs, ...expd);
   const max = top * 1.12;
@@ -1095,8 +1095,6 @@ function renderPityHist(done, pmf, m){
     s += '<line x1="' + L + '" y1="' + y(v).toFixed(1) + '" x2="' + (W - R) + '" y2="' + y(v).toFixed(1) + '" stroke="rgba(255,255,255,.05)"/>' +
       '<text x="' + (L - 8) + '" y="' + (y(v) + 3.5).toFixed(1) + '" fill="#5e5c68" font-size="10" text-anchor="end">' + v + "</text>";
   }
-  const soft = Math.floor((m.soft - 1) / bw);
-  s += '<rect x="' + (L + soft * step).toFixed(1) + '" y="' + T + '" width="' + ((nb - soft) * step).toFixed(1) + '" height="' + ih + '" fill="rgba(240,194,100,.035)"/>';
   let line = "";
   for(let i = 0; i < nb; i++){
     const cx = L + (i + .5) * step;
@@ -1106,6 +1104,10 @@ function renderPityHist(done, pmf, m){
     line += (i ? " L" : "M") + cx.toFixed(1) + " " + y(expd[i]).toFixed(1);
     s += '<text x="' + cx.toFixed(1) + '" y="' + (H - 14) + '" fill="#5e5c68" font-size="10" text-anchor="middle">' + (W >= 500 ? (i * bw + 1) + "–" + Math.min(m.hard, (i + 1) * bw) : "≤" + Math.min(m.hard, (i + 1) * bw)) + "</text>";
   }
+  // начало мягкого гаранта — тонкая вертикальная линия в точном месте шкалы, а не заливка
+  const sx = L + ((m.soft - 1) / bw) * step;
+  s += '<line x1="' + sx.toFixed(1) + '" y1="' + (T - 10) + '" x2="' + sx.toFixed(1) + '" y2="' + (T + ih) + '" stroke="rgba(240,194,100,.45)" stroke-dasharray="3 3"/>' +
+    '<text x="' + (sx - 5).toFixed(1) + '" y="' + (T - 4) + '" fill="#a9853a" font-size="10" text-anchor="end">мягкий гарант с ' + m.soft + "</text>";
   s += '<path d="' + line + '" fill="none" stroke="#8794a1" stroke-width="1.6" stroke-dasharray="4 4"/>';
   for(let i = 0; i < nb; i++) s += '<circle cx="' + (L + (i + .5) * step).toFixed(1) + '" cy="' + y(expd[i]).toFixed(1) + '" r="2.6" fill="#8794a1"/>';
   // подписи — поверх линии и с тёмной обводкой; если рядом точка ожидания, подпись уходит
@@ -1124,7 +1126,17 @@ function renderPityHist(done, pmf, m){
   s = s.replace('<svg ', '<svg ') + '<defs><linearGradient id="bw2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffdf95"/><stop offset="100%" stop-color="#c59a3c"/></linearGradient></defs></svg>';
   host.innerHTML = s + '<div class="legend"><span><i style="background:linear-gradient(180deg,#ffdf95,#c59a3c)"></i>ваши выпадения</span>' +
     '<span><i style="background:#8794a1;border-radius:50%"></i>ожидаемо по модели</span>' +
-    '<span><i style="background:rgba(240,194,100,.18)"></i>мягкий гарант с ' + m.soft + "-й крутки</span></div>";
+    '<span><i style="width:2px;height:10px;border-radius:0;background:rgba(240,194,100,.6)"></i>начало мягкого гаранта</span></div>';
+}
+
+// сколько выпадений на странице: таблица — 20, сетка портретов — целое число рядов,
+// чтобы последний ряд не оставался неполным (7 столбцов → 21, 5 → 20, 3 → 21)
+function rarePer(asGrid){
+  if(!asGrid) return 20;
+  const sec = document.getElementById("rareSection");
+  const w = sec ? sec.clientWidth : 0;
+  const cols = Math.max(1, Math.floor((w + 8) / (122 + 8)));
+  return cols * Math.ceil(20 / cols);
 }
 
 /* переход от столбца к строке списка */
@@ -1137,9 +1149,10 @@ function jumpToDrop(id){
   const rows = resolveTops(acc, b).slice().reverse();
   const idx = rows.findIndex(x => x.rec.id === id);
   if(idx === -1) return;
-  const page = Math.floor(idx / 20);
+  const per = rarePer(rareView() === "grid");
+  const page = Math.floor(idx / per);
   if(page !== histPage){ histPage = page; renderRareTable(acc, banners); }
-  const tr = document.getElementById("histBanners").children[idx % 20];
+  const tr = document.getElementById("histBanners").children[idx % per];
   if(!tr) return;
   tr.classList.remove("flash");
   void (tr.offsetWidth || 0);

@@ -63,6 +63,10 @@ function zVal(pid, v){
   if(/^305/.test(String(pid))) return (v / 100).toLocaleString("ru-RU", { maximumFractionDigits:2 });
   return fInt(v);
 }
+function zIc(pid){
+  const p = String(pid).slice(0, 3);
+  return { "111":"hp", "121":"atk", "131":"def", "122":"imp", "201":"cr", "211":"cd", "314":"am", "312":"ap", "231":"penr", "232":"pen", "305":"er" }[p] || (/^31[5-9]/.test(p) ? "dmg" : "dot");
+}
 function zzzVM(av){
   const B = SCB.nap, id = String(av.Id), info = B.avatars[id] || {};
   const lvl = av.Level || 1, promo = Math.max(0, (av.PromotionLevel || 1) - 1), core = av.CoreSkillEnhancement || 0;
@@ -103,8 +107,8 @@ function zzzVM(av){
     mains.forEach(m => put(m[0], m[1])); subs.forEach(m => put(m[0], m[1]));
     subs.forEach(s => { if(s[0] === "20103") cv += 2 * s[1]; if(s[0] === "21103") cv += s[1]; });
     slots.push({ pos: slot.Slot || e.Slot || slots.length + 1, label: String(slot.Slot || slots.length + 1), set: scLoc(su), icon: su.icon, lvl: e.Level || 0, top: rar === 4,
-      main: mains[0] ? [zProp(mains[0][0]), zVal(mains[0][0], mains[0][1])] : null,
-      subs: subs.map(s => ({ n: zProp(s[0]), v: zVal(s[0], s[1]), up: s[2] - 1, val: !!valuable[s[0]] })) });
+      main: mains[0] ? [zProp(mains[0][0]), zVal(mains[0][0], mains[0][1]), zIc(mains[0][0])] : null,
+      subs: subs.map(s => ({ n: zProp(s[0]), v: zVal(s[0], s[1]), up: s[2] - 1, val: !!valuable[s[0]], ic: zIc(s[0]), key: s[0], raw: s[1], fmt: v => zVal(s[0], v) })) });
   });
   const sets = Object.keys(cnt).filter(s => s && cnt[s] >= 2).sort((a, b) => cnt[b] - cnt[a]).map(s => {
     const su = B.suits[s] || {};
@@ -113,15 +117,15 @@ function zzzVM(av){
   });
   const pct = (b, r, f) => Math.floor((base[b] || 0) * (1 + (add[r] || 0) / 10000) + (add[f] || 0));
   const flat = (b, f) => (base[b] || 0) + (add[f] || 0);
-  const row = (key, pid, total, b, hlKey) => ({ n: key, v: zVal(pid, total), base: b !== undefined && total > b ? zVal(pid, b) : "", add: b !== undefined && total > b ? zVal(pid, total - b) : "", hl: hl.indexOf(hlKey) !== -1 });
+  const row = (key, pid, total, b, hlKey) => ({ n: key, v: zVal(pid, total), base: b !== undefined && total > b ? zVal(pid, b) : "", add: b !== undefined && total > b ? zVal(pid, total - b) : "", hl: hl.indexOf(hlKey) !== -1, ic: zIc(pid) });
   const T = { hp: pct("11101", "11102", "11103"), atk: pct("12101", "12102", "12103"), def: pct("13101", "13102", "13103"),
     imp: pct("12201", "12202", "12203"), cr: flat("20101", "20103"), cd: flat("21101", "21103"), am: pct("31401", "31402", "31403"),
     ap: flat("31201", "31203"), penr: flat("23101", "23103"), pen: flat("23201", "23203"),
     er: Math.round((base["30501"] || 0) * (1 + (add["30502"] || 0) / 10000) + (add["30503"] || 0)) };
   const stats = [
     row("HP", "11103", T.hp, base["11101"], "11101"), row(zProp("12101"), "12103", T.atk, base["12101"], "12101"), row(zProp("13101"), "13103", T.def, base["13101"], "13101"),
-    row(zProp("12201"), "12203", T.imp, base["12201"], "12201"), row(zProp("20103"), "20103", T.cr, undefined, "20101"), row(zProp("21103"), "21103", T.cd, undefined, "21101"),
-    row(zProp("31401"), "31403", T.am, base["31401"], "31401"), row(zProp("31203"), "31203", T.ap, undefined, "31201"), row(zProp("23103"), "23103", T.penr, undefined, "23101"),
+    row(zProp("12201"), "12203", T.imp, base["12201"], "12201"), row(zProp("20103"), "20103", T.cr, base["20101"], "20101"), row(zProp("21103"), "21103", T.cd, base["21101"], "21101"),
+    row(zProp("31401"), "31403", T.am, base["31401"], "31401"), row(zProp("31203"), "31203", T.ap, base["31201"], "31201"), row(zProp("23103"), "23103", T.penr, undefined, "23101"),
     row(zProp("23203"), "23203", T.pen, undefined, "23201"), row(zProp("30503"), "30503", T.er, undefined, "30501")
   ];
   ["31501","31601","31701","31801","31901"].forEach(b => { const v = flat(b, String(Number(b) + 2)); if(v) stats.push(row(zProp(b), b, v, undefined, b)); });
@@ -157,6 +161,10 @@ function hProp(p){
 }
 function hLabel(k){ return scLoc(SCB.hkrpg.props[k]) || k; }
 function hVal(pct, v, spd){ return pct ? fPct(v * 100) : spd && v % 1 ? (Math.round(v * 10) / 10).toLocaleString("ru-RU") : fInt(v); }
+function hIc(k){
+  return { MaxHP:"hp", Attack:"atk", Defence:"def", Speed:"spd", CriticalChance:"cr", CriticalDamage:"cd", BreakDamageAddedRatio:"be", HealRatio:"heal",
+    SPRatio:"er", StatusProbability:"ehr", StatusResistance:"res" }[k] || (/AddedRatio$/.test(k) ? "dmg" : "dot");
+}
 function hsrVM(av){
   const B = SCB.hkrpg, id = String(av.avatarId), A = B.avatars[id] || {};
   const lvl = av.level || 1, P = (A.promo || {})[String(av.promotion || 0)] || {};
@@ -191,13 +199,13 @@ function hsrVM(av){
     cnt[setId] = (cnt[setId] || 0) + 1;
     const ma = ((B.main[String(mg)] || {})[String(r.mainAffixId)]) || null;
     let main = null;
-    if(ma){ const v = ma.BaseValue + ma.LevelAdd * (r.level || 0), pp = hProp(ma.Property); put(ma.Property, v); main = [hLabel(pp.k), hVal(pp.pct, v, pp.k === "Speed")]; }
+    if(ma){ const v = ma.BaseValue + ma.LevelAdd * (r.level || 0), pp = hProp(ma.Property); put(ma.Property, v); main = [hLabel(pp.k), hVal(pp.pct, v, pp.k === "Speed"), hIc(pp.k)]; }
     const subs = scList(r.subAffixList).map(s => {
       const x = (B.sub[String(sg)] || {})[String(s.affixId)]; if(!x) return null;
       const n = s.cnt || 1, v = x.BaseValue * n + x.StepValue * (s.step || 0), pp = hProp(x.Property);
       put(x.Property, v);
       if(pp.k === "CriticalChance") cv += 2 * v * 100; if(pp.k === "CriticalDamage") cv += v * 100;
-      return { n: hLabel(pp.k), v: hVal(pp.pct, v, pp.k === "Speed"), up: n - 1, val: isVal(pp.k, pp.pct) };
+      return { n: hLabel(pp.k), v: hVal(pp.pct, v, pp.k === "Speed"), up: n - 1, val: isVal(pp.k, pp.pct), ic: hIc(pp.k), key: pp.k + (pp.pct ? "%" : ""), raw: v, fmt: x => hVal(pp.pct, x, pp.k === "Speed") };
     }).filter(Boolean);
     const pos = typeof r.type === "number" ? r.type : (HSR_SLOT[type] || slots.length + 1);
     const st = B.sets[String(setId)] || {};
@@ -221,7 +229,7 @@ function hsrVM(av){
   const hl = { Warrior:["Attack","CriticalChance","CriticalDamage"], Rogue:["Attack","CriticalChance","CriticalDamage"], Mage:["Attack","CriticalChance","CriticalDamage"],
     Memory:["MaxHP","CriticalChance","CriticalDamage"], Elation:["Attack","CriticalChance","CriticalDamage"], Warlock:["Attack","StatusProbability"],
     Shaman:["Speed","BreakDamageAddedRatio"], Priest:["MaxHP","HealRatio"], Knight:["Defence"] }[A.path] || [];
-  const row = (k, v, pct, b) => ({ n: hLabel(k), v: hVal(pct, v), base: b && v > b + .5 ? fInt(b) : "", add: b && v > b + .5 ? fInt(v - b) : "", hl: hl.indexOf(k) !== -1 || k === "Speed" });
+  const row = (k, v, pct, b) => ({ n: hLabel(k), v: hVal(pct, v), base: b && v > b + .5 ? fInt(b) : "", add: b && v > b + .5 ? fInt(v - b) : "", hl: hl.indexOf(k) !== -1 || k === "Speed", ic: hIc(k) });
   const stats = [row("MaxHP", T.hp, 0, base.hp), row("Attack", T.atk, 0, base.atk), row("Defence", T.def, 0, base.def), row("Speed", T.spd, 0, base.spd),
     row("CriticalChance", T.cr, 1), row("CriticalDamage", T.cd, 1), row("BreakDamageAddedRatio", T.be, 1), row("HealRatio", T.ohb, 1),
     row("SPRatio", T.err, 1), row("StatusProbability", T.ehr, 1), row("StatusResistance", T.res, 1)];
@@ -258,6 +266,11 @@ const GI_ELDMG = { Fire:40, Electric:41, Water:42, Grass:43, Wind:44, Rock:45, I
 function gLabel(fp){ return scLoc(SCB.hk4e.props[fp]) || fp.replace("FIGHT_PROP_", ""); }
 function gPct(fp){ return /PERCENT|CRITICAL|CHARGE|HURT|HEAL_ADD/.test(fp); }
 function gVal(fp, v){ return gPct(fp) ? fPct(v) : fInt(v); }
+function gIc(fp){
+  const k = String(fp).replace("FIGHT_PROP_", "").replace(/^BASE_/, "");
+  return { HP:"hp", HP_PERCENT:"hp", ATTACK:"atk", ATTACK_PERCENT:"atk", DEFENSE:"def", DEFENSE_PERCENT:"def", ELEMENT_MASTERY:"em",
+    CRITICAL:"cr", CRITICAL_HURT:"cd", CHARGE_EFFICIENCY:"er", HEAL_ADD:"heal" }[k] || (/ADD_HURT$/.test(k) ? "dmg" : "dot");
+}
 function giVM(av){
   const B = SCB.hk4e, id = String(av.avatarId), A = B.avatars[id] || {};
   const pm = av.propMap || {}, f = av.fightPropMap || {};
@@ -284,18 +297,18 @@ function giVM(av){
     const ids = (eq.reliquary.appendPropIdList || []).map(x => GI_FP[B.affix[String(x)]]);
     const ms = fl.reliquaryMainstat || {};
     slots.push({ pos: sl[0], label: sl[1], set: scLoc(B.sets[hash]), icon: fl.icon ? "/ui/" + fl.icon + ".png" : "", lvl: Math.max(0, (eq.reliquary.level || 1) - 1), top: fl.rankLevel === 5,
-      main: ms.mainPropId ? [gLabel(ms.mainPropId), gVal(ms.mainPropId, ms.statValue)] : null,
+      main: ms.mainPropId ? [gLabel(ms.mainPropId), gVal(ms.mainPropId, ms.statValue), gIc(ms.mainPropId)] : null,
       subs: (fl.reliquarySubstats || []).map(s => {
         if(s.appendPropId === "FIGHT_PROP_CRITICAL") cv += 2 * s.statValue;
         if(s.appendPropId === "FIGHT_PROP_CRITICAL_HURT") cv += s.statValue;
         const rolls = ids.filter(x => x === s.appendPropId).length || 1;
-        return { n: gLabel(s.appendPropId), v: gVal(s.appendPropId, s.statValue), up: rolls - 1, val: !!valuable[s.appendPropId] };
+        return { n: gLabel(s.appendPropId), v: gVal(s.appendPropId, s.statValue), up: rolls - 1, val: !!valuable[s.appendPropId], ic: gIc(s.appendPropId), key: s.appendPropId, raw: s.statValue, fmt: x => gVal(s.appendPropId, x) };
       }) });
   });
   const sets = Object.keys(cnt).filter(h => cnt[h].n >= 2).sort((a, b) => cnt[b].n - cnt[a].n)
     .map(h => ({ name: scLoc(B.sets[h]) || "Комплект", icon: cnt[h].icon ? "/ui/" + cnt[h].icon + ".png" : "", full: cnt[h].n >= 4 }));
   const elDmg = GI_ELDMG[A.el];
-  const row = (fp, total, base) => ({ n: gLabel(fp), v: gVal(fp, gPct(fp) ? total * 100 : total), base: base && total > base ? fInt(base) : "", add: base && total > base ? fInt(total - base) : "", hl: false });
+  const row = (fp, total, base) => ({ n: gLabel(fp), v: gVal(fp, gPct(fp) ? total * 100 : total), base: base && total > base ? fInt(base) : "", add: base && total > base ? fInt(total - base) : "", hl: false, ic: gIc(fp) });
   const stats = [row("FIGHT_PROP_HP", F(2000), F(1)), row("FIGHT_PROP_ATTACK", F(2001), F(4)), row("FIGHT_PROP_DEFENSE", F(2002), F(7)),
     row("FIGHT_PROP_ELEMENT_MASTERY", F(28)), row("FIGHT_PROP_CRITICAL", F(20)), row("FIGHT_PROP_CRITICAL_HURT", F(22)), row("FIGHT_PROP_CHARGE_EFFICIENCY", F(23))];
   if(F(26)) stats.push(row("FIGHT_PROP_HEAL_ADD", F(26)));
@@ -309,8 +322,9 @@ function giVM(av){
   const skills = (A.skills || []).map((s, i) => [sn[i] || "Навык", (sl[String(s)] || 1) + (extra[String((A.proud || {})[String(s)])] || 0)]);
   const el = GI_EL[A.el] || [A.el, "#f0c264"];
   const cons = (av.talentIdList || []).length;
+  const it = itemsDb.hk4e && itemsDb.hk4e.items[id];
   return { name: scItemName("hk4e", id) || "#" + id, art: A.img, circle: A.circle, el: el[0], color: el[1], cls: GI_WT[A.wt] || "",
-    lvl, maxLvl: Math.max(90, lvl), cons:{ label:"C", title:"Созвездие", n: cons }, keys, skills, stats, weapon, sets, cv: cv * 100, slotsTitle:"Артефакты", setsWord:"артефактов",
+    lvl, maxLvl: Math.max(90, lvl), cons:{ label:"C", title:"Созвездие", n: cons }, rarity: it ? it.r : 5, friend: (av.fetterInfo || {}).expLevel || 0, keys, skills, stats, weapon, sets, cv: cv * 100, slotsTitle:"Артефакты", setsWord:"артефактов",
     slots: [1,2,3,4,5].map(i => slots.find(s => s.pos === i) || { pos:i, label: ["Цветок","Перо","Пески","Кубок","Корона"][i - 1], empty:true }),
     foot: "Характеристики — как в окне персонажа в игре: их присылает сама игра через витрину профиля." };
 }
@@ -436,7 +450,8 @@ function renderShowcase(){
   });
   const cur = ui.scAgentG[game], vm = vms[cur];
   if(!vm){ card.innerHTML = '<div class="sc-empty">Не удалось разобрать сборку этого персонажа — возможно, он новее справочника. Справочник обновляется раз в неделю.</div>'; return; }
-  scRenderCard(card, u, cur, vm);
+  if(scAltWanted(game)) scRenderAlt(card, game, vm, uid);
+  else scRenderCard(card, u, cur, vm);
 }
 
 function scPips(n, max){

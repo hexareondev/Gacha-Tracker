@@ -19,9 +19,22 @@ function ensureBuild(cb){
     .finally(() => { sbuildLoading = false; });
 }
 
-const SC_ELEMENT = { Fire:"Огонь", Ice:"Лёд", Elec:"Электричество", Physics:"Физика", Ether:"Эфир", Wind:"Ветер",
-  FireFrost:"Огонь и лёд", AuricEther:"Золотой эфир", Lumen:"Свет", ZhenZhenAssault:"Удар" };
-const SC_PRO = { Attack:"Атака", Stun:"Оглушение", Anomaly:"Аномалия", Support:"Поддержка", Defense:"Защита", Rupture:"Разрыв", Armorer:"Броня" };
+// стихии и классы — как они называются в игре; особые стихии — разновидности обычных
+const SC_EL = {
+  Fire:{ n:"Огонь", c:"#ff6a3d" }, Ice:{ n:"Лёд", c:"#8fdcff" }, Elec:{ n:"Электро", c:"#4f9dff" },
+  Physics:{ n:"Физ.", c:"#f2c14e" }, Ether:{ n:"Эфир", c:"#ff4fd2" }, Wind:{ n:"Ветер", c:"#4fe3b0" }, Lumen:{ n:"Люмен", c:"#ffe98a" },
+  FireFrost:{ n:"Мороз", base:"Ice" }, AuricEther:{ n:"Аура-тушь", base:"Ether" }, ZhenZhenAssault:{ n:"Остриё", base:"Physics" }
+};
+function scElement(list){
+  list = list || [];
+  const sp = list.find(e => SC_EL[e] && SC_EL[e].base);
+  const key = sp || list[0] || "";
+  const e = SC_EL[key];
+  if(!e) return { n:key, c:"#f0c264", key };
+  const base = e.base ? SC_EL[e.base] : e;
+  return { n:e.n, c:base.c, key: e.base || key };
+}
+const SC_PRO = { Attack:"Нападение", Stun:"Устрашение", Anomaly:"Аномалия", Support:"Поддержка", Defense:"Оборона", Rupture:"Разрушение", Armorer:"Оружейник" };
 const SC_SKILL = { 0:"Обычная атака", 1:"Особая атака", 2:"Уклонение", 3:"Цепная атака", 5:"Базовый навык", 6:"Поддержка" };
 
 /* ── расчёт характеристик по формулам из документации Enka ── */
@@ -214,6 +227,7 @@ function renderShowcase(){
     const b = document.createElement("button");
     const inShow = (u.shown || []).indexOf(id) !== -1;
     b.className = "sc-tab" + (id === ui.scAgent ? " on" : "") + (inShow ? "" : " old");
+    b.style.setProperty("--accent", scElement((sbuild.avatars[id] || {}).el).c);
     b.title = scName("c", id) + (inShow ? "" : " — сейчас не в витрине, сборка от " + u.agents[id].at.slice(0, 10).split("-").reverse().join("."));
     const info = sbuild.avatars[id] || {};
     b.innerHTML = '<span>' + esc(scName("c", id).charAt(0)) + '</span>' + ((info.circle || info.img) ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(scImg(info.circle || info.img)) + '" onerror="this.remove()">' : "");
@@ -223,8 +237,6 @@ function renderShowcase(){
   scRenderCard(card, u, ui.scAgent);
 }
 
-const SC_EL_COLOR = { Fire:"#ff7a45", Ice:"#8fd8ff", Elec:"#5fa8ff", Physics:"#f2c14e", Ether:"#ff5fc8", Wind:"#6fe0b0",
-  FireFrost:"#ffb38a", AuricEther:"#ffd36b", Lumen:"#fff1a8", ZhenZhenAssault:"#f2c14e" };
 // ценные дополнительные характеристики: крит всегда, остальное — по главным характеристикам агента
 function scValuable(hl){
   const v = { "20103":1, "21103":1 };
@@ -246,8 +258,8 @@ function scPips(n, max, cls){
 function scRenderCard(card, u, id){
   const rec = u.agents[id], av = rec.a, c = scCompute(av), info = c.info;
   const inShow = (u.shown || []).indexOf(id) !== -1;
-  const el = (info.el || [])[0] || "";
-  const accent = SC_EL_COLOR[el] || info.color || "#f0c264";
+  const elem = scElement(info.el);
+  const accent = elem.c;
   const hl = (info.hl || []).map(String);
   const valuable = scValuable(hl);
   const nm = scName("c", id);
@@ -256,7 +268,8 @@ function scRenderCard(card, u, id){
   let cv = 0;
   c.discs.forEach(d => d.subs.forEach(s => { if(s[0] === "20103") cv += 2 * s[1]; if(s[0] === "21103") cv += s[1]; }));
 
-  const key = [["ATK", scPropName("12101"), c.total.atk, "12103"], ["CRIT", scPropName("20103"), c.total.crit, "20103"], ["CDMG", scPropName("21103"), c.total.critdmg, "21103"]];
+  const ru = nameLang() !== "en";
+  const key = [["ATK", scPropName("12101"), c.total.atk, "12103"], ["CRIT", ru ? "Шанс крита" : "CRIT Rate", c.total.crit, "20103"], ["CDMG", scPropName("21103"), c.total.critdmg, "21103"]];
   if(hl.indexOf("31401") !== -1 || hl.indexOf("31201") !== -1) key[0] = ["AP", scPropName("31203"), c.total.ap, "31203"];
   if(hl.indexOf("12201") !== -1) key[0] = ["IMP", scPropName("12201"), c.total.impact, "12203"];
   const rows = [
@@ -267,13 +280,15 @@ function scRenderCard(card, u, id){
   ].concat(Object.keys(c.total.dmg).map(b => [b, scPropName(b), c.total.dmg[b], String(Number(b) + 2)]));
 
   let h = '<div class="sc-hero" style="--accent:' + esc(accent) + '">' +
-    '<div class="sc-art"><span class="sc-art-letter">' + esc(nm.charAt(0)) + '</span>' +
-    (info.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(info.img)) + '" onerror="this.remove()">' : "") + '</div>' +
+    '<div class="sc-art">' +
+      '<span class="sc-art-letter"' + (info.img ? ' hidden' : "") + '>' + esc(nm.charAt(0)) + '</span>' +
+      (info.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(info.img)) + '" onerror="this.previousElementSibling.hidden=false;this.remove()">' : "") +
+    '</div>' +
     '<div class="sc-head">' +
-      '<div class="sc-kicker">' + esc([(info.el || []).map(e => SC_ELEMENT[e] || e).join(" · "), SC_PRO[info.pro] || info.pro].filter(Boolean).join("  /  ")) + '</div>' +
+      '<div class="sc-chips"><span class="sc-el"><i></i>' + esc(elem.n) + '</span>' + (info.pro ? '<span>' + esc(SC_PRO[info.pro] || info.pro) + '</span>' : "") + '</div>' +
       '<h2>' + esc(nm) + '</h2>' +
-      '<div class="sc-lvl"><span class="num">' + c.lvl + '</span><small>/ 60</small><div class="sc-lvlbar"><i style="width:' + Math.min(100, c.lvl / 60 * 100) + '%"></i></div></div>' +
-      '<div class="sc-mind"><span>Кинограмма</span>' + scPips(c.m, 6, "m") + '<b>M' + c.m + '</b></div>' +
+      '<div class="sc-lvl"><span class="num">Ур. ' + c.lvl + '</span><div class="sc-lvlbar"><i style="width:' + Math.min(100, c.lvl / 60 * 100) + '%"></i></div><small>60</small></div>' +
+      '<div class="sc-mind" title="Кинограмма M' + c.m + '">' + [1,2,3,4,5,6].map(i => '<i class="' + (i <= c.m ? "on" : "") + '">' + i + '</i>').join("") + '<b>M' + c.m + '</b></div>' +
       '<div class="sc-keys">' + key.map(k => '<div><span>' + esc(k[1]) + '</span><b class="num">' + esc(scPropVal(k[3], k[2])) + '</b></div>').join("") + '</div>' +
       '<div class="sc-skills">' + c.skills.map(s => '<span title="' + esc(SC_SKILL[s.i]) + ': ' + s.lv + '"><i>' + esc(SC_SKILL[s.i]) + '</i><b>' + s.lv + '</b></span>').join("") +
         '<span title="Открытые улучшения базового навыка"><i>Ядро</i><b>' + (c.core ? "ABCDEF".slice(0, c.core).slice(-1) : "—") + '</b></span></div>' +

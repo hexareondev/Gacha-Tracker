@@ -15,10 +15,10 @@ document.getElementById("scrim").onclick = closeSide;
 const NAV_GAMES = [
   { id:"gi",  name:"Genshin Impact",    hist:"hk4e",  views:["pulls","history","collection","achievements"] },
   { id:"hsr", name:"Honkai: Star Rail", hist:"hkrpg", views:["pulls","history","collection","achievements"] },
-  { id:"zzz", name:"Zenless Zone Zero", hist:"nap",   views:["calendar","pulls","history","collection","achievements"] }
+  { id:"zzz", name:"Zenless Zone Zero", hist:"nap",   views:["calendar","pulls","history","collection","showcase","achievements"] }
 ];
-const VIEW_NAMES = { calendar:"Календарь", pulls:"Крутки", history:"История", collection:"Коллекция", achievements:"Достижения" };
-const VIEWS = { calendar:"viewCalendar", pulls:"viewPulls", history:"viewHistory", collection:"viewCollection", achievements:"viewAchievements" };
+const VIEW_NAMES = { calendar:"Календарь", pulls:"Крутки", history:"История", collection:"Коллекция", showcase:"Витрина", achievements:"Достижения" };
+const VIEWS = { calendar:"viewCalendar", pulls:"viewPulls", history:"viewHistory", collection:"viewCollection", showcase:"viewShowcase", achievements:"viewAchievements" };
 const PULL_MATCH = { gi:/genshin|геншин|гэншин/i, hsr:/star\s*rail|\bhsr\b|хср/i, zzz:/zenless|\bzzz\b|ззз|зенлес/i };
 const PULL_DEFAULT = {
   gi:  [["Переплетающиеся судьбы",1],["Примогемы",160]],
@@ -133,7 +133,7 @@ function setNav(game, view){
   ui.game = game;
   ui.tab = view;
   Object.keys(VIEWS).forEach(v => document.getElementById(VIEWS[v]).classList.toggle("hidden", v !== view));
-  document.body.classList.remove("tab-calendar","tab-pulls","tab-history","tab-collection","tab-achievements","game-gi","game-hsr","game-zzz","game-custom");
+  document.body.classList.remove("tab-calendar","tab-pulls","tab-history","tab-collection","tab-showcase","tab-achievements","game-gi","game-hsr","game-zzz","game-custom");
   document.body.classList.add("tab-" + view, cg ? "game-custom" : "game-" + game);
   closeMenu(); closePick(); closePatchPick(); closeGamePick(); closeSide();
   if(view === "pulls"){
@@ -145,6 +145,8 @@ function setNav(game, view){
     renderHistory(); readWatched(false);
   } else if(view === "collection"){
     renderCollection();
+  } else if(view === "showcase"){
+    renderShowcase();
   } else if(view === "achievements"){
     AS.game = game;
     aLimit = 120;

@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=12">
+<link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
 <div class="shell">
@@ -395,6 +395,25 @@
     <div class="colgrid" id="colGrid"></div>
   </div><!-- /viewCollection -->
 
+  <div id="viewShowcase" class="hidden">
+    <div class="sc-top">
+      <input id="scUid" inputmode="numeric" placeholder="UID в ZZZ" autocomplete="off" maxlength="12">
+      <button class="mark sm" id="scLoad">Обновить из витрины</button>
+      <button class="ghost sm" id="scPick" title="Ответ Enka, сохранённый как файл">Загрузить файл</button>
+      <input type="file" id="scFile" accept="application/json,.json" hidden>
+    </div>
+    <p class="hint" id="scNote">Сборки берутся из витрины профиля через Enka.Network — в игре выставьте агентов в витрину. Каждая загрузка сохраняется, так что со временем здесь копятся все агенты, которых вы показывали.</p>
+    <div class="sc-help hidden" id="scHelp">
+      <b>Браузер не пустил запрос к Enka напрямую.</b> Есть два способа:
+      <ol>
+        <li>Откройте <a id="scHelpLink" target="_blank" rel="noopener" href="https://enka.network">ответ Enka по вашему UID</a>, сохраните страницу (Ctrl+S, как .json) и загрузите её кнопкой «Загрузить файл».</li>
+        <li>Один раз заведите бесплатного посредника на Cloudflare — код и инструкция в <a href="https://github.com/hexareondev/Gacha-Tracker/blob/main/tools/enka-proxy-worker.js" target="_blank" rel="noopener">tools/enka-proxy-worker.js</a> — и укажите его адрес в настройках. Тогда кнопка будет работать сама.</li>
+      </ol>
+    </div>
+    <div class="sc-tabs" id="scTabs"></div>
+    <div class="sc-card" id="scCard"></div>
+  </div><!-- /viewShowcase -->
+
   <div id="viewAchievements" class="hidden">
     <div class="achtop">
       <div class="seg" id="achGameSeg"></div>
@@ -542,6 +561,10 @@
     </select></div>
     <p class="hint" style="margin:8px 0 0">Выгрузчики пишут имена на разных языках. Трекер узнаёт предмет по коду и показывает все имена на одном языке.</p>
     <div class="sep"></div>
+    <p class="group">Витрина (Enka.Network)</p>
+    <div class="editrow"><span>Посредник</span><input id="enkaProxy" spellcheck="false" placeholder="пусто — напрямую к enka.network"></div>
+    <p class="hint" style="margin:8px 0 0">Нужен, только если браузер не пускает к Enka напрямую. Код посредника для Cloudflare Workers — в tools/enka-proxy-worker.js.</p>
+    <div class="sep"></div>
     <p class="group">Портреты в истории круток</p>
     <div class="editrow"><span>Источник</span><select id="iconMode">
       <option value="auto">автоматически: открытые базы и папка assets</option>
@@ -675,18 +698,19 @@
   <button class="mark sm" id="syncBarPull">Загрузить</button>
   <button class="ghost sm" id="syncBarClose" aria-label="Скрыть">✕</button>
 </div>
-<script src="js/core.js?v=12"></script>
-<script src="js/calendar.js?v=12"></script>
-<script src="js/history.js?v=12"></script>
-<script src="js/pools.js?v=12"></script>
-<script src="js/collection.js?v=12"></script>
-<script src="js/backup.js?v=12"></script>
-<script src="js/settings.js?v=12"></script>
-<script src="js/pulls.js?v=12"></script>
-<script src="js/achievements.js?v=12"></script>
-<script src="js/odds.js?v=12"></script>
-<script src="js/share.js?v=12"></script>
-<script src="js/sync.js?v=12"></script>
-<script src="js/nav.js?v=12"></script>
+<script src="js/core.js?v=13"></script>
+<script src="js/calendar.js?v=13"></script>
+<script src="js/history.js?v=13"></script>
+<script src="js/pools.js?v=13"></script>
+<script src="js/collection.js?v=13"></script>
+<script src="js/showcase.js?v=13"></script>
+<script src="js/backup.js?v=13"></script>
+<script src="js/settings.js?v=13"></script>
+<script src="js/pulls.js?v=13"></script>
+<script src="js/achievements.js?v=13"></script>
+<script src="js/odds.js?v=13"></script>
+<script src="js/share.js?v=13"></script>
+<script src="js/sync.js?v=13"></script>
+<script src="js/nav.js?v=13"></script>
 </body>
 </html>

@@ -103,6 +103,39 @@ def zenless(store):
     return out
 
 
+def zenless_build(store):
+    """Всё, что нужно для карточки агента из витрины Enka: характеристики агентов,
+    амплификаторов, дисков и комплектов, названия свойств."""
+    locs = load(store, "zzz/locs.json")
+    props = {}
+    for pid, p in load(store, "zzz/property.json").items():
+        ru, en = name(locs, p.get("Name", ""))
+        props[pid] = {"k": p.get("Name", ""), "n": ru, "en": en, "f": p.get("Format", "")}
+    avatars = {}
+    for iid, a in load(store, "zzz/avatars.json").items():
+        avatars[iid] = {
+            "base": a.get("BaseProps", {}), "grow": a.get("GrowthProps", {}),
+            "promo": a.get("PromotionProps", []), "core": a.get("CoreEnhancementProps", []),
+            "el": a.get("ElementTypes", []), "pro": a.get("ProfessionType", ""),
+            "img": a.get("Image", ""), "hl": a.get("HighlightProps", []),
+            "color": (a.get("Colors") or {}).get("Accent", ""),
+        }
+    weapons = {}
+    for iid, w in load(store, "zzz/weapons.json").items():
+        weapons[iid] = {
+            "main": [str(w["MainStat"]["PropertyId"]), w["MainStat"]["PropertyValue"]] if w.get("MainStat") else None,
+            "sub": [str(w["SecondaryStat"]["PropertyId"]), w["SecondaryStat"]["PropertyValue"]] if w.get("SecondaryStat") else None,
+            "r": w.get("Rarity", 0), "img": w.get("ImagePath", ""), "pro": w.get("ProfessionType", ""),
+        }
+    eq = load(store, "zzz/equipments.json")
+    discs = {iid: [d.get("Rarity", 0), str(d.get("SuitId", ""))] for iid, d in (eq.get("Items") or {}).items()}
+    suits = {}
+    for sid, su in (eq.get("Suits") or {}).items():
+        ru, en = name(locs, su.get("Name", ""))
+        suits[sid] = {"n": ru, "en": en, "icon": su.get("Icon", ""), "bonus": su.get("SetBonusProps", {})}
+    return {"props": props, "avatars": avatars, "weapons": weapons, "discs": discs, "suits": suits}
+
+
 def main():
     ap = argparse.ArgumentParser(description="База персонажей и оружия из справочников EnkaNetwork")
     ap.add_argument("--store", help="локальная папка store из EnkaNetwork/API-docs")
@@ -135,6 +168,30 @@ def main():
             f.write("\n")
         chars = sum(1 for v in items.values() if v["t"] == "c")
         print(f"{game}: персонажей {chars}, оружия {len(items) - chars} → {path}")
+
+    # данные для карточек агентов из витрины (пока только ZZZ)
+    try:
+        build = zenless_build(args.store)
+        path = os.path.join(args.out, "nap_build.json")
+        body = {"game": "nap", "source": "EnkaNetwork/API-docs", **build}
+        try:
+            with open(path, encoding="utf-8") as f:
+                old = json.load(f)
+            same = all(old.get(k) == body[k] for k in build)
+        except (OSError, ValueError):
+            same = False
+        if same:
+            print("nap_build: без изменений")
+        elif len(build["avatars"]) < 20:
+            print("nap_build: подозрительно мало агентов, файл не перезаписан", file=sys.stderr)
+        else:
+            body["updated"] = stamp
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(body, f, ensure_ascii=False, separators=(",", ":"))
+                f.write("\n")
+            print(f"nap_build: агентов {len(build['avatars'])}, комплектов {len(build['suits'])} → {path}")
+    except Exception as e:
+        print(f"nap_build: ошибка — {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":

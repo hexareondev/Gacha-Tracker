@@ -263,6 +263,7 @@
           <tbody id="calcBody"></tbody>
         </table>
       </div>
+      <div class="spent hidden" id="pSpent"></div>
     </section>
 
     <section>
@@ -295,6 +296,22 @@
         </div>
         <div class="watchrow hidden" id="watchRow"></div>
         <p class="hint" id="histNote"></p>
+        <details class="exporter">
+          <summary>Где взять файл истории?</summary>
+          <p>Подойдёт любой выгрузчик с форматом UIGF v4 (например, StarDB или Starward). Или наш небольшой выгрузчик для Windows: он сам находит ссылку на историю в кэше игры, скачивает все баннеры Genshin Impact, Star Rail и ZZZ и сохраняет один файл <code>uigf_*.json</code> рядом с собой.</p>
+          <ol>
+            <li>Скачайте <b>gacha_export.exe</b> и положите в любую папку — устанавливать ничего не нужно.</li>
+            <li>В игре откройте историю круток — так в кэше появится свежая ссылка.</li>
+            <li>Запустите exe двойным щелчком и дождитесь надписи «Готово».</li>
+            <li>Перетащите получившийся файл сюда. В следующий раз выгрузчик докачает только новые крутки.</li>
+          </ol>
+          <p class="hint">Windows может предупредить «Система Windows защитила ваш компьютер»: у программы нет платной цифровой подписи. Нажмите «Подробнее» → «Выполнить в любом случае». Exe собирается автоматически на серверах GitHub из открытого кода этого репозитория, обращается только к официальному API истории круток и ничего не меняет в файлах игры.</p>
+          <div class="row" style="justify-content:flex-start;flex-wrap:wrap">
+            <a class="btn mark sm" href="https://github.com/hexareondev/Gacha-Tracker/releases/download/exporter/gacha_export.exe">Скачать для Windows (.exe)</a>
+            <a class="btn ghost sm" href="exporter/gacha_export.py" download>Скрипт для Python (.py)</a>
+            <a class="btn ghost sm" href="https://github.com/hexareondev/Gacha-Tracker/blob/main/exporter/gacha_export.py" target="_blank" rel="noopener">Код на GitHub</a>
+          </div>
+        </details>
       </div>
     </div>
 
@@ -305,6 +322,7 @@
             <div class="k">Всего круток</div>
             <div class="v num" id="gTotal">0</div>
             <div class="delta" id="gRange"></div>
+            <button class="ghost pill sm sharebtn" id="shareLuck">Карточка удачи</button>
           </div>
         </div>
         <div class="subs">
@@ -531,6 +549,22 @@
   </div>
 </div>
 
+<div class="overlay" id="shareOverlay">
+  <div class="sheet wide sharesheet" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <h3 id="shareTitle">Карточка удачи</h3>
+    <p class="sub">Картинка собирается прямо в браузере из вашей истории круток — её можно сохранить или отправить друзьям.</p>
+    <div class="sharepre"><img id="shareImg" alt="Карточка удачи"><div class="sharewait" id="shareWait">Рисую…</div></div>
+    <label class="synccheck"><input type="checkbox" id="shareHideUid"> Скрыть UID</label>
+    <p class="hint" id="shareNote" style="margin:6px 0 0"></p>
+    <div class="row sharebtns" style="margin-top:14px">
+      <button class="ghost" id="shareClose">Закрыть</button>
+      <button class="ghost hidden" id="shareCopy">Копировать</button>
+      <button class="ghost hidden" id="shareSend">Отправить</button>
+      <button class="mark" id="shareSave">Скачать PNG</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="confirmOverlay">
   <div class="sheet" style="max-width:380px" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
     <h3 id="confirmTitle">Очистить историю?</h3>
@@ -569,6 +603,7 @@
 <script src="js/pulls.js"></script>
 <script src="js/achievements.js"></script>
 <script src="js/odds.js"></script>
+<script src="js/share.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/nav.js"></script>
 </body>

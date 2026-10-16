@@ -383,6 +383,29 @@ tr.sub:last-of-type td{padding-bottom:11px}
 .dropin span{font-size:12.5px;color:var(--muted);max-width:540px;line-height:1.55}
 .dropin .row{margin-top:6px}
 .dropin .hint{margin:4px 0 0}
+a.btn{
+  display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit;
+  background:rgba(255,255,255,.045);border:1px solid var(--edge-soft);border-radius:var(--rs);
+  transition:background .15s ease,border-color .15s ease;
+}
+a.btn:hover{background:rgba(255,255,255,.085);border-color:var(--edge)}
+a.btn.ghost{background:transparent}
+a.btn.mark{background:linear-gradient(180deg,var(--gold-hot),var(--gold));color:#1a1305;border-color:transparent;border-radius:999px}
+a.btn.mark:hover{background:linear-gradient(180deg,#ffe9b4,var(--gold-hot))}
+a.btn.sm{padding:0 14px}
+details.exporter{align-self:stretch;max-width:600px;margin:10px auto 0;text-align:left;font-size:13px;line-height:1.6;color:var(--muted)}
+details.exporter summary{cursor:pointer;text-align:center;color:var(--gold);font-size:13px;list-style:none}
+details.exporter summary::-webkit-details-marker{display:none}
+details.exporter summary::after{content:" ▾";font-size:11px}
+details.exporter[open] summary::after{content:" ▴"}
+details.exporter[open]{padding:14px 16px 16px;background:var(--panel-2);border:1px solid var(--edge-soft);border-radius:var(--rs)}
+details.exporter p{margin:10px 0}
+details.exporter ol{margin:8px 0;padding-left:20px}
+details.exporter li{margin:3px 0}
+details.exporter b{font-size:inherit;font-weight:600;color:var(--text)}
+details.exporter code{font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:5px;color:var(--text)}
+details.exporter a:not(.btn){color:var(--gold)}
+details.exporter .row{margin-top:12px}
 .watchrow{
   display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
   margin-top:12px;padding:10px 14px;font-size:12.5px;color:var(--muted);
@@ -856,4 +879,41 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 }
 @media(max-width:760px){
   #oddsKind{flex-wrap:wrap;border-radius:14px}
+}
+
+/* ── потрачено за патч ── */
+.spent{margin-top:12px;padding:14px 16px;border-radius:var(--r);background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--edge-soft)}
+.sp-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.sp-head b{font-family:var(--display);font-weight:600;font-size:15px}
+.sp-head span{font-size:12px;color:var(--dim)}
+.sp-empty{font-size:13px;color:var(--muted);line-height:1.55}
+.sp-head + .sp-empty{margin-top:-2px}
+.sp-bar{display:flex;gap:2px;height:6px;border-radius:999px;overflow:hidden;margin-bottom:12px;background:rgba(255,255,255,.05)}
+.sp-bar i{display:block;min-width:3px}
+.spent .char i,.sp-bar i.char{background:var(--gold)}
+.spent .weap i,.sp-bar i.weap{background:var(--steel)}
+.spent .std i,.sp-bar i.std{background:#8fa86a}
+.spent .other i,.sp-bar i.other{background:#8b7fb8}
+.sp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.sp{padding:9px 11px;border-radius:var(--rs);background:rgba(255,255,255,.03);border:1px solid var(--edge-soft);min-width:0}
+.sp .k{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp .k i{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
+.sp .v{font-family:var(--display);font-size:20px;font-weight:600;margin-top:2px}
+.sp .s{font-size:11.5px;color:var(--dim)}
+.sp.tot{background:transparent;border-style:dashed}
+.sp-note{margin:10px 2px 0;font-size:11.5px;color:var(--dim);line-height:1.5}
+
+/* ── карточка удачи ── */
+.sharebtn{align-self:flex-start;margin-top:12px}
+.sharesheet{max-width:540px;max-height:calc(100vh - 32px);overflow:auto}
+.sharepre{position:relative;border-radius:var(--rs);overflow:hidden;background:#0c0c11;border:1px solid var(--edge-soft);margin-bottom:12px;aspect-ratio:4/5;max-height:62vh;margin-inline:auto}
+.sharepre img{display:block;width:100%;height:100%;object-fit:contain}
+.sharewait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+.sharebtns{flex-wrap:wrap}
+.sharebtns button{flex:1 1 auto}
+.sharebtns button{white-space:nowrap;padding:10px 14px}
+@media (max-width:640px){
+  .sp.tot{grid-column:1/-1}
+  .sheet .row.sharebtns{display:grid;grid-template-columns:1fr 1fr}
+  .sharebtns #shareSave{order:-1;grid-column:1/-1}
 }

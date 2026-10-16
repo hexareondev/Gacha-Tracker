@@ -75,6 +75,7 @@ function renderPulls(){
   renderCalc();
   renderPatchTable(g);
   renderPatchChart(g);
+  renderSpent(g, p);
   if(typeof renderOdds === "function" && ui.tab === "pulls") renderOdds();
 
   const trackedTotal = (g.types||[]).reduce((s,t) => s + typeTracked(t), 0);
@@ -420,6 +421,79 @@ function renderPatchChart(g){
   host.innerHTML = s +
     '<div class="legend"><span><i style="background:linear-gradient(180deg,#ffdf95,#c59a3c)"></i>накопили за патч</span>' +
     '<span><i style="background:linear-gradient(180deg,#e0576f,#8a3247)"></i>потратили больше, чем получили</span></div>';
+}
+
+/* ── потрачено за патч по истории круток: отдельный счёт, не смешивается с остатком валюты ── */
+const SPENT_GROUP = {
+  hk4e:  { "301":"char", "302":"weap", "500":"other", "200":"std", "100":"other" },
+  hkrpg: { "11":"char", "21":"char", "12":"weap", "22":"weap", "1":"std", "2":"other" },
+  nap:   { "2":"char", "102":"char", "3":"weap", "103":"weap", "1":"std", "5":"other" }
+};
+function spentNames(hk){
+  return hk === "nap"
+    ? { char:"Агенты", weap:"Амплификаторы", std:"Стандарт", other:"Банбу" }
+    : hk === "hkrpg"
+      ? { char:"Персонажи", weap:"Конусы", std:"Стандарт", other:"Новичковый" }
+      : { char:"Персонажи", weap:"Оружие", std:"Стандарт", other:"Прочие" };
+}
+function spentAcc(g){
+  const n = g.key && typeof navGame === "function" ? navGame(g.key) : null;
+  if(!n || typeof hdata === "undefined") return null;
+  const list = hdata.accounts.filter(a => a.game === n.hist && a.records.length);
+  if(!list.length) return { hk:n.hist, acc:null, many:false };
+  return { hk:n.hist, acc: list.find(a => a.key === hdata.active) || list[0], many: list.length > 1 };
+}
+function patchSpent(g, p, acc, hk){
+  const ps = sortedPatches(g), i = ps.findIndex(x => x.id === p.id), nxt = ps[i+1];
+  const from = p.date, to = nxt && nxt.date ? nxt.date : null;
+  const map = SPENT_GROUP[hk] || {}, top = gameInfo(hk).top;
+  const o = { char:{n:0,top:0}, weap:{n:0,top:0}, std:{n:0,top:0}, other:{n:0,top:0}, total:0, last:"" };
+  acc.records.forEach(r => {
+    const d = (r.t || "").slice(0, 10);
+    if(!d || d < from || (to && d >= to)) return;
+    const b = o[map[r.k] || "other"];
+    b.n++; o.total++;
+    if(r.r === top) b.top++;
+    if(r.t > o.last) o.last = r.t;
+  });
+  o.lastAll = acc.records.reduce((m, r) => r.t > m ? r.t : m, "");
+  o.done = !!to;
+  return o;
+}
+function renderSpent(g, p){
+  const host = document.getElementById("pSpent");
+  const sa = spentAcc(g);
+  if(!sa || !p || !p.date){ host.classList.add("hidden"); host.innerHTML = ""; return; }
+  host.classList.remove("hidden");
+  if(!sa.acc){
+    host.innerHTML = '<div class="sp-empty">Загрузите историю круток во вкладке «История» — здесь появится, сколько круток ушло за патч на персонажей и на оружие.</div>';
+    return;
+  }
+  const o = patchSpent(g, p, sa.acc, sa.hk), names = spentNames(sa.hk);
+  const word = sa.hk === "nap" ? "S" : "5★";
+  const keys = ["char","weap","std","other"].filter(k => k === "char" || k === "weap" || o[k].n);
+  let head = '<div class="sp-head"><b>Потрачено за патч</b><span>по истории круток' +
+    (sa.many ? " · UID " + esc(sa.acc.uid) : "") + '</span></div>';
+  if(!o.total){
+    host.innerHTML = head + '<div class="sp-empty">' +
+      (o.lastAll && o.lastAll.slice(0,10) < p.date
+        ? "История загружена только до " + dmy(o.lastAll.slice(0,10)) + " — обновите файл, чтобы увидеть крутки этого патча."
+        : "В этом патче круток не было.") + '</div>';
+    return;
+  }
+  let bar = '<div class="sp-bar">';
+  keys.forEach(k => { if(o[k].n) bar += '<i class="' + k + '" style="flex:' + o[k].n + '" title="' + names[k] + ": " + o[k].n + '"></i>'; });
+  bar += '</div>';
+  let cells = '<div class="sp-grid">';
+  keys.forEach(k => {
+    cells += '<div class="sp ' + k + '"><div class="k"><i></i>' + names[k] + '</div><div class="v num">' +
+      o[k].n.toLocaleString("ru-RU") + '</div><div class="s">' +
+      (!o[k].n ? "&nbsp;" : o[k].top ? o[k].top + " × " + word : "без " + word) + '</div></div>';
+  });
+  cells += '<div class="sp tot"><div class="k">Всего</div><div class="v num">' + o.total.toLocaleString("ru-RU") + '</div><div class="s">' +
+    (o.done ? "патч завершён" : "история по " + dmy(o.lastAll.slice(0,10))) + '</div></div></div>';
+  host.innerHTML = head + bar + cells +
+    '<p class="sp-note">Считается по файлу истории и не влияет на «Изменение» выше — там разница остатка валюты.</p>';
 }
 
 /* ── управление патчами и играми ── */

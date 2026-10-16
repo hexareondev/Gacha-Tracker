@@ -30,7 +30,8 @@ const LOSE_EXTRA = {
   hkrpg: {
     // с 3.2 игрок выбирает 7 персонажей пула проигрыша из стандартных и добавленных лимитированных;
     // если такой персонаж выпал на собственном повторном баннере — отметьте выигрыш вручную
-    "1102":"2025-04-09", "1205":"2025-04-09", "1208":"2025-04-09"               // Зеле, Блэйд, Фу Сюань
+    "1102":"2025-04-09", "1205":"2025-04-09", "1208":"2025-04-09",              // Зеле, Блэйд, Фу Сюань — с 3.2
+    "1006":"2026-04-22", "1302":"2026-04-22", "1221":"2026-04-22"               // Серебряный Волк, Аргенти, Юньли — с 4.2
   }
 };
 function basePool(game){
@@ -164,7 +165,7 @@ function renderStd(){
   const top = Number(gameInfo(game).top);
   document.getElementById("stdTitle").textContent = "Пул проигрыша 50/50 · " + gameInfo(game).name;
   document.getElementById("stdGameNote").textContent = game === "hkrpg"
-    ? "В Star Rail с версии 3.2 при проигрыше 50/50 могут выпасть и лимитированные персонажи — первыми стали Зеле, Блэйд и Фу Сюань. Если позже добавились другие (например, Серебряный Волк) — добавьте их ниже в «только пул проигрыша» с датой, с которой они стали выпадать. Если такой персонаж выпал на своём же повторном баннере, отметьте выигрыш вручную — отметка применится ко всему баннеру."
+    ? "В Star Rail с версии 3.2 при проигрыше 50/50 могут выпасть и лимитированные персонажи — с 3.2 это Зеле, Блэйд и Фу Сюань, с 4.2 — ещё Серебряный Волк, Аргенти и Юньли. Если добавятся новые — внесите их ниже в «только пул проигрыша» с датой, с которой они стали выпадать. Если такой персонаж выпал на своём же повторном баннере, отметьте выигрыш вручную — отметка применится ко всему баннеру."
     : "";
   // в списке — всё, что в пуле, плюс убранные вами (их можно вернуть)
   const ids = Object.keys(pool).concat(Object.keys(edits).filter(id => edits[id] === null && !pool[id]));
@@ -179,12 +180,25 @@ function renderStd(){
     [id => !isStd(id), "Только пул проигрыша (в стандартный баннер не входят)"]
   ];
   list.innerHTML = "";
-  groups.forEach(([fit, title]) => {
+  const fold = (ui.stdFold || {})[game] || {};
+  groups.forEach(([fit, title], gi) => {
     const part = ids.filter(fit).sort((a, b) => label(a).localeCompare(label(b), "ru"));
     if(!part.length) return;
-    const h = document.createElement("div");
-    h.className = "stdgrp"; h.textContent = title;
+    // разделы сворачиваются; что свёрнуто — запоминается для каждой игры
+    const shut = !!fold[gi];
+    const h = document.createElement("button");
+    h.className = "stdgrp" + (shut ? " shut" : "");
+    h.setAttribute("aria-expanded", !shut);
+    h.innerHTML = '<span>' + esc(title) + '</span><em>' + part.length + '</em>';
+    h.onclick = () => {
+      ui.stdFold = ui.stdFold || {};
+      const f = ui.stdFold[game] = ui.stdFold[game] || {};
+      if(f[gi]) delete f[gi]; else f[gi] = 1;
+      saveUI();
+      renderStd();
+    };
     list.appendChild(h);
+    if(shut) return;
     part.forEach(id => {
       const e = pool[id], removed = !e;
       const row = document.createElement("div");

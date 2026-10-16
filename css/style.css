@@ -968,8 +968,14 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .stdgame{margin:-8px 0 14px;color:var(--gold);opacity:.85}
 .stdgame:empty{display:none}
 .stdlist{display:flex;flex-direction:column;gap:2px}
-.stdgrp{font-size:12px;color:var(--dim);margin:12px 2px 4px;text-transform:uppercase;letter-spacing:.06em}
+.stdgrp{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;border-radius:var(--rs);
+  font-size:12px;color:var(--muted);margin:10px 0 2px;padding:7px 8px;text-transform:uppercase;letter-spacing:.06em}
+.stdgrp:hover{background:rgba(255,255,255,.04)}
 .stdgrp:first-child{margin-top:0}
+.stdgrp span{flex:1 1 auto;min-width:0}
+.stdgrp em{font-style:normal;color:var(--dim);letter-spacing:0}
+.stdgrp::after{content:"▾";color:var(--dim);font-size:11px;transition:transform .15s ease}
+.stdgrp.shut::after{transform:rotate(-90deg)}
 .stdrow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--rs);background:rgba(255,255,255,.025)}
 .stdrow .nm{flex:1 1 auto;min-width:0;font-size:13.5px}
 .stdrow .nm small{display:block;font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

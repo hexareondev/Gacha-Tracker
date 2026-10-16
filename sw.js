@@ -2,7 +2,7 @@
    Свои файлы берутся из сети, если она есть (так всегда открывается свежая версия),
    и сохраняются в кеш; без сети страница открывается из кеша. Шрифты — из кеша
    с фоновым обновлением. Остальные внешние адреса (портреты, базы) не трогаем. */
-const CACHE = "gacha-tracker-v8";
+const CACHE = "gacha-tracker-v10";
 const SHELL = [
   "./", "index.html", "css/style.css",
   "js/core.js", "js/calendar.js", "js/history.js", "js/pools.js", "js/backup.js", "js/settings.js",
@@ -12,7 +12,8 @@ const SHELL = [
 ];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache:"reload" — мимо HTTP-кеша браузера, иначе GitHub Pages ещё 10 минут отдаёт старые файлы
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache:"reload" })))).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", e => {
   e.waitUntil(
@@ -29,7 +30,8 @@ self.addEventListener("fetch", e => {
 
   if(url.origin === location.origin){
     e.respondWith(
-      fetch(req).then(res => {
+      // no-cache — сверка с сервером по ETag: свежий файл сразу после обновления сайта
+      fetch(new Request(req.url, { cache:"no-cache", credentials:"same-origin" })).then(res => {
         if(res.ok){ const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return res;
       }).catch(() =>

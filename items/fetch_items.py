@@ -136,6 +136,90 @@ def zenless_build(store):
     return {"props": props, "avatars": avatars, "weapons": weapons, "discs": discs, "suits": suits}
 
 
+def starrail_build(store):
+    """Для карточек персонажей Star Rail: рост характеристик, конусы, реликвии, следы, названия свойств."""
+    locs = load(store, "hsr/hsr.json")
+    meta = load(store, "hsr/honker_meta.json")
+    ranks = load(store, "hsr/honker_ranks.json")
+    avatars = {}
+    for iid, a in load(store, "hsr/avatars.json").items():
+        if iid not in meta["avatar"]:
+            continue
+        avatars[iid] = {
+            "promo": meta["avatar"][iid], "el": a.get("Element", ""), "path": a.get("AvatarBaseType", ""),
+            "img": a.get("AvatarCutinFrontImgPath", ""), "circle": a.get("AvatarSideIconPath", ""),
+            "ranks": [(ranks.get(str(r)) or {}).get("SkillAddLevelList", {}) for r in a.get("RankIDList", [])],
+        }
+    lcs = {}
+    for iid, w in load(store, "hsr/weapons.json").items():
+        if iid not in meta["equipment"]:
+            continue
+        lcs[iid] = {"promo": meta["equipment"][iid], "skill": w.get("EquipmentSkill") or meta["equipmentSkill"].get(iid, {}),
+                    "img": w.get("ImagePath", ""), "r": w.get("Rarity", 0), "path": w.get("AvatarBaseType", "")}
+    rel = load(store, "hsr/relics.json")
+    items = {iid: [r.get("Rarity", 0), r.get("Type", ""), r.get("MainAffixGroup"), r.get("SubAffixGroup"), r.get("SetID"), r.get("Icon", "")]
+             for iid, r in rel.get("Items", {}).items()}
+    sets = {}
+    for sid, st in rel.get("Sets", {}).items():
+        ru, en = name(locs, st.get("Name", ""))
+        icon = next((v[5] for v in items.values() if str(v[4]) == sid and v[1] in ("HEAD", "NECK")), "")
+        sets[sid] = {"n": ru, "en": en, "icon": icon, "bonus": st.get("SetSkills", {})}
+    props = {}
+    for k in ("MaxHP", "Attack", "Defence", "Speed", "CriticalChance", "CriticalDamage", "BreakDamageAddedRatio", "HealRatio",
+              "SPRatio", "StatusProbability", "StatusResistance", "ElationDamageAddedRatio",
+              "PhysicalAddedRatio", "FireAddedRatio", "IceAddedRatio", "ThunderAddedRatio", "WindAddedRatio", "QuantumAddedRatio", "ImaginaryAddedRatio"):
+        ru, en = name(locs, k)
+        props[k] = {"n": ru, "en": en}
+    return {"avatars": avatars, "lcs": lcs, "relics": items, "main": meta["relic"]["mainAffix"], "sub": meta["relic"]["subAffix"],
+            "sets": sets, "tree": meta["tree"], "props": props}
+
+
+def genshin_build(store):
+    """Для карточек персонажей Genshin: Enka отдаёт готовые характеристики, нужны только названия и картинки."""
+    locs = load(store, "gi/locs.json")
+    avatars = {}
+    for iid, a in load(store, "gi/avatars.json").items():
+        side = gi_icon(a.get("SideIconName", ""))
+        avatars[iid] = {
+            "el": a.get("Element", ""), "wt": a.get("WeaponType", ""),
+            "img": side.replace("UI_AvatarIcon_Side_", "UI_Gacha_AvatarImg_"), "circle": side.replace("UI_AvatarIcon_Side_", "UI_AvatarIcon_"),
+            "skills": a.get("SkillOrder", []), "proud": a.get("ProudMap", {}),
+        }
+    affix = {iid: a.get("PropType") for iid, a in load(store, "gi/affixes.json").items()}
+    rel = load(store, "gi/relics.json")
+    sets = {}
+    for sid, st in rel.get("Sets", {}).items():
+        ru, en = name(locs, st.get("Name", ""))
+        if ru:
+            sets[str(st.get("Name"))] = {"n": ru, "en": en}
+    props = {}
+    for k in locs.get("ru", {}):
+        if k.startswith("FIGHT_PROP_"):
+            ru, en = name(locs, k)
+            props[k] = {"n": ru, "en": en}
+    return {"avatars": avatars, "affix": affix, "sets": sets, "props": props}
+
+
+def save_build(path, build, stamp, key, minimum):
+    body = {"source": "EnkaNetwork/API-docs", **build}
+    try:
+        with open(path, encoding="utf-8") as f:
+            old = json.load(f)
+        if all(old.get(k) == body[k] for k in build):
+            print(f"{os.path.basename(path)}: без изменений")
+            return
+    except (OSError, ValueError):
+        pass
+    if len(build[key]) < minimum:
+        print(f"{os.path.basename(path)}: подозрительно мало данных, файл не перезаписан", file=sys.stderr)
+        return
+    body["updated"] = stamp
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(body, f, ensure_ascii=False, separators=(",", ":"))
+        f.write("\n")
+    print(f"{os.path.basename(path)}: {len(build[key])} → {path}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="База персонажей и оружия из справочников EnkaNetwork")
     ap.add_argument("--store", help="локальная папка store из EnkaNetwork/API-docs")
@@ -169,7 +253,14 @@ def main():
         chars = sum(1 for v in items.values() if v["t"] == "c")
         print(f"{game}: персонажей {chars}, оружия {len(items) - chars} → {path}")
 
-    # данные для карточек агентов из витрины (пока только ZZZ)
+    # данные для карточек персонажей Star Rail и Genshin
+    for fname, fn, key, minimum in (("hkrpg_build.json", starrail_build, "avatars", 30), ("hk4e_build.json", genshin_build, "avatars", 40)):
+        try:
+            save_build(os.path.join(args.out, fname), fn(args.store), stamp, key, minimum)
+        except Exception as e:
+            print(f"{fname}: ошибка — {e}", file=sys.stderr)
+
+    # данные для карточек агентов ZZZ
     try:
         build = zenless_build(args.store)
         path = os.path.join(args.out, "nap_build.json")

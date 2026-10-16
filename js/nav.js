@@ -13,8 +13,8 @@ document.getElementById("scrim").onclick = closeSide;
 
 /* ── навигация: игры и их разделы ── */
 const NAV_GAMES = [
-  { id:"gi",  name:"Genshin Impact",    hist:"hk4e",  views:["pulls","history","collection","achievements"] },
-  { id:"hsr", name:"Honkai: Star Rail", hist:"hkrpg", views:["pulls","history","collection","achievements"] },
+  { id:"gi",  name:"Genshin Impact",    hist:"hk4e",  views:["pulls","history","collection","showcase","achievements"] },
+  { id:"hsr", name:"Honkai: Star Rail", hist:"hkrpg", views:["pulls","history","collection","showcase","achievements"] },
   { id:"zzz", name:"Zenless Zone Zero", hist:"nap",   views:["calendar","pulls","history","collection","showcase","achievements"] }
 ];
 const VIEW_NAMES = { calendar:"Календарь", pulls:"Крутки", history:"История", collection:"Коллекция", showcase:"Витрина", achievements:"Достижения" };

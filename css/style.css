@@ -1210,6 +1210,7 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .gx-cons i{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(10,30,32,.75);border:1.5px solid rgba(200,240,235,.35);color:#9fb7b4}
 .gx-cons i.on{border-color:var(--accent);box-shadow:0 0 12px color-mix(in srgb,var(--accent) 60%,transparent);color:#fff}
 .gx-cons i b{font-size:10.5px;font-family:var(--display)}
+.xim{display:inline-block;background:currentColor;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;opacity:1;width:17px;height:17px;flex:0 0 17px}
 .gx-cons .xi{width:13px;height:13px}
 .gx-friend{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#b9cfcc;margin:6px 0}
 .gx-friend b{color:#fff}
@@ -1249,58 +1250,86 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .gx-as i{font-style:normal;color:#ecd9a8;letter-spacing:1px}
 .gx-as .xi,.gx-am .xi{width:12px;height:12px;flex-basis:12px}
 
-/* Star Rail — карточка HoYoLAB: звёздный фиолетовый фон, арт-карта слева, сетка реликвий */
-.hx{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:16px;padding:16px;border-radius:14px;color:#e9e6f5;
-  background:radial-gradient(1.5px 1.5px at 20% 30%,#fff8,transparent),radial-gradient(1px 1px at 70% 60%,#fff6,transparent),radial-gradient(1px 1px at 40% 80%,#fff5,transparent),
-    radial-gradient(700px 500px at 80% 0%,#3a2f6e,transparent 70%),linear-gradient(160deg,#1e1a3c,#141130 60%,#100d26);
-  border:1px solid rgba(190,170,255,.18)}
-.hx-left{display:flex;flex-direction:column;gap:12px;min-width:0}
-.hx-art{position:relative;height:500px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.25);
-  background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--accent) 35%,transparent),transparent 65%),linear-gradient(180deg,#2a2350,#1a1534)}
-.hx-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top}
-.hx-name{position:absolute;left:12px;top:10px;font-size:22px;font-weight:700;text-shadow:0 2px 8px #000}
-.hx-name em{font-style:normal;font-size:11px;font-weight:600;padding:1px 6px;border-radius:3px;background:#d9c38f;color:#2a2210;vertical-align:middle}
-.hx-tags{position:absolute;left:12px;top:46px;display:flex;gap:6px}
-.hx-tags span{display:flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2)}
-.hx-tags .xi{color:var(--accent);width:12px;height:12px}
-.hx-eid{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:8px}
-.hx-eid i{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:700;
-  background:rgba(10,8,25,.7);border:1.5px solid rgba(255,255,255,.35);color:#aaa}
-.hx-eid i.on{border-color:#fff;color:#fff;box-shadow:0 0 10px color-mix(in srgb,var(--accent) 70%,transparent)}
-.hx-eid .xi{width:12px;height:12px}
-.hx-box{border-radius:10px;background:rgba(40,34,80,.55);border:1px solid rgba(190,170,255,.16);padding:10px 12px}
-.hx-bt{font-size:12.5px;color:#b9b2d8;margin-bottom:8px}
-.hx-bt small{font-size:11px;color:#8a83ad;margin-left:6px}
+/* Star Rail — раскладка HoYoLAB в цветах трекера */
+.hx{--accent:#f0c264;display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:14px;padding:14px;border-radius:var(--r);color:var(--text);
+  background:radial-gradient(600px 400px at 0% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%),linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--edge-soft)}
+.hx-left{display:flex;flex-direction:column;gap:10px;min-width:0}
+.hx-art{position:relative;height:480px;border-radius:var(--rs);overflow:hidden;border:1px solid color-mix(in srgb,var(--accent) 25%,var(--edge-soft));
+  background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--accent) 28%,transparent),transparent 65%),#0c0c11}
+/* карточка персонажа с фоном: крупнее и без лишнего неба сверху */
+.hx-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%;transform:scale(1.14);transform-origin:50% 22%}
+.hx-art::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(10,10,14,.55),transparent 22%,transparent 72%,rgba(10,10,14,.85))}
+.hx-name{position:absolute;z-index:1;left:12px;top:10px;font-family:var(--display);font-size:22px;font-weight:600;text-shadow:0 2px 10px #000}
+.hx-name em,.hx-lcmeta em{font-style:normal;font-family:var(--body,inherit);font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--gold);color:#1a1305;vertical-align:middle}
+.hx-tags{position:absolute;z-index:1;left:12px;top:46px;display:flex;gap:6px}
+.hx-tags span{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);color:var(--muted)}
+.hx-tags .el{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.hx-tags .el i{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.hx-eid{position:absolute;z-index:1;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:8px}
+.hx-e{width:38px;height:38px;border-radius:50%;background:rgba(10,10,14,.75);border:1.5px solid rgba(255,255,255,.2);color:var(--dim)}
+.hx-e img{opacity:.3;filter:grayscale(1)}
+.hx-e .lk{position:relative;z-index:1;width:13px;height:13px}
+.hx-e.on{border-color:var(--gold);box-shadow:0 0 10px rgba(240,194,100,.45)}
+.hx-e.on img{opacity:1;filter:none}
+.hx-box{border-radius:var(--rs);background:rgba(255,255,255,.025);border:1px solid var(--edge-soft);padding:10px 12px}
+.hx-bt{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:8px}
+.hx-bt small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);margin-left:6px}
 .hx-lc{display:flex;gap:12px;align-items:center}
-.hx-lcimg{width:46px;height:62px;border-radius:4px;background:linear-gradient(180deg,#5b4a96,#30285a)}
-.hx-lcname{font-size:14px;color:#c9a6ff}
-.hx-lcname.top{color:#f2cf7a}
-.hx-lcmeta{font-size:11.5px;color:#a9a2cc;margin-top:3px}
-.hx-traces{display:flex;gap:10px}
-.hx-traces span{position:relative;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);border:1.5px solid rgba(255,255,255,.4)}
-.hx-traces i{font-style:normal;font-family:var(--display)}
-.hx-traces b{position:absolute;right:-4px;bottom:-4px;font-size:10px;min-width:17px;height:17px;border-radius:9px;background:#2a2450;border:1px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
-.hx-right{display:flex;flex-direction:column;gap:12px;min-width:0}
-.hx-title{font-size:22px;font-weight:700;padding-left:10px;border-left:3px solid #e9e6f5}
-.hx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px}
-.hx-grid .xrow{color:#e0dcf2;border-bottom:1px solid rgba(255,255,255,.06)}
-.hx-grid .xrow.hl{color:#ffb85c}
-.hx-grid .xrow .xba em{color:#8fd0ff}
-.hx-relics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.hx-rel{border-radius:8px;overflow:hidden;background:rgba(20,16,44,.7);border:1px solid rgba(255,255,255,.08);min-width:0}
-.hx-rel.none p{margin:0;padding:20px 10px;color:#8a83ad;font-size:12px;text-align:center}
-.hx-rh{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;font-size:13px;font-weight:600;
-  background:linear-gradient(90deg,#7a5a3a,#4a3a2a 70%,#3a2e26);color:#fff}
-.hx-rh em{font-style:normal;font-size:10px;padding:0 4px;border-radius:3px;background:rgba(0,0,0,.35);margin-left:4px}
-.hx-ricon{width:28px;height:28px}
-.hx-rm,.hx-rs{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.05)}
-.hx-rm{background:rgba(255,255,255,.06);font-weight:700;font-size:13.5px}
+.hx-lcimg{width:58px;height:76px;border-radius:6px;background:#0c0c11;border:1px solid var(--edge-soft)}
+.hx-lcname{font-size:14px;font-weight:600;color:var(--text)}
+.hx-lcname.top{color:var(--gold-hot)}
+.hx-lcmeta{font-size:11.5px;color:var(--dim);margin:2px 0 4px}
+.hx-lcst{font-size:11.5px;color:var(--muted)}
+.hx-lcst b{color:var(--text);font-family:var(--display)}
+.hx-skills{display:flex;flex-wrap:wrap;gap:10px}
+.hx-skills > span{position:relative}
+.hx-sk{width:44px;height:44px;border-radius:50%;background:#0c0c11;border:1.5px solid rgba(240,194,100,.45)}
+.hx-skills b{position:absolute;right:-4px;bottom:-3px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--gold);color:#1a1305;font-size:10.5px;font-family:var(--display);display:flex;align-items:center;justify-content:center}
+.hx-nodes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.hx-major{width:34px;height:34px;border-radius:50%;background:#0c0c11;border:1.5px solid var(--edge)}
+.hx-minor{width:22px;height:22px;border-radius:50%;background:#0c0c11;border:1px solid var(--edge-soft)}
+.hx-major img,.hx-minor img{opacity:.25;filter:grayscale(1)}
+.hx-major.on,.hx-minor.on{border-color:rgba(240,194,100,.6)}
+.hx-major.on img,.hx-minor.on img{opacity:1;filter:none}
+.hx-minor img{inset:3px;width:calc(100% - 6px);height:calc(100% - 6px)}
+.hx-tbonus{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:10px;font-size:11.5px;color:var(--muted)}
+.hx-tbonus b{color:var(--gold);font-family:var(--display);font-weight:600}
+.hx-right{display:flex;flex-direction:column;gap:10px;min-width:0}
+.hx-title{font-family:var(--display);font-size:20px;font-weight:600;padding-left:10px;border-left:3px solid var(--gold)}
+.hx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(7,auto);grid-auto-flow:column;column-gap:14px}
+.hx-grid .xrow{color:var(--muted);border-bottom:1px solid rgba(255,255,255,.05)}
+.hx-grid .xrow > b{color:var(--text)}
+.hx-grid .xrow.hl,.hx-grid .xrow.hl > b{color:var(--gold-hot)}
+.hx-grid .xrow .xba em{color:#8fa86a}
+.hx-useful{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:8px 10px;border-radius:var(--rs);background:rgba(240,194,100,.05);border:1px solid rgba(240,194,100,.15)}
+.hx-useful > div:first-child{flex:1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.hx-ut{font-size:12px;color:var(--muted);margin-right:4px}
+.hx-uc{font-size:12px;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--edge-soft)}
+.hx-uc b{color:var(--gold-hot);font-family:var(--display)}
+.hx-utot{width:54px;height:54px;flex:0 0 54px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid var(--gold);background:radial-gradient(circle,rgba(240,194,100,.18),transparent 70%)}
+.hx-utot b{font-family:var(--display);font-size:20px;color:var(--gold-hot);line-height:1}
+.hx-utot small{font-size:9.5px;color:var(--dim)}
+.hx-relics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 8px;padding-top:14px}
+.hx-rel{position:relative;border-radius:var(--rs);background:var(--panel);border:1px solid var(--edge-soft);min-width:0}
+.hx-rel.top{border-color:rgba(240,194,100,.25)}
+.hx-rel.none p{margin:0;padding:20px 10px;color:var(--dim);font-size:12px;text-align:center}
+/* низкая шапка, крупная иконка комплекта выступает за её верх — как в HoYoLAB */
+.hx-rh{position:relative;display:flex;align-items:center;height:26px;padding:0 56px 0 10px;border-radius:var(--rs) var(--rs) 0 0;font-size:13px;font-weight:600;
+  background:linear-gradient(90deg,rgba(240,194,100,.22),rgba(240,194,100,.05) 70%);border-bottom:1px solid rgba(240,194,100,.18);color:var(--text)}
+.hx-rh span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hx-rh em{font-style:normal;font-size:10px;padding:0 5px;border-radius:999px;background:rgba(0,0,0,.4);color:var(--gold);margin-left:4px}
+.hx-ricon{position:absolute;right:4px;top:-18px;width:48px;height:48px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+.hx-rm,.hx-rs{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.04)}
+.hx-rm{background:rgba(255,255,255,.035);font-weight:600;font-size:13.5px}
+.hx-rm b{color:var(--gold-hot)}
 .hx-rm span,.hx-rs span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hx-rs{color:#cfcae6}
-.hx-rs i{font-style:normal;font-size:10px;color:#a9a2cc;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.08)}
-.hx-rs.val{color:#ffb85c}
+.hx-rs{color:var(--dim)}
+.hx-rs i{font-style:normal;font-size:10px;color:var(--muted);padding:0 4px;border-radius:999px;background:rgba(255,255,255,.07)}
+.hx-rs.val{color:var(--text)}
+.hx-rs.val b{color:var(--gold-hot)}
+.hx-rs.val i{background:rgba(240,194,100,.18);color:var(--gold-hot)}
 .hx-rm b,.hx-rs b{font-family:var(--display)}
-
 /* ZZZ — широкая карточка в духе Enka: арт, кинограммы столбцом, характеристики, диски справа */
 .zx{position:relative;display:grid;grid-template-columns:minmax(0,240px) 46px minmax(0,1fr) minmax(0,310px);grid-template-rows:auto auto;
   border-radius:14px;overflow:hidden;color:#f3f3f3;border:2px solid color-mix(in srgb,var(--accent) 60%,#000);
@@ -1375,9 +1404,11 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
   .zx-discs{clip-path:none;padding:10px}
 }
 @media (max-width:520px){
-  .gx-grid,.hx-grid{grid-template-columns:1fr}
+  .gx-grid,.hx-grid{grid-template-columns:1fr;grid-template-rows:none;grid-auto-flow:row}
   .gx-grid .xrow:nth-child(odd){border-right:none}
   .hx-relics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hx-rh{padding-right:44px}
+  .hx-ricon{width:40px;height:40px;top:-15px;right:2px}
   .zx-stats{grid-template-columns:1fr}
   .zx-w{padding-right:86px}
 }

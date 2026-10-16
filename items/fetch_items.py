@@ -137,24 +137,41 @@ def zenless_build(store):
 
 
 def starrail_build(store):
-    """Для карточек персонажей Star Rail: рост характеристик, конусы, реликвии, следы, названия свойств."""
+    """Для карточек персонажей Star Rail: рост характеристик, конусы, реликвии, следы, иконки, названия свойств.
+    Свежие персонажи есть в avatars.json/weapons.json/tree.json раньше, чем в honker_meta, — берём оттуда."""
     locs = load(store, "hsr/hsr.json")
     meta = load(store, "hsr/honker_meta.json")
-    ranks = load(store, "hsr/honker_ranks.json")
+    ranks = load(store, "hsr/ranks.json")
+    skills = load(store, "hsr/skills.json")
+    tree = dict(meta.get("tree", {}))
+    tree.update(load(store, "hsr/tree.json"))
     avatars = {}
     for iid, a in load(store, "hsr/avatars.json").items():
-        if iid not in meta["avatar"]:
+        promo = a.get("Promotion") or meta["avatar"].get(iid)
+        if not promo:
             continue
+        st = (a.get("SkillTree") or {}).get("0") or {}
+        points = list(st.get("AvatarSkills", []))
+        for grp in st.get("PropSkills", []) + st.get("SummonSkills", []):
+            points += grp
         avatars[iid] = {
-            "promo": meta["avatar"][iid], "el": a.get("Element", ""), "path": a.get("AvatarBaseType", ""),
+            "promo": promo, "el": a.get("Element", ""), "path": a.get("AvatarBaseType", ""),
             "img": a.get("AvatarCutinFrontImgPath", ""), "circle": a.get("AvatarSideIconPath", ""),
             "ranks": [(ranks.get(str(r)) or {}).get("SkillAddLevelList", {}) for r in a.get("RankIDList", [])],
+            "rankIcons": [(ranks.get(str(r)) or {}).get("IconPath", "") for r in a.get("RankIDList", [])],
+            "points": {str(pt): [(skills.get(str(pt)) or {}).get("IconPath", ""), (skills.get(str(pt)) or {}).get("PointType", 0)] for pt in points},
+            "tree": st,
         }
     lcs = {}
     for iid, w in load(store, "hsr/weapons.json").items():
-        if iid not in meta["equipment"]:
+        promo = {}
+        for lvl, pr in (w.get("Promotion") or meta["equipment"].get(iid) or {}).items():
+            promo[lvl] = {"BaseHP": pr.get("BaseHP", 0), "HPAdd": pr.get("BaseHPAdd", pr.get("HPAdd", 0)),
+                          "BaseAttack": pr.get("BaseAttack", 0), "AttackAdd": pr.get("BaseAttackAdd", pr.get("AttackAdd", 0)),
+                          "BaseDefence": pr.get("BaseDefence", 0), "DefenceAdd": pr.get("BaseDefenceAdd", pr.get("DefenceAdd", 0))}
+        if not promo:
             continue
-        lcs[iid] = {"promo": meta["equipment"][iid], "skill": w.get("EquipmentSkill") or meta["equipmentSkill"].get(iid, {}),
+        lcs[iid] = {"promo": promo, "skill": w.get("EquipmentSkill") or meta["equipmentSkill"].get(iid, {}),
                     "img": w.get("ImagePath", ""), "r": w.get("Rarity", 0), "path": w.get("AvatarBaseType", "")}
     rel = load(store, "hsr/relics.json")
     items = {iid: [r.get("Rarity", 0), r.get("Type", ""), r.get("MainAffixGroup"), r.get("SubAffixGroup"), r.get("SetID"), r.get("Icon", "")]
@@ -170,8 +187,11 @@ def starrail_build(store):
               "PhysicalAddedRatio", "FireAddedRatio", "IceAddedRatio", "ThunderAddedRatio", "WindAddedRatio", "QuantumAddedRatio", "ImaginaryAddedRatio"):
         ru, en = name(locs, k)
         props[k] = {"n": ru, "en": en}
+    # следы оставляем только для известных персонажей — так файл меньше
+    keep = set(avatars)
+    tree = {k: v for k, v in tree.items() if k[:4] in keep or k[1:5] in keep}
     return {"avatars": avatars, "lcs": lcs, "relics": items, "main": meta["relic"]["mainAffix"], "sub": meta["relic"]["subAffix"],
-            "sets": sets, "tree": meta["tree"], "props": props}
+            "sets": sets, "tree": tree, "props": props}
 
 
 def genshin_build(store):

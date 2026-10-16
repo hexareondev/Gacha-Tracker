@@ -27,7 +27,10 @@ const SC_ICON = {
   dot: '<circle cx="8" cy="8" r="2.5"/>',
   lock:'<rect x="3.5" y="7" width="9" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>'
 };
-function ic(k, cls){ return '<svg class="xi' + (cls ? " " + cls : "") + '" viewBox="0 0 16 16" aria-hidden="true">' + (SC_ICON[k] || SC_ICON.dot) + "</svg>"; }
+function ic(k, cls){
+  // картинка-маска: цвет берётся из currentColor, как у SVG
+  if(typeof k === "string" && k.indexOf("hsr:") === 0) return '<i class="xi xim' + (cls ? " " + cls : "") + '" style="-webkit-mask-image:url(icons/hsr/' + k.slice(4) + '.webp);mask-image:url(icons/hsr/' + k.slice(4) + '.webp)" aria-hidden="true"></i>';
+  return '<svg class="xi' + (cls ? " " + cls : "") + '" viewBox="0 0 16 16" aria-hidden="true">' + (SC_ICON[k] || SC_ICON.dot) + "</svg>"; }
 function xImg(path, cls, letter){
   return '<span class="ximg ' + (cls || "") + '">' + (letter ? '<b>' + esc(letter) + '</b>' : "") +
     (path ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(path)) + '" onerror="this.remove()">' : "") + "</span>";
@@ -64,29 +67,44 @@ function gxCard(vm){
   return h;
 }
 
-/* ── Star Rail: карточка HoYoLAB ── */
+/* ── Star Rail: раскладка HoYoLAB в цветах трекера ── */
+function hxImg(path, cls, extra){
+  return '<span class="ximg ' + cls + '">' + (extra || "") + (path ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(scImg(path)) + '" onerror="this.remove()">' : "") + "</span>";
+}
 function hxCard(vm){
+  const t = vm.traces || { skills:[], majors:[], minors:[], bonus:[] };
   let h = '<div class="hx" style="--accent:' + esc(vm.color) + '">' +
     '<div class="hx-left">' +
       '<div class="hx-art">' + (vm.art ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
         '<div class="hx-name">' + esc(vm.name) + ' <em>Ур. ' + vm.lvl + '</em></div>' +
-        '<div class="hx-tags"><span>' + ic("dmg") + esc(vm.el) + '</span><span>' + esc(vm.cls) + '</span></div>' +
-        '<div class="hx-eid">' + [1,2,3,4,5,6].map(i => '<i class="' + (i <= vm.cons.n ? "on" : "") + '">' + (i <= vm.cons.n ? toRoman(i) : ic("lock")) + "</i>").join("") + '</div>' +
+        '<div class="hx-tags"><span class="el"><i></i>' + esc(vm.el) + '</span><span>' + esc(vm.cls) + '</span></div>' +
+        '<div class="hx-eid">' + [1,2,3,4,5,6].map(i => hxImg((vm.rankIcons || [])[i - 1], "hx-e" + (i <= vm.cons.n ? " on" : ""), i <= vm.cons.n ? "" : ic("lock", "lk"))).join("") + '</div>' +
       '</div>';
   if(vm.weapon){
     const w = vm.weapon;
-    h += '<div class="hx-box"><div class="hx-bt">Световой конус</div><div class="hx-lc">' + xImg(w.img, "hx-lcimg", w.badge) +
-      '<div><div class="hx-lcname' + (w.top ? " top" : "") + '">' + esc(w.name) + '</div><div class="hx-lcmeta">Ур. ' + w.lvl + ' · Наложение ур. ' + w.refine.n + '</div></div></div></div>';
+    h += '<div class="hx-box"><div class="hx-bt">Световой конус</div><div class="hx-lc">' + hxImg(w.img, "hx-lcimg") +
+      '<div><div class="hx-lcname' + (w.top ? " top" : "") + '">' + esc(w.name) + '</div><div class="hx-lcmeta">Ур. ' + w.lvl + ' · Наложение ур. ' + w.refine.n + '</div>' +
+      w.stats.map(s => '<div class="hx-lcst">' + esc(s[0]) + ' <b>' + esc(s[1]) + "</b></div>").join("") + '</div></div></div>';
   }
-  h += '<div class="hx-box"><div class="hx-bt">Следы</div><div class="hx-traces">' + vm.skills.map(s => '<span title="' + esc(s[0]) + '"><i>' + esc(s[0].charAt(0)) + '</i><b>' + s[1] + "</b></span>").join("") + '</div></div>' +
-    '</div><div class="hx-right"><div class="hx-title">Характеристики</div>' +
-      '<div class="hx-box"><div class="hx-grid">' + vm.stats.map(xStatRow).join("") + '</div></div>' +
-      '<div class="hx-box"><div class="hx-bt">Хар-ки реликвий' + (vm.sets.length ? ' <small>' + vm.sets.map(s => esc(s.name) + (s.full ? " ×4" : " ×2")).join(" · ") + '</small>' : "") + '</div><div class="hx-relics">' +
-      vm.slots.map(d => d.empty ? '<div class="hx-rel none"><div class="hx-rh">' + esc(d.label) + '</div><p>Пусто</p></div>' :
-        '<div class="hx-rel"><div class="hx-rh"><span>' + esc(d.label) + ' <em>+' + d.lvl + '</em></span>' + xImg(d.icon, "hx-ricon") + '</div>' +
-          (d.main ? '<div class="hx-rm">' + ic(d.main[2]) + '<span>' + esc(d.main[0]) + '</span><b>' + esc(d.main[1]) + '</b></div>' : "") +
-          d.subs.map(s => '<div class="hx-rs' + (s.val ? " val" : "") + '">' + ic(s.ic) + '<span>' + esc(s.n) + (s.up ? ' <i>»' + s.up + '</i>' : "") + '</span><b>' + esc(s.v) + "</b></div>").join("") + "</div>").join("") +
-      '</div></div></div></div>';
+  h += '<div class="hx-box"><div class="hx-bt">Следы</div>' +
+      '<div class="hx-skills">' + t.skills.map(s => '<span title="' + esc(s.n) + ': ' + s.lv + '">' + hxImg(s.icon, "hx-sk") + '<b>' + s.lv + "</b></span>").join("") + '</div>' +
+      (t.majors.length || t.minors.length ? '<div class="hx-nodes">' + t.majors.map(m => hxImg(m.icon, "hx-major" + (m.on ? " on" : ""))).join("") +
+        t.minors.map(m => hxImg(m.icon, "hx-minor" + (m.on ? " on" : ""))).join("") + '</div>' : "") +
+      (t.bonus.length ? '<div class="hx-tbonus">' + t.bonus.map(b => '<span>' + esc(b.n) + ' <b>' + esc(b.v) + "</b></span>").join("") + '</div>' : "") +
+    '</div></div>';
+
+  h += '<div class="hx-right"><div class="hx-title">Характеристики</div>' +
+    '<div class="hx-box"><div class="hx-grid">' + vm.stats.map(xStatRow).join("") + '</div></div>';
+  const uk = Object.keys(vm.useful || {}).sort((a, b) => vm.useful[b] - vm.useful[a]);
+  const total = uk.reduce((s, k) => s + vm.useful[k], 0);
+  h += '<div class="hx-box hx-relbox"><div class="hx-bt">Реликвии' + (vm.sets.length ? ' <small>' + vm.sets.map(s => esc(s.name) + (s.full ? " ×4" : " ×2")).join(" · ") + '</small>' : "") + '</div>' +
+    (uk.length ? '<div class="hx-useful"><div><span class="hx-ut">Полезные усиления</span>' + uk.map(k => '<span class="hx-uc">' + esc(k) + ' <b>' + vm.useful[k] + "</b></span>").join("") +
+      '</div><div class="hx-utot"><b>' + total + '</b><small>всего</small></div></div>' : "") +
+    '<div class="hx-relics">' + vm.slots.map(d => d.empty ? '<div class="hx-rel none"><div class="hx-rh"><span>' + esc(d.label) + '</span></div><p>Пусто</p></div>' :
+      '<div class="hx-rel' + (d.top ? " top" : "") + '"><div class="hx-rh"><span>' + esc(d.label) + ' <em>+' + d.lvl + '</em></span>' + hxImg(d.icon, "hx-ricon") + '</div>' +
+        (d.main ? '<div class="hx-rm">' + ic(d.main[2]) + '<span>' + esc(d.main[0]) + '</span><b>' + esc(d.main[1]) + '</b></div>' : "") +
+        d.subs.map(s => '<div class="hx-rs' + (s.val ? " val" : "") + '">' + ic(s.ic) + '<span>' + esc(s.n) + (s.up ? ' <i>»' + s.up + '</i>' : "") + '</span><b>' + esc(s.v) + "</b></div>").join("") + "</div>").join("") +
+    '</div></div></div></div>';
   return h;
 }
 function toRoman(n){ return ["", "I", "II", "III", "IV", "V", "VI"][n] || n; }

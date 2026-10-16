@@ -155,15 +155,21 @@ function hProp(p){
   const map = { HPDelta:["MaxHP",0], HPAddedRatio:["MaxHP",1], AttackDelta:["Attack",0], AttackAddedRatio:["Attack",1], DefenceDelta:["Defence",0],
     DefenceAddedRatio:["Defence",1], SpeedDelta:["Speed",0], BaseSpeed:["Speed",0], SpeedAddedRatio:["Speed",1], CriticalChanceBase:["CriticalChance",1],
     CriticalDamageBase:["CriticalDamage",1], BreakDamageAddedRatioBase:["BreakDamageAddedRatio",1], HealRatioBase:["HealRatio",1], SPRatioBase:["SPRatio",1],
-    StatusProbabilityBase:["StatusProbability",1], StatusResistanceBase:["StatusResistance",1] };
+    StatusProbabilityBase:["StatusProbability",1], StatusResistanceBase:["StatusResistance",1], ElationDamageAddedRatioBase:["ElationDamageAddedRatio",1] };
   if(map[p]) return { k: map[p][0], pct: !!map[p][1] };
   return { k: p, pct: /Ratio|Chance|Damage|Probability|Resistance/.test(p) };
 }
 function hLabel(k){ return scLoc(SCB.hkrpg.props[k]) || k; }
 function hVal(pct, v, spd){ return pct ? fPct(v * 100) : spd && v % 1 ? (Math.round(v * 10) / 10).toLocaleString("ru-RU") : fInt(v); }
+// иконки характеристик HSR — картинки из HoYoLAB (icons/hsr), где картинки нет — своя SVG
+const H_IMG = { MaxHP:"hp", Attack:"atk", Defence:"def", Speed:"spd", CriticalChance:"cr", CriticalDamage:"cd", BreakDamageAddedRatio:"be", HealRatio:"heal",
+  SPRatio:"er", StatusProbability:"ehr", StatusResistance:"res", ElationDamageAddedRatio:"elation",
+  PhysicalAddedRatio:"physical", FireAddedRatio:"fire", IceAddedRatio:"ice", ThunderAddedRatio:"thunder", WindAddedRatio:"wind",
+  QuantumAddedRatio:"quantum", ImaginaryAddedRatio:"imaginary" };
 function hIc(k){
+  if(H_IMG[k]) return "hsr:" + H_IMG[k];
   return { MaxHP:"hp", Attack:"atk", Defence:"def", Speed:"spd", CriticalChance:"cr", CriticalDamage:"cd", BreakDamageAddedRatio:"be", HealRatio:"heal",
-    SPRatio:"er", StatusProbability:"ehr", StatusResistance:"res" }[k] || (/AddedRatio$/.test(k) ? "dmg" : "dot");
+    SPRatio:"er", StatusProbability:"ehr", StatusResistance:"res", ElationDamageAddedRatio:"be" }[k] || (/AddedRatio$/.test(k) ? "dmg" : "dot");
 }
 function hsrVM(av){
   const B = SCB.hkrpg, id = String(av.avatarId), A = B.avatars[id] || {};
@@ -230,12 +236,11 @@ function hsrVM(av){
     Memory:["MaxHP","CriticalChance","CriticalDamage"], Elation:["Attack","CriticalChance","CriticalDamage"], Warlock:["Attack","StatusProbability"],
     Shaman:["Speed","BreakDamageAddedRatio"], Priest:["MaxHP","HealRatio"], Knight:["Defence"] }[A.path] || [];
   const row = (k, v, pct, b) => ({ n: hLabel(k), v: hVal(pct, v), base: b && v > b + .5 ? fInt(b) : "", add: b && v > b + .5 ? fInt(v - b) : "", hl: hl.indexOf(k) !== -1 || k === "Speed", ic: hIc(k) });
+  // все характеристики в игровом порядке, включая нулевые
   const stats = [row("MaxHP", T.hp, 0, base.hp), row("Attack", T.atk, 0, base.atk), row("Defence", T.def, 0, base.def), row("Speed", T.spd, 0, base.spd),
-    row("CriticalChance", T.cr, 1), row("CriticalDamage", T.cd, 1), row("BreakDamageAddedRatio", T.be, 1), row("HealRatio", T.ohb, 1),
+    row("CriticalChance", T.cr, 1), row("CriticalDamage", T.cd, 1), row(elKey + "AddedRatio", dmg, 1), row("BreakDamageAddedRatio", T.be, 1),
+    row("ElationDamageAddedRatio", g("ElationDamageAddedRatioBase") + g("ElationDamageAddedRatio"), 1), row("HealRatio", T.ohb, 1),
     row("SPRatio", T.err, 1), row("StatusProbability", T.ehr, 1), row("StatusResistance", T.res, 1)];
-  if(dmg) stats.push(row(elKey + "AddedRatio", dmg, 1));
-  // нулевые второстепенные характеристики не показываем
-  for(let i = stats.length - 1; i >= 0; i--) if(/^0%$/.test(stats[i].v) && ["BreakDamageAddedRatio","HealRatio","StatusProbability","StatusResistance"].some(k => stats[i].n === hLabel(k))) stats.splice(i, 1);
   let keys = [[hLabel("Speed"), hVal(0, T.spd)], [hLabel("CriticalChance"), hVal(1, T.cr)], [hLabel("CriticalDamage"), hVal(1, T.cd)]];
   if(A.path === "Priest") keys = [[hLabel("Speed"), hVal(0, T.spd)], [hLabel("MaxHP"), fInt(T.hp)], [hLabel("HealRatio"), hVal(1, T.ohb)]];
   if(A.path === "Knight") keys = [[hLabel("Speed"), hVal(0, T.spd)], [hLabel("Defence"), fInt(T.def)], [hLabel("MaxHP"), fInt(T.hp)]];
@@ -245,8 +250,27 @@ function hsrVM(av){
   (A.ranks || []).slice(0, rank).forEach(m => Object.keys(m || {}).forEach(s => { boost[s] = (boost[s] || 0) + m[s]; }));
   const skills = scList(av.skillTreeList).filter(t => { const n = t.pointId % 1000; return n >= 1 && n <= 4 && Math.floor(t.pointId / 1000) === Number(id); })
     .sort((a, b) => a.pointId - b.pointId).map(t => { const n = t.pointId % 1000; return [HSR_SKILL[n], (t.level || 0) + (boost[String(Number(id) * 100 + n)] || 0)]; });
+  // следы: навыки с иконками (включая навыки спутника), бонусные способности и узлы характеристик
+  const lvOf = {}; scList(av.skillTreeList).forEach(t => { lvOf[String(t.pointId)] = t.level || 0; });
+  const pts = A.points || {};
+  const skName = pid => { const n = Number(pid) % 1000; return HSR_SKILL[n] || (n >= 300 && n < 400 ? (n % 2 ? "Навык спутника" : "Талант спутника") : n >= 400 ? "Особый навык" : "Навык"); };
+  const tSkills = Object.keys(pts).filter(p => (pts[p][1] === 2 || pts[p][1] === 4) && Number(p) % 1000 !== 7 && lvOf[p])
+    .sort((a, b) => Number(a) - Number(b))
+    .map(p => ({ n: skName(p), lv: lvOf[p] + (boost[String(Number(id) * 100 + Number(p) % 1000)] || 0), icon: pts[p][0] }));
+  const majors = Object.keys(pts).filter(p => pts[p][1] === 3).sort().map(p => ({ icon: pts[p][0], on: !!lvOf[p] }));
+  const minors = Object.keys(pts).filter(p => pts[p][1] === 1).sort().map(p => ({ icon: pts[p][0], on: !!lvOf[p] }));
+  const treeSum = {};
+  Object.keys(pts).filter(p => pts[p][1] === 1 && lvOf[p]).forEach(p => {
+    const x = (B.tree[p] || {})[String(lvOf[p])]; if(!x) return;
+    Object.keys(x.props || {}).forEach(k => { treeSum[k] = (treeSum[k] || 0) + x.props[k]; });
+  });
+  const treeBonus = Object.keys(treeSum).map(k => { const pp = hProp(k); return { n: hLabel(pp.k), v: "+" + hVal(pp.pct, treeSum[k], pp.k === "Speed") }; });
+  // полезные усиления реликвий: сколько раз выпадала каждая полезная доп. характеристика
+  const useful = {};
+  slots.forEach(d => d.subs.forEach(su => { if(su.val){ useful[su.n] = (useful[su.n] || 0) + su.up + 1; } }));
   const el = HSR_EL[A.el] || [A.el, "#f0c264"];
-  return { name: scItemName("hkrpg", id) || "#" + id, art: A.img, circle: A.circle, el: el[0], color: el[1], cls: HSR_PATH[A.path] || A.path,
+  return { traces:{ skills: tSkills, majors, minors, bonus: treeBonus }, rankIcons: A.rankIcons || [], useful,
+    name: scItemName("hkrpg", id) || "#" + id, art: A.img, circle: A.circle, el: el[0], color: el[1], cls: HSR_PATH[A.path] || A.path,
     lvl, maxLvl: 80, cons:{ label:"E", title:"Эйдолон", n: rank }, keys, skills, stats, weapon, sets, cv: cv * 100, slotsTitle:"Реликвии", setsWord:"реликвий",
     slots: [1,2,3,4,5,6].map(i => slots.find(s => s.pos === i) || { pos:i, label: HSR_SLOT[i], empty:true }),
     foot: "Характеристики посчитаны по данным игры: персонаж, конус, следы, реликвии и постоянные бонусы комплектов. Пассивка конуса учитывается, только если её бонус постоянный и путь совпадает; баффы в бою не учитываются." };

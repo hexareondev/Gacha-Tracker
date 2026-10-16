@@ -8,7 +8,7 @@
 
 Работает прямо в браузере · без регистрации · ваши данные никуда не отправляются
 
-### [Открыть трекер →](https://USERNAME.github.io/REPO/)
+### [Открыть трекер →](https://hexareondev.github.io/Gacha-Tracker/)
 
 ![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-сайт-0c0c10?style=flat-square&logo=github&logoColor=f0c264)
 ![Без сервера](https://img.shields.io/badge/без_сервера-без_сборки-0c0c10?style=flat-square&logo=html5&logoColor=f0c264)

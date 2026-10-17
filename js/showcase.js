@@ -92,7 +92,7 @@ function zzzVM(av){
     if(wi.sub) put(wi.sub[0], sub);
     weapon = { title:"Амплификатор", name: scItemName("nap", w.Id) || "#" + w.Id, img: wi.img, top: wi.r === 4, badge: wi.r === 4 ? "S" : wi.r === 3 ? "A" : "B",
       lvl: w.Level || 1, refine:{ label:"P", n: w.UpgradeLevel || 1 },
-      stats: [wi.main && [zProp(wi.main[0]), zVal(wi.main[0], main), zIc(wi.main[0])], wi.sub && [zProp(wi.sub[0]), zVal(wi.sub[0], sub), zIc(wi.sub[0])]].filter(Boolean) };
+      stats: [wi.main && [zProp(wi.main[0]), zVal(wi.main[0], main), zIc(wi.main[0]), String(wi.main[0]).slice(0, 3)], wi.sub && [zProp(wi.sub[0]), zVal(wi.sub[0], sub), zIc(wi.sub[0]), String(wi.sub[0]).slice(0, 3)]].filter(Boolean) };
   }
   const hl = (info.hl || []).map(String);
   const valuable = { "20103":1, "21103":1 };
@@ -109,12 +109,12 @@ function zzzVM(av){
     const e = slot.Equipment || slot, di = B.discs[String(e.Id)] || [4, ""];
     const rar = di[0], suit = di[1], su = B.suits[suit] || {};
     cnt[suit] = (cnt[suit] || 0) + 1;
-    const mains = scList(e.MainStatList).map(m => [String(m.PropertyId), zDiscMain(m.PropertyValue || 0, e.Level || 0, rar)]);
+    const mains = scList(e.MainPropertyList || e.MainStatList).map(m => [String(m.PropertyId), zDiscMain(m.PropertyValue || 0, e.Level || 0, rar)]);
     const subs = scList(e.RandomPropertyList).map(m => [String(m.PropertyId), (m.PropertyValue || 0) * (m.PropertyLevel || 1), m.PropertyLevel || 1]);
     mains.forEach(m => put(m[0], m[1])); subs.forEach(m => put(m[0], m[1]));
     subs.forEach(s => { if(s[0] === "20103") cv += 2 * s[1]; if(s[0] === "21103") cv += s[1]; });
     slots.push({ pos: slot.Slot || e.Slot || slots.length + 1, label: String(slot.Slot || slots.length + 1), set: scLoc(su), icon: su.icon, lvl: e.Level || 0, top: rar === 4, rank: rar === 4 ? "S" : rar === 3 ? "A" : "B",
-      main: mains[0] ? [zProp(mains[0][0]), zVal(mains[0][0], mains[0][1]), zIc(mains[0][0])] : null,
+      main: mains[0] ? [zProp(mains[0][0]), zVal(mains[0][0], mains[0][1]), zIc(mains[0][0]), mains[0][0].slice(0, 3)] : null,
       subs: subs.map(s => ({ n: zProp(s[0]), v: zVal(s[0], s[1]), up: s[2] - 1, val: !!valuable[s[0]], ic: zIc(s[0]), key: s[0], raw: s[1], fmt: v => zVal(s[0], v) })) });
   });
   const sets = Object.keys(cnt).filter(s => s && cnt[s] >= 2).sort((a, b) => cnt[b] - cnt[a]).map(s => {
@@ -124,7 +124,7 @@ function zzzVM(av){
   });
   const pct = (b, r, f) => Math.floor((base[b] || 0) * (1 + (add[r] || 0) / 10000) + (add[f] || 0));
   const flat = (b, f) => (base[b] || 0) + (add[f] || 0);
-  const row = (key, pid, total, b, hlKey) => ({ n: key, v: zVal(pid, total), base: b !== undefined && total > b ? zVal(pid, b) : "", add: b !== undefined && total > b ? zVal(pid, total - b) : "", hl: hl.indexOf(hlKey) !== -1, ic: zIc(pid) });
+  const row = (key, pid, total, b, hlKey) => ({ n: key, v: zVal(pid, total), base: b !== undefined && total > b ? zVal(pid, b) : "", add: b !== undefined && total > b ? zVal(pid, total - b) : "", hl: hl.indexOf(hlKey) !== -1, ic: zIc(pid), f: String(pid).slice(0, 3) });
   const T = { hp: pct("11101", "11102", "11103"), atk: pct("12101", "12102", "12103"), def: pct("13101", "13102", "13103"),
     imp: pct("12201", "12202", "12203"), cr: flat("20101", "20103"), cd: flat("21101", "21103"), am: pct("31401", "31402", "31403"),
     ap: flat("31201", "31203"), penr: flat("23101", "23103"), pen: flat("23201", "23203"),

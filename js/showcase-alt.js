@@ -112,14 +112,17 @@ function hxCard(vm){
 function toRoman(n){ return ["", "I", "II", "III", "IV", "V", "VI"][n] || n; }
 
 /* ── ZZZ: широкая карточка в духе Enka ── */
+// порядок нижней сводки: HP%, HP, сила атаки %, сила атаки, защита %, защита, крит. шанс, крит. урон, знание аномалии, пробивание
+const ZX_BAR = ["11102", "11103", "12102", "12103", "13102", "13103", "20103", "21103", "31203", "23203"];
+function zxBarPos(k){ const i = ZX_BAR.indexOf(String(k)); return i === -1 ? 99 : i; }
 function zxCard(vm, uid){
   const half = Math.ceil(vm.stats.length / 2);
-  const col = list => list.map(r => '<div class="zx-st' + (r.hl ? " hl" : "") + '">' + ic(r.ic) + '<span class="zx-l">' + esc(r.n) + '</span><span class="zx-dots"></span>' +
+  const col = list => list.map(r => '<div class="zx-st' + (r.hl ? " hl" : "") + '" data-f="' + esc(r.f || "") + '">' + ic(r.ic) + '<span class="zx-l">' + esc(r.n) + '</span><span class="zx-dots"></span>' +
     '<span class="zx-v"><b>' + esc(r.v) + '</b>' + (r.base ? '<small>' + esc(r.base) + ' + <em>' + esc(r.add) + '</em></small>' : "") + "</span></div>").join("");
   // сводка: сколько раз выпадала каждая доп. характеристика и сколько дала в сумме
   const sum = {};
   vm.slots.forEach(d => (d.subs || []).forEach(s => {
-    const k = s.key; sum[k] = sum[k] || { n:0, v:0, ic:s.ic, fmt:s.fmt, name:s.n };
+    const k = s.key; sum[k] = sum[k] || { n:0, v:0, ic:s.ic, fmt:s.fmt, name:s.n, val:s.val };
     sum[k].n += s.up + 1; sum[k].v += s.raw;
   }));
   const core = vm.skills.find(s => s[0] === "Ядро");
@@ -139,21 +142,29 @@ function zxCard(vm, uid){
     '<div class="zx-mind"><div class="zx-mind-in">' + mind + '</div></div>' +
     '<div class="zx-mid"><div class="zx-mid-in"><div class="zx-stats"><div>' + col(vm.stats.slice(0, half)) + '</div><div>' + col(vm.stats.slice(half)) + '</div></div>' +
       '<div class="zx-low"><div class="zx-core">' + "ABCDEF".split("").map((l, i) => '<i class="' + (i < coreN ? "on" : "") + '">' + l + "</i>").join("") + '</div>' +
-        (vm.weapon ? '<div class="zx-w"><div class="zx-wn">' + esc(vm.weapon.name) + '</div><div class="zx-wst">' + vm.weapon.stats.map(s => '<span>' + (s[2] ? ic(s[2]) : "") + esc(s[1]) + "</span>").join("") + '</div>' +
+        (vm.weapon ? '<div class="zx-w"><div class="zx-wn">' + esc(vm.weapon.name) + '</div><div class="zx-wst">' + vm.weapon.stats.map(s => '<span' + (s[3] ? ' data-f="' + esc(s[3]) + '"' : "") + '>' + (s[2] ? ic(s[2]) : "") + esc(s[1]) + "</span>").join("") + '</div>' +
           xImg(vm.weapon.img, "zx-wimg") + '<em class="zx-p">' + vm.weapon.refine.label + vm.weapon.refine.n + '</em><em class="zx-wl">Lv. ' + vm.weapon.lvl + '</em></div>' : "") + '</div>' +
       '<div class="zx-low2"><div class="zx-skills">' + skills.map(s => '<span title="' + esc(s[0]) + '">' + zImg("sk_" + ZZZ_SKILL_IC[s[2]], "zx-skimg") + '<b>' + s[1] + "</b></span>").join("") + '</div>' +
         '<div class="zx-sets">' + vm.sets.map(s => '<div><span>' + esc(s.name) + '</span>' + xImg(s.icon, "zx-sicon") + '<b>×' + (s.full ? 4 : 2) + "</b></div>").join("") + '</div></div>' +
     '</div></div>' +
     '<div class="zx-discs">' + vm.slots.map(d => d.empty ? '<div class="zx-d none"><div class="zx-box"><div class="zx-vin"></div><div class="zx-sq"><div class="zx-sqi"><b>' + d.pos + '</b></div></div></div><p>Пусто</p></div>' :
       '<div class="zx-d r' + (d.rank || "B") + '"><div class="zx-box"><div class="zx-vin">' + xImg(d.icon, "zx-dicon") + '</div>' +
-        '<div class="zx-sq">' + (d.icon ? '<img class="zx-sqbg" alt="" referrerpolicy="no-referrer" src="' + esc(scImg(d.icon)) + '" onerror="this.remove()">' : "") +
-          '<div class="zx-sqi"><div class="zx-sq1"><b>' + (d.main ? esc(d.main[1]) : "") + '</b>' + (d.main ? ic(d.main[2]) : "") + '</div>' +
+        '<div class="zx-sq">' +
+          '<div class="zx-sqi"><div class="zx-sq1"' + (d.main ? ' data-f="' + esc(d.main[3]) + '"' : "") + '><b>' + (d.main ? esc(d.main[1]) : "") + '</b>' + (d.main ? ic(d.main[2]) : "") + '</div>' +
           '<div class="zx-sq2"><em>Lv. ' + d.lvl + '</em><s>' + esc(d.rank || "B") + '</s></div></div></div></div>' +
-        '<div class="zx-ds">' + d.subs.map(s => '<span class="' + (s.val ? "val" : "") + '">' + ic(s.ic) + '<b>' + esc(s.v) + '</b>' + (s.up ? '<u style="width:' + (s.up * 8 - 2) + 'px"></u>' : "") + "</span>").join("") + "</div></div>").join("") + '</div>' +
-    '<div class="zx-bar">' + Object.keys(sum).sort((a, b) => sum[b].n - sum[a].n).map(k => '<span title="' + esc(sum[k].name) + '"><small>' + sum[k].n + '</small>' + ic(sum[k].ic) + '<b>' + esc(sum[k].fmt(sum[k].v)) + "</b></span>").join("") + '</div>' +
+        '<div class="zx-ds">' + d.subs.map(s => '<span class="' + (s.val ? "val" : "") + '" data-f="' + esc(String(s.key).slice(0, 3)) + '">' + ic(s.ic) + '<b>' + esc(s.v) + '</b>' + (s.up ? '<u style="width:' + (s.up * 8 - 2) + 'px"></u>' : "") + "</span>").join("") + "</div></div>").join("") + '</div>' +
+    '<div class="zx-bar">' + Object.keys(sum).sort((a, b) => zxBarPos(a) - zxBarPos(b)).map(k => '<span' + (sum[k].val ? ' class="val"' : "") + ' title="' + esc(sum[k].name) + '" data-f="' + esc(String(k).slice(0, 3)) + '"><small>' + sum[k].n + '</small>' + ic(sum[k].ic) + '<b>' + esc(sum[k].fmt(sum[k].v)) + "</b></span>").join("") + '</div>' +
   '</div>';
   return h;
 }
+
+// ZZZ: наведение на характеристику подсвечивает её в дисках и в нижней сводке
+document.addEventListener("mouseover", e => {
+  const el = e.target.closest && e.target.closest(".zx [data-f]");
+  const card = e.target.closest && e.target.closest(".zx");
+  document.querySelectorAll(".zx .zx-on").forEach(x => { if(!el || x.dataset.f !== el.dataset.f || !card.contains(x)) x.classList.remove("zx-on"); });
+  if(el && el.dataset.f) card.querySelectorAll('[data-f="' + el.dataset.f + '"]').forEach(x => x.classList.add("zx-on"));
+});
 
 // переключатель вида
 // вид карточки выбирается отдельно для каждой игры; по умолчанию «как в игре» только у Star Rail

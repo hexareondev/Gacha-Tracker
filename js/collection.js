@@ -236,6 +236,7 @@ function renderColItem(){
       (x.hist.length && x.extra ? " — " + x.hist.length + " из истории, " + x.extra + " вне её" : x.extra ? " — все вне истории" : " — все из истории") +
       (x.first ? " · впервые " + x.first.split("-").reverse().join(".") : "") + '</span>'
     : '<span>Пока не получено.</span>';
+  colBuildLink(game, acc, x);
   document.getElementById("colExtra").textContent = x.extra;
   document.getElementById("colMinus").disabled = !x.extra;
   document.getElementById("colExtraDate").value = x.extraDate || "";
@@ -247,6 +248,32 @@ function renderColItem(){
     return '<div class="colev"><span class="d">' + esc((r.t || "").slice(0, 16).replace(/^(\d{4})-(\d\d)-(\d\d)/, "$3.$2.$1")) + '</span><span class="b">' +
       esc(bannerInfo(game, r.k).n) + '</span><i>' + esc(lv) + '</i></div>';
   }).join("");
+}
+// сборка из витрины: если этот персонаж загружался через Enka — кнопка, открывающая его карточку
+function colFindBuild(game, acc, id){
+  if(typeof enkaData === "undefined") return null;
+  const keys = Object.keys(enkaData).filter(k => k.indexOf(game + ":") === 0 && enkaData[k].agents && enkaData[k].agents[id]);
+  if(!keys.length) return null;
+  const mine = acc && acc.uid ? keys.find(k => k === game + ":" + acc.uid) : null;
+  const k = mine || keys.sort((a, b) => (enkaData[b].agents[id].at || "").localeCompare(enkaData[a].agents[id].at || ""))[0];
+  return { uid: k.slice(game.length + 1), at: enkaData[k].agents[id].at || "", inShow: (enkaData[k].shown || []).indexOf(id) !== -1 };
+}
+function colBuildLink(game, acc, x){
+  const box = document.getElementById("colBuild");
+  const b = x.t === "c" ? colFindBuild(game, acc, String(x.id)) : null;
+  box.hidden = !b;
+  if(!b){ box.innerHTML = ""; return; }
+  const when = b.at ? b.at.slice(0, 10).split("-").reverse().join(".") : "";
+  box.innerHTML = '<button class="mark sm" id="colBuildGo">Сборка из витрины</button><span class="hint">' +
+    (b.inShow ? "сейчас в витрине" : "сборка от " + esc(when)) + " · UID " + esc(b.uid) + "</span>";
+  document.getElementById("colBuildGo").onclick = () => {
+    ui.scUidG = ui.scUidG || {}; ui.scAgentG = ui.scAgentG || {};
+    ui.scUidG[game] = b.uid; ui.scAgentG[game] = String(x.id);
+    if(typeof scLastGame !== "undefined") scLastGame = null;     // витрина перечитает UID
+    saveUI(); closeColItem();
+    const g = navByHist(game);
+    setNav(g ? g.id : ui.game, "showcase");
+  };
 }
 function colChangeExtra(delta, date){
   const { game, acc, id } = colCur;

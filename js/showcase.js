@@ -566,10 +566,20 @@ document.getElementById("scFile").onchange = e => { const f = e.target.files[0];
   const inp = document.getElementById("enkaProxy");
   inp.value = ui.enkaProxy || "";
   document.getElementById("openSettings").addEventListener("click", () => { inp.value = ui.enkaProxy || ""; });
+  const hint = inp.closest(".editrow").nextElementSibling;
+  const hint0 = hint ? hint.textContent : "";
+  const say = t => { if(hint) hint.textContent = t; };
   inp.addEventListener("change", () => {
-    const v = inp.value.trim().replace(/\/+$/, "");
-    if(v && !/^https:\/\//.test(v)){ inp.value = ui.enkaProxy || ""; return; }
-    if(v) ui.enkaProxy = v; else delete ui.enkaProxy;
+    // принимаем адрес в любом виде: без https://, с хвостом /api/… или со слешем в конце
+    let v = inp.value.trim().replace(/\s+/g, "");
+    if(v && !/^[a-z]+:\/\//i.test(v)) v = "https://" + v;
+    v = v.replace(/^http:\/\//i, "https://").replace(/\/api(\/.*)?$/i, "").replace(/\/+$/, "");
+    if(v){
+      let ok = false;
+      try { const u = new URL(v); ok = u.protocol === "https:" && /\./.test(u.hostname); v = u.origin; } catch(e){}
+      if(!ok){ inp.value = ui.enkaProxy || ""; say("Не похоже на адрес — пример: https://имя.аккаунт.workers.dev"); return; }
+      ui.enkaProxy = v; inp.value = v; say("Сохранено: витрина будет загружаться через " + v);
+    } else { delete ui.enkaProxy; say(hint0); }
     saveUI();
   });
 })();

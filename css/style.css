@@ -1462,3 +1462,7 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
   .zx-sets span{text-align:left}
   .zx-w{padding-right:48px;flex-basis:calc(100% - 34px)}
 }
+
+/* коллекция: ссылка на сборку из витрины */
+.colbuild{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.colbuild .hint{margin:0}

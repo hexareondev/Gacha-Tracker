@@ -30,6 +30,8 @@ const SC_ICON = {
 function ic(k, cls){
   // картинка-маска: цвет берётся из currentColor, как у SVG
   if(typeof k === "string" && k.indexOf("hsr:") === 0) return '<i class="xi xim' + (cls ? " " + cls : "") + '" style="-webkit-mask-image:url(icons/hsr/' + k.slice(4) + '.webp);mask-image:url(icons/hsr/' + k.slice(4) + '.webp)" aria-hidden="true"></i>';
+  if(typeof k === "string" && k.indexOf("zzz:") === 0) return '<i class="xi xim' + (cls ? " " + cls : "") + '" style="-webkit-mask-image:url(icons/zzz/' + k.slice(4) + '.webp);mask-image:url(icons/zzz/' + k.slice(4) + '.webp)" aria-hidden="true"></i>';
+  if(typeof k === "string" && k.indexOf("zimg:") === 0) return '<img class="xi xig' + (cls ? " " + cls : "") + '" src="icons/zzz/' + k.slice(5) + '.webp" alt="" aria-hidden="true">';
   return '<svg class="xi' + (cls ? " " + cls : "") + '" viewBox="0 0 16 16" aria-hidden="true">' + (SC_ICON[k] || SC_ICON.dot) + "</svg>"; }
 function xImg(path, cls, letter){
   return '<span class="ximg ' + (cls || "") + '">' + (letter ? '<b>' + esc(letter) + '</b>' : "") +
@@ -122,20 +124,31 @@ function zxCard(vm, uid){
   }));
   const core = vm.skills.find(s => s[0] === "Ядро");
   const coreN = core && core[1] !== "—" ? "ABCDEF".indexOf(core[1]) + 1 : 0;
+  // навыки в порядке окна агента: атака, уклонение, помощь, особая, цепочка
+  const order = [0, 2, 6, 1, 3];
+  const skills = vm.skills.filter(s => ZZZ_SKILL_IC[s[2]]).sort((a, b) => order.indexOf(a[2]) - order.indexOf(b[2]));
+  const zImg = (name, cls) => name ? '<img class="' + cls + '" src="icons/zzz/' + name + '.webp" alt="">' : "";
+  // столбец кинограммы: 6 ячеек, пустая, специализация, стихия
+  const mind = [1,2,3,4,5,6].map(i => '<i class="' + (i <= vm.cons.n ? "on" : "") + '"><span>0' + i + "</span></i>").join("") +
+    '<i class="blank"></i><i class="ic" title="' + esc(vm.cls || "") + '">' + (vm.proIc ? zImg("sp_" + vm.proIc, "") : '<span>' + esc((vm.cls || "").slice(0, 3)) + "</span>") + '</i>' +
+    '<i class="ic" title="' + esc(vm.el || "") + '">' + zImg(vm.elIc && "el_" + vm.elIc, "") + "</i>";
   let h = '<div class="zx" style="--accent:' + esc(vm.color) + '">' +
     '<div class="zx-art">' + (vm.art ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
       '<div class="zx-uid">' + esc(uid || "") + '</div>' +
       '<div class="zx-id"><div class="zx-lv">Уровень <b>' + vm.lvl + '</b> / ' + vm.maxLvl + '</div><div class="zx-nm">' + esc(vm.name) + '</div></div></div>' +
-    '<div class="zx-mind">' + [1,2,3,4,5,6].map(i => '<i class="' + (i <= vm.cons.n ? "on" : "") + '">0' + i + "</i>").join("") + '</div>' +
-    '<div class="zx-mid"><div class="zx-stats"><div>' + col(vm.stats.slice(0, half)) + '</div><div>' + col(vm.stats.slice(half)) + '</div></div>' +
+    '<div class="zx-mind"><div class="zx-mind-in">' + mind + '</div></div>' +
+    '<div class="zx-mid"><div class="zx-mid-in"><div class="zx-stats"><div>' + col(vm.stats.slice(0, half)) + '</div><div>' + col(vm.stats.slice(half)) + '</div></div>' +
       '<div class="zx-low"><div class="zx-core">' + "ABCDEF".split("").map((l, i) => '<i class="' + (i < coreN ? "on" : "") + '">' + l + "</i>").join("") + '</div>' +
-        (vm.weapon ? '<div class="zx-w"><div class="zx-wn">' + esc(vm.weapon.name) + '</div><div class="zx-wst">' + vm.weapon.stats.map(s => '<span>' + esc(s[1]) + "</span>").join("") + '</div>' +
+        (vm.weapon ? '<div class="zx-w"><div class="zx-wn">' + esc(vm.weapon.name) + '</div><div class="zx-wst">' + vm.weapon.stats.map(s => '<span>' + (s[2] ? ic(s[2]) : "") + esc(s[1]) + "</span>").join("") + '</div>' +
           xImg(vm.weapon.img, "zx-wimg") + '<em class="zx-p">' + vm.weapon.refine.label + vm.weapon.refine.n + '</em><em class="zx-wl">Lv. ' + vm.weapon.lvl + '</em></div>' : "") + '</div>' +
-      '<div class="zx-low2"><div class="zx-skills">' + vm.skills.filter(s => s[0] !== "Ядро").map(s => '<span title="' + esc(s[0]) + '"><i>' + esc(s[0].charAt(0)) + '</i><b>' + s[1] + "</b></span>").join("") + '</div>' +
-        '<div class="zx-sets">' + vm.sets.map(s => '<div>' + esc(s.name) + ' ' + xImg(s.icon, "zx-sicon") + '<b>×' + (s.full ? 4 : 2) + "</b></div>").join("") + '</div></div>' +
-    '</div>' +
-    '<div class="zx-discs">' + vm.slots.map(d => d.empty ? '<div class="zx-d none"><div class="zx-db"><b>' + d.pos + '</b></div><p>Пусто</p></div>' :
-      '<div class="zx-d' + (d.top ? " top" : "") + '"><div class="zx-db">' + xImg(d.icon, "zx-dicon") + '<b>' + (d.main ? esc(d.main[1]) : "") + '</b>' + (d.main ? ic(d.main[2]) : "") + '<em>Lv. ' + d.lvl + '</em></div>' +
+      '<div class="zx-low2"><div class="zx-skills">' + skills.map(s => '<span title="' + esc(s[0]) + '">' + zImg("sk_" + ZZZ_SKILL_IC[s[2]], "zx-skimg") + '<b>' + s[1] + "</b></span>").join("") + '</div>' +
+        '<div class="zx-sets">' + vm.sets.map(s => '<div><span>' + esc(s.name) + '</span>' + xImg(s.icon, "zx-sicon") + '<b>×' + (s.full ? 4 : 2) + "</b></div>").join("") + '</div></div>' +
+    '</div></div>' +
+    '<div class="zx-discs">' + vm.slots.map(d => d.empty ? '<div class="zx-d none"><div class="zx-box"><div class="zx-vin"></div><div class="zx-sq"><div class="zx-sqi"><b>' + d.pos + '</b></div></div></div><p>Пусто</p></div>' :
+      '<div class="zx-d r' + (d.rank || "B") + '"><div class="zx-box"><div class="zx-vin">' + xImg(d.icon, "zx-dicon") + '</div>' +
+        '<div class="zx-sq">' + (d.icon ? '<img class="zx-sqbg" alt="" referrerpolicy="no-referrer" src="' + esc(scImg(d.icon)) + '" onerror="this.remove()">' : "") +
+          '<div class="zx-sqi"><div class="zx-sq1"><b>' + (d.main ? esc(d.main[1]) : "") + '</b>' + (d.main ? ic(d.main[2]) : "") + '</div>' +
+          '<div class="zx-sq2"><em>Lv. ' + d.lvl + '</em><s>' + esc(d.rank || "B") + '</s></div></div></div></div>' +
         '<div class="zx-ds">' + d.subs.map(s => '<span class="' + (s.val ? "val" : "") + '">' + ic(s.ic) + '<b>' + esc(s.v) + '</b>' + (s.up ? '<u style="width:' + (s.up * 8 - 2) + 'px"></u>' : "") + "</span>").join("") + "</div></div>").join("") + '</div>' +
     '<div class="zx-bar">' + Object.keys(sum).sort((a, b) => sum[b].n - sum[a].n).map(k => '<span title="' + esc(sum[k].name) + '"><small>' + sum[k].n + '</small>' + ic(sum[k].ic) + '<b>' + esc(sum[k].fmt(sum[k].v)) + "</b></span>").join("") + '</div>' +
   '</div>';

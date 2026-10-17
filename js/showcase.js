@@ -36,14 +36,14 @@ function scLoc(o){ return o ? (ru() ? o.n || o.en : o.en || o.n) : ""; }
 const ZZZ_EL = {
   Fire:{ n:"Огонь", c:"#ff6a3d" }, Ice:{ n:"Лёд", c:"#8fdcff" }, Elec:{ n:"Электро", c:"#4f9dff" },
   Physics:{ n:"Физ.", c:"#f2c14e" }, Ether:{ n:"Эфир", c:"#ff4fd2" }, Wind:{ n:"Ветер", c:"#4fe3b0" }, Lumen:{ n:"Люмен", c:"#ffe98a" },
-  FireFrost:{ n:"Мороз", base:"Ice" }, AuricEther:{ n:"Аура-тушь", base:"Ether" }, ZhenZhenAssault:{ n:"Остриё", base:"Physics" }
+  FireFrost:{ n:"Мороз", base:"Ice", c:"#4cc4ea" }, AuricEther:{ n:"Аура-тушь", base:"Ether", c:"#e8a93c" }, ZhenZhenAssault:{ n:"Остриё", base:"Physics", c:"#8c8cff" }
 };
 function zzzElement(list){
   list = list || [];
   const key = list.find(e => ZZZ_EL[e] && ZZZ_EL[e].base) || list[0] || "";
   const e = ZZZ_EL[key];
-  if(!e) return { n:key, c:"#f0c264" };
-  return { n:e.n, c:(e.base ? ZZZ_EL[e.base] : e).c };
+  if(!e) return { n:key, c:"#f0c264", k:key };
+  return { n:e.n, c:e.c || ZZZ_EL[e.base].c, k:key };
 }
 const ZZZ_PRO = { Attack:"Нападение", Stun:"Устрашение", Anomaly:"Аномалия", Support:"Поддержка", Defense:"Оборона", Rupture:"Разрушение", Armorer:"Оружейник" };
 const ZZZ_SKILL = { 0:"Обычная атака", 1:"Особая атака", 2:"Уклонение", 3:"Цепная атака", 5:"Базовый навык", 6:"Поддержка" };
@@ -63,10 +63,17 @@ function zVal(pid, v){
   if(/^305/.test(String(pid))) return (v / 100).toLocaleString("ru-RU", { maximumFractionDigits:2 });
   return fInt(v);
 }
+// иконки ZZZ из игры (icons/zzz): характеристики — маской (цвет текста), бонус урона — цветная иконка базовой стихии
 function zIc(pid){
   const p = String(pid).slice(0, 3);
-  return { "111":"hp", "121":"atk", "131":"def", "122":"imp", "201":"cr", "211":"cd", "314":"am", "312":"ap", "231":"penr", "232":"pen", "305":"er" }[p] || (/^31[5-9]/.test(p) ? "dmg" : "dot");
+  const m = { "111":"hp", "121":"atk", "131":"def", "122":"impact", "201":"cr", "211":"cd", "314":"am", "312":"ap", "231":"penr", "232":"pen", "305":"er" }[p];
+  if(m) return "zzz:" + m;
+  const el = { "315":"physical", "316":"fire", "317":"ice", "318":"electric", "319":"ether" }[p];
+  return el ? "zimg:el_" + el : "dot";
 }
+const ZZZ_EL_IC = { Fire:"fire", Ice:"ice", Elec:"electric", Physics:"physical", Ether:"ether", Wind:"wind", Lumen:"lumen", FireFrost:"frost", AuricEther:"auric", ZhenZhenAssault:"honed" };
+const ZZZ_PRO_IC = { Attack:"attack", Stun:"stun", Anomaly:"anomaly", Support:"support", Defense:"defense", Rupture:"rupture" };
+const ZZZ_SKILL_IC = { 0:"basic", 1:"special", 2:"dodge", 3:"chain", 6:"assist" };
 function zzzVM(av){
   const B = SCB.nap, id = String(av.Id), info = B.avatars[id] || {};
   const lvl = av.Level || 1, promo = Math.max(0, (av.PromotionLevel || 1) - 1), core = av.CoreSkillEnhancement || 0;
@@ -85,7 +92,7 @@ function zzzVM(av){
     if(wi.sub) put(wi.sub[0], sub);
     weapon = { title:"Амплификатор", name: scItemName("nap", w.Id) || "#" + w.Id, img: wi.img, top: wi.r === 4, badge: wi.r === 4 ? "S" : wi.r === 3 ? "A" : "B",
       lvl: w.Level || 1, refine:{ label:"P", n: w.UpgradeLevel || 1 },
-      stats: [wi.main && [zProp(wi.main[0]), zVal(wi.main[0], main)], wi.sub && [zProp(wi.sub[0]), zVal(wi.sub[0], sub)]].filter(Boolean) };
+      stats: [wi.main && [zProp(wi.main[0]), zVal(wi.main[0], main), zIc(wi.main[0])], wi.sub && [zProp(wi.sub[0]), zVal(wi.sub[0], sub), zIc(wi.sub[0])]].filter(Boolean) };
   }
   const hl = (info.hl || []).map(String);
   const valuable = { "20103":1, "21103":1 };
@@ -106,7 +113,7 @@ function zzzVM(av){
     const subs = scList(e.RandomPropertyList).map(m => [String(m.PropertyId), (m.PropertyValue || 0) * (m.PropertyLevel || 1), m.PropertyLevel || 1]);
     mains.forEach(m => put(m[0], m[1])); subs.forEach(m => put(m[0], m[1]));
     subs.forEach(s => { if(s[0] === "20103") cv += 2 * s[1]; if(s[0] === "21103") cv += s[1]; });
-    slots.push({ pos: slot.Slot || e.Slot || slots.length + 1, label: String(slot.Slot || slots.length + 1), set: scLoc(su), icon: su.icon, lvl: e.Level || 0, top: rar === 4,
+    slots.push({ pos: slot.Slot || e.Slot || slots.length + 1, label: String(slot.Slot || slots.length + 1), set: scLoc(su), icon: su.icon, lvl: e.Level || 0, top: rar === 4, rank: rar === 4 ? "S" : rar === 3 ? "A" : "B",
       main: mains[0] ? [zProp(mains[0][0]), zVal(mains[0][0], mains[0][1]), zIc(mains[0][0])] : null,
       subs: subs.map(s => ({ n: zProp(s[0]), v: zVal(s[0], s[1]), up: s[2] - 1, val: !!valuable[s[0]], ic: zIc(s[0]), key: s[0], raw: s[1], fmt: v => zVal(s[0], v) })) });
   });
@@ -125,7 +132,7 @@ function zzzVM(av){
   const stats = [
     row("HP", "11103", T.hp, base["11101"], "11101"), row(zProp("12101"), "12103", T.atk, base["12101"], "12101"), row(zProp("13101"), "13103", T.def, base["13101"], "13101"),
     row(zProp("12201"), "12203", T.imp, base["12201"], "12201"), row(zProp("20103"), "20103", T.cr, base["20101"], "20101"), row(zProp("21103"), "21103", T.cd, base["21101"], "21101"),
-    row(zProp("31401"), "31403", T.am, base["31401"], "31401"), row(zProp("31203"), "31203", T.ap, base["31201"], "31201"), row(zProp("23103"), "23103", T.penr, undefined, "23101"),
+    row(zProp("31203"), "31203", T.ap, base["31201"], "31201"), row(zProp("31401"), "31403", T.am, base["31401"], "31401"), row(zProp("23103"), "23103", T.penr, undefined, "23101"),
     row(zProp("23203"), "23203", T.pen, undefined, "23201"), row(zProp("30503"), "30503", T.er, undefined, "30501")
   ];
   ["31501","31601","31701","31801","31901"].forEach(b => { const v = flat(b, String(Number(b) + 2)); if(v) stats.push(row(zProp(b), b, v, undefined, b)); });
@@ -134,10 +141,10 @@ function zzzVM(av){
   if(hl.indexOf("12201") !== -1) keys[0] = [zProp("12201"), zVal("12203", T.imp)];
   const m = av.TalentLevel || 0, boost = m >= 5 ? 4 : m >= 3 ? 2 : 0;
   const skills = scList(av.SkillLevelList).filter(s => ZZZ_SKILL[s.Index] !== undefined).sort((a, b) => a.Index - b.Index)
-    .map(s => [ZZZ_SKILL[s.Index], (s.Level || 0) + boost]);
+    .map(s => [ZZZ_SKILL[s.Index], (s.Level || 0) + boost, s.Index]);
   skills.push(["Ядро", core ? "ABCDEF".charAt(core - 1) : "—"]);
   const el = zzzElement(info.el);
-  return { name: scItemName("nap", id) || "#" + id, art: info.img, circle: info.circle || info.img, el: el.n, color: el.c, cls: ZZZ_PRO[info.pro] || info.pro,
+  return { name: scItemName("nap", id) || "#" + id, art: info.img, circle: info.circle || info.img, el: el.n, color: el.c, cls: ZZZ_PRO[info.pro] || info.pro, elIc: ZZZ_EL_IC[el.k] || "", proIc: ZZZ_PRO_IC[info.pro] || "",
     lvl, maxLvl: 60, cons:{ label:"M", title:"Кинограмма", n:m }, keys, skills, stats, weapon, sets, cv, slotsTitle:"Диски", setsWord:"дисков",
     slots: [1,2,3,4,5,6].map(i => slots.find(s => s.pos === i) || { pos:i, label:String(i), empty:true }),
     foot: "Характеристики посчитаны по формулам Enka: агент, амплификатор, диски и бонусы комплектов за 2 предмета. Пассивки амплификатора, эффекты за 4 предмета и баффы в бою не учитываются, поэтому цифры могут немного отличаться от окна агента в игре." };

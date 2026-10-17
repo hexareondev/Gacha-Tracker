@@ -179,6 +179,9 @@ function renderCollection(){
 
   const grid = document.getElementById("colGrid");
   grid.innerHTML = "";
+  // у кого есть сборка из витрины — значок в углу плитки
+  const built = {};
+  if(typeof enkaData !== "undefined") Object.keys(enkaData).forEach(k => { if(k.indexOf(game + ":") === 0) Object.keys(enkaData[k].agents || {}).forEach(id => { built[id] = 1; }); });
   list.forEach(x => {
     const c = document.createElement("button");
     c.className = "colcard" + (x.copies ? "" : " none") + (x.r === g.top ? " top" : "") + (colMaxed(x) ? " max" : "");
@@ -186,6 +189,12 @@ function renderCollection(){
     pic.className = "colpic";
     colPic(pic, game, x);
     c.appendChild(pic);
+    if(x.t === "c" && built[String(x.id)]){
+      const bd = document.createElement("i");
+      bd.className = "bld"; bd.title = "Есть сборка из витрины — откройте карточку";
+      bd.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13V8M8 13V4M13 13V6"/></svg>';
+      c.appendChild(bd);
+    }
     const lvl = colLevel(game, x);
     if(lvl){
       const b = document.createElement("i");

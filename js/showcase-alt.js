@@ -188,3 +188,97 @@ function scLayoutSeg(game){
 function scRenderAlt(card, game, vm, uid){
   card.innerHTML = game === "hk4e" ? gxCard(vm) : game === "hkrpg" ? hxCard(vm) : zxCard(vm, uid);
 }
+
+
+/* ── карточка витрины в PNG: копия разметки + стили сайта внутри SVG, все картинки и шрифты вшиты как data:URL ── */
+async function scToDataUrl(url){
+  try {
+    const r = await fetch(url, { mode:"cors", referrerPolicy:"no-referrer", cache:"force-cache" });
+    if(!r.ok) return null;
+    const b = await r.blob();
+    return await new Promise(res => { const f = new FileReader(); f.onload = () => res(f.result); f.onerror = () => res(null); f.readAsDataURL(b); });
+  } catch(e){ return null; }
+}
+let scFontCss = null;
+async function scFonts(){
+  if(scFontCss !== null) return scFontCss;
+  scFontCss = "";
+  const link = document.querySelector('link[href*="fonts.googleapis"]');
+  if(!link) return "";
+  try {
+    let css = await (await fetch(link.href)).text();
+    // берём только латиницу и кириллицу, остальные наборы символов не нужны
+    const blocks = css.split("/*").filter(b => /^\s*(latin|cyrillic)\s*\*\//.test(b)).map(b => b.slice(b.indexOf("*/") + 2));
+    const out = [];
+    for(const b of blocks){
+      const m = b.match(/url\((https:[^)]+)\)/);
+      if(!m) continue;
+      const d = await scToDataUrl(m[1]);
+      if(d) out.push(b.replace(m[1], d));
+    }
+    scFontCss = out.join("\n");
+  } catch(e){}
+  return scFontCss;
+}
+let scCssText = null;
+async function scCardPng(node){
+  if(scCssText === null){
+    const href = (document.querySelector('link[href*="css/style.css"]') || {}).href || "css/style.css";
+    try { scCssText = await (await fetch(href)).text(); } catch(e){ scCssText = ""; }
+  }
+  const fonts = await scFonts();
+  const w = Math.ceil(node.getBoundingClientRect().width), h = Math.ceil(node.getBoundingClientRect().height);
+  const clone = node.cloneNode(true);
+  clone.querySelectorAll(".zx-on").forEach(x => x.classList.remove("zx-on"));
+  // картинки → data:URL; не отдалась (нет CORS) — убираем, чтобы холст не «испортился»
+  let lost = 0;
+  await Promise.all([...clone.querySelectorAll("img")].map(async im => {
+    const d = im.getAttribute("src") ? await scToDataUrl(im.src) : null;
+    if(d){ im.setAttribute("src", d); im.removeAttribute("loading"); } else { im.remove(); lost++; }
+  }));
+  // иконки-маски в style="mask-image:url(...)"
+  await Promise.all([...clone.querySelectorAll('[style*="url("]')].map(async el => {
+    const st = el.getAttribute("style"), urls = [...new Set((st.match(/url\(([^)]+)\)/g) || []).map(u => u.slice(4, -1).replace(/["']/g, "")))];
+    let out = st;
+    for(const u of urls){ const d = await scToDataUrl(new URL(u, location.href).href); if(d) out = out.split(u).join(d); }
+    el.setAttribute("style", out);
+  }));
+  // переменные цветов с :root, чтобы карточка выглядела как на сайте
+  const rs = getComputedStyle(document.documentElement);
+  const vars = [...new Set(scCssText.match(/--[\w-]+(?=\s*:)/g) || [])].map(v => v + ":" + rs.getPropertyValue(v)).join(";");
+  const body = getComputedStyle(document.body);
+  const attr = v => String(v).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const wrap = '<div xmlns="http://www.w3.org/1999/xhtml" style="' + attr(vars + ";width:" + w + "px;font-family:" + body.fontFamily + ";color:" + body.color) + '">' +
+    "<style><![CDATA[" + (fonts + "\n" + scCssText).replace(/]]>/g, "") + "]]></style>" + new XMLSerializer().serializeToString(clone) + "</div>";
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '"><foreignObject x="0" y="0" width="100%" height="100%">' + wrap + "</foreignObject></svg>";
+  const bad = new DOMParser().parseFromString(svg, "image/svg+xml").querySelector("parsererror");
+  if(bad) throw new Error("svg: " + bad.textContent.slice(0, 200));
+  const img = new Image();
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); });
+  const k = 2, cv = document.createElement("canvas");
+  cv.width = w * k; cv.height = h * k;
+  const ctx = cv.getContext("2d");
+  ctx.scale(k, k);
+  ctx.fillStyle = getComputedStyle(document.body).backgroundColor || "#111";
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(img, 0, 0, w, h);
+  const blob = await new Promise(res => { try { cv.toBlob(res, "image/png"); } catch(e){ res(null); } });
+  return { blob, lost };
+}
+document.getElementById("scPng").addEventListener("click", async e => {
+  const btn = e.currentTarget, node = document.querySelector("#scCard > *");
+  if(!node || btn.disabled) return;
+  const t = btn.textContent;
+  btn.disabled = true; btn.textContent = "Рисую…";
+  try {
+    const r = await scCardPng(node);
+    if(!r.blob) throw new Error("png");
+    const name = ((document.querySelector(".zx-nm,.hx-name,.gx-name,.sc-card h2") || {}).textContent || "card").split(" Ур.")[0].trim().replace(/[\\/:*?"<>|]+/g, "") + ".png";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(r.blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    if(r.lost) document.getElementById("scNote").textContent = "Картинка сохранена, но " + r.lost + " изображений Enka не отдал для рисования — на PNG их нет.";
+  } catch(err){ console.error(err); document.getElementById("scNote").textContent = "Не получилось нарисовать картинку."; }
+  finally { btn.disabled = false; btn.textContent = t; }
+});

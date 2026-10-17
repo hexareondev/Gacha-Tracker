@@ -450,6 +450,7 @@ function renderShowcase(){
 
   const tabs = document.getElementById("scTabs"), card = document.getElementById("scCard");
   tabs.innerHTML = ""; card.innerHTML = "";
+  document.getElementById("scPng").hidden = true;
   if(!u || !Object.keys(u.agents).length){
     card.innerHTML = '<div class="sc-empty">Здесь появятся сборки ' + G.who + ' из витрины вашего профиля: ' +
       (game === "nap" ? "амплификатор, диски" : game === "hkrpg" ? "световой конус, реликвии" : "оружие, артефакты") +
@@ -482,6 +483,7 @@ function renderShowcase(){
   const cur = ui.scAgentG[game], vm = vms[cur];
   if(!vm){ card.innerHTML = '<div class="sc-empty">Не удалось разобрать сборку этого персонажа — возможно, он новее справочника. Справочник обновляется раз в неделю.</div>'; return; }
   scLayoutSeg(game);
+  document.getElementById("scPng").hidden = false;
   if(scAltWanted(game)) scRenderAlt(card, game, vm, uid);
   else scRenderCard(card, u, cur, vm);
 }

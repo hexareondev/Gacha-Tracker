@@ -11,6 +11,8 @@ const sync = sstore.load() || {};
 const GIST_FILE = "gacha-tracker.json";
 const GIST_DESC = "Гача Трекер — резервная копия";
 if(typeof sync.auto !== "boolean") sync.auto = true;
+// метка этого браузера: пишется в копию, чтобы своё же сохранение не считалось «новее»
+if(!sync.dev){ sync.dev = Date.now().toString(36) + Math.random().toString(36).slice(2, 8); sstore.save(sync); }
 const SYNC_EVERY = 5 * 60 * 1000;
 function syncSave(){ sstore.save(sync); }
 // быстрый отпечаток данных: по нему видно, менялось ли что-то с последней синхронизации
@@ -54,13 +56,21 @@ async function findGist(){
 }
 /* Защита от перезаписи: если копию в GitHub с тех пор, как это устройство видело её
    в последний раз, обновило другое устройство, без явного согласия не отправляем. */
+function remoteDev(g){ const m = g && /· dev:([a-z0-9]+)/.exec(g.description || ""); return m ? m[1] : ""; }
 function newerRemote(g){
-  return !!g && (!sync.remoteAt || g.updated_at > sync.remoteAt);
+  // другая вкладка этого же браузера могла отправить копию — берём свежие отметки из хранилища
+  const st = sstore.load() || {};
+  if(st.remoteAt && (!sync.remoteAt || st.remoteAt > sync.remoteAt)){ sync.remoteAt = st.remoteAt; sync.hash = st.hash; sync.gist = st.gist || sync.gist; }
+  if(!g || (sync.remoteAt && g.updated_at <= sync.remoteAt)) return false;
+  // копию отправил этот же браузер — это не чужое сохранение, просто запоминаем время
+  if(remoteDev(g) === sync.dev){ sync.remoteAt = g.updated_at; syncSave(); return false; }
+  return true;
 }
 async function syncPush(force){
   const text = backupText();
   const files = {}; files[GIST_FILE] = { content: text };
-  const body = JSON.stringify({ description: GIST_DESC, files });
+  const desc = GIST_DESC + " · dev:" + sync.dev;
+  const body = JSON.stringify({ description: desc, files });
   const g = await findGist();
   if(!force && newerRemote(g)){
     const e = new Error("в GitHub копия новее — её отправило другое устройство");
@@ -69,7 +79,7 @@ async function syncPush(force){
   }
   const res = g
     ? await gh("/gists/" + g.id, { method:"PATCH", body })
-    : await gh("/gists", { method:"POST", body: JSON.stringify({ description: GIST_DESC, public:false, files }) });
+    : await gh("/gists", { method:"POST", body: JSON.stringify({ description: desc, public:false, files }) });
   sync.gist = res.id;
   sync.pushed = Date.now();
   sync.remoteAt = res.updated_at;

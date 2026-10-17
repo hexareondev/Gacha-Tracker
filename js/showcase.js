@@ -60,13 +60,13 @@ function zProp(pid){
 function zVal(pid, v){
   const p = SCB.nap.props[String(pid)], f = p ? p.f : "";
   if(f.indexOf("%") !== -1) return fPct(v / 100);
-  if(/^305/.test(String(pid))) return (v / 100).toLocaleString("ru-RU", { maximumFractionDigits:2 });
+  if(/^305|^320/.test(String(pid))) return (v / 100).toLocaleString("ru-RU", { maximumFractionDigits:2 });
   return fInt(v);
 }
 // иконки ZZZ из игры (icons/zzz): характеристики — маской (цвет текста), бонус урона — цветная иконка базовой стихии
 function zIc(pid){
   const p = String(pid).slice(0, 3);
-  const m = { "111":"hp", "121":"atk", "131":"def", "122":"impact", "201":"cr", "211":"cd", "314":"am", "312":"ap", "231":"penr", "232":"pen", "305":"er" }[p];
+  const m = { "111":"hp", "121":"atk", "131":"def", "122":"impact", "201":"cr", "211":"cd", "314":"am", "312":"ap", "231":"penr", "232":"pen", "305":"er", "320":"rp", "123":"sheer" }[p];
   if(m) return "zzz:" + m;
   const el = { "315":"physical", "316":"fire", "317":"ice", "318":"electric", "319":"ether" }[p];
   return el ? "zimg:el_" + el : "dot";
@@ -102,6 +102,7 @@ function zzzVM(av){
     if(p === "13101") valuable["13102"] = 1;
     if(p === "31201" || p === "31401") valuable["31203"] = 1;
     if(p === "23101" || p === "23201") valuable["23203"] = 1;
+    if(p === "12301"){ valuable["12102"] = 1; valuable["11102"] = 1; }   // сила сквозной атаки растёт от силы атаки и HP
   });
   const slots = [], cnt = {};
   let cv = 0;
@@ -128,13 +129,20 @@ function zzzVM(av){
   const T = { hp: pct("11101", "11102", "11103"), atk: pct("12101", "12102", "12103"), def: pct("13101", "13102", "13103"),
     imp: pct("12201", "12202", "12203"), cr: flat("20101", "20103"), cd: flat("21101", "21103"), am: pct("31401", "31402", "31403"),
     ap: flat("31201", "31203"), penr: flat("23101", "23103"), pen: flat("23201", "23203"),
-    er: Math.round((base["30501"] || 0) * (1 + (add["30502"] || 0) / 10000) + (add["30503"] || 0)) };
+    er: Math.round((base["30501"] || 0) * (1 + (add["30502"] || 0) / 10000) + (add["30503"] || 0)),
+    rp: Math.round((base["32001"] || 0) * (1 + (add["32002"] || 0) / 10000) + (add["32003"] || 0)) };
+  // у агентов «Разрушения» вместо энергии адреналин, и есть сила сквозной атаки: 30% силы атаки + 10% HP
+  const rupture = info.pro === "Rupture";
+  if(rupture) T.sheer = Math.floor(T.atk * 0.3 + T.hp * 0.1) + (base["12301"] || 0) + (add["12303"] || 0);
   const stats = [
     row("HP", "11103", T.hp, base["11101"], "11101"), row(zProp("12101"), "12103", T.atk, base["12101"], "12101"), row(zProp("13101"), "13103", T.def, base["13101"], "13101"),
     row(zProp("12201"), "12203", T.imp, base["12201"], "12201"), row(zProp("20103"), "20103", T.cr, base["20101"], "20101"), row(zProp("21103"), "21103", T.cd, base["21101"], "21101"),
     row(zProp("31203"), "31203", T.ap, base["31201"], "31201"), row(zProp("31401"), "31403", T.am, base["31401"], "31401"), row(zProp("23103"), "23103", T.penr, undefined, "23101"),
-    row(zProp("23203"), "23203", T.pen, undefined, "23201"), row(zProp("30503"), "30503", T.er, undefined, "30501")
+    row(zProp("23203"), "23203", T.pen, undefined, "23201"),
+    row(zProp("30503"), "30503", T.er, undefined, "30501")
   ];
+  if(rupture) stats.pop();   // у «Разрушения» энергии нет, а адреналин, как и Enka, не показываем
+  if(rupture) stats.splice(8, 0, row(zProp("12303"), "12303", T.sheer, undefined, "12301"));   // как у Enka: после контроля аномалии
   ["31501","31601","31701","31801","31901"].forEach(b => { const v = flat(b, String(Number(b) + 2)); if(v) stats.push(row(zProp(b), b, v, undefined, b)); });
   let keys = [[zProp("12101"), zVal("12103", T.atk)], [ru() ? "Шанс крита" : "CRIT Rate", zVal("20103", T.cr)], [zProp("21103"), zVal("21103", T.cd)]];
   if(hl.indexOf("31401") !== -1 || hl.indexOf("31201") !== -1) keys[0] = [zProp("31203"), zVal("31203", T.ap)];
@@ -450,7 +458,7 @@ function renderShowcase(){
 
   const tabs = document.getElementById("scTabs"), card = document.getElementById("scCard");
   tabs.innerHTML = ""; card.innerHTML = "";
-  document.getElementById("scPng").hidden = true;
+  document.getElementById("scPng").hidden = true; document.getElementById("scCopy").hidden = true;
   if(!u || !Object.keys(u.agents).length){
     card.innerHTML = '<div class="sc-empty">Здесь появятся сборки ' + G.who + ' из витрины вашего профиля: ' +
       (game === "nap" ? "амплификатор, диски" : game === "hkrpg" ? "световой конус, реликвии" : "оружие, артефакты") +
@@ -483,7 +491,7 @@ function renderShowcase(){
   const cur = ui.scAgentG[game], vm = vms[cur];
   if(!vm){ card.innerHTML = '<div class="sc-empty">Не удалось разобрать сборку этого персонажа — возможно, он новее справочника. Справочник обновляется раз в неделю.</div>'; return; }
   scLayoutSeg(game);
-  document.getElementById("scPng").hidden = false;
+  document.getElementById("scPng").hidden = false; document.getElementById("scCopy").hidden = !(navigator.clipboard && window.ClipboardItem);
   if(scAltWanted(game)) scRenderAlt(card, game, vm, uid);
   else scRenderCard(card, u, cur, vm);
 }

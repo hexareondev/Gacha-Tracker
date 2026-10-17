@@ -116,7 +116,7 @@ function toRoman(n){ return ["", "I", "II", "III", "IV", "V", "VI"][n] || n; }
 const ZX_BAR = ["11102", "11103", "12102", "12103", "13102", "13103", "20103", "21103", "31203", "23203"];
 function zxBarPos(k){ const i = ZX_BAR.indexOf(String(k)); return i === -1 ? 99 : i; }
 function zxCard(vm, uid){
-  const half = Math.ceil(vm.stats.length / 2);
+  const half = 6;   // первый столбец — от HP до крит. урона, остальное во втором
   const col = list => list.map(r => '<div class="zx-st' + (r.hl ? " hl" : "") + '" data-f="' + esc(r.f || "") + '">' + ic(r.ic) + '<span class="zx-l">' + esc(r.n) + '</span><span class="zx-dots"></span>' +
     '<span class="zx-v"><b>' + esc(r.v) + '</b>' + (r.base ? '<small>' + esc(r.base) + ' + <em>' + esc(r.add) + '</em></small>' : "") + "</span></div>").join("");
   // сводка: сколько раз выпадала каждая доп. характеристика и сколько дала в сумме
@@ -281,4 +281,21 @@ document.getElementById("scPng").addEventListener("click", async e => {
     if(r.lost) document.getElementById("scNote").textContent = "Картинка сохранена, но " + r.lost + " изображений Enka не отдал для рисования — на PNG их нет.";
   } catch(err){ console.error(err); document.getElementById("scNote").textContent = "Не получилось нарисовать картинку."; }
   finally { btn.disabled = false; btn.textContent = t; }
+});
+
+document.getElementById("scCopy").addEventListener("click", async e => {
+  const btn = e.currentTarget, node = document.querySelector("#scCard > *");
+  if(!node || btn.disabled) return;
+  const t = btn.textContent, note = document.getElementById("scNote");
+  btn.disabled = true; btn.textContent = "Рисую…";
+  let lost = 0;
+  // ClipboardItem получает обещание сразу, внутри клика — так требует Safari
+  const blobP = scCardPng(node).then(r => { lost = r.lost; if(!r.blob) throw new Error("png"); return r.blob; });
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blobP })]);
+    btn.textContent = "Скопировано";
+    if(lost) note.textContent = "Скопировано, но " + lost + " изображений Enka не отдал для рисования — на картинке их нет.";
+    setTimeout(() => { btn.textContent = t; }, 1500);
+  } catch(err){ console.error(err); note.textContent = "Браузер не дал скопировать картинку — сохраните её кнопкой «Картинкой»."; btn.textContent = t; }
+  finally { btn.disabled = false; }
 });

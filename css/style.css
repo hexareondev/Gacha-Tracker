@@ -1335,7 +1335,8 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
   border-radius:14px;overflow:hidden;color:#f3f3f3;border:2px solid #2a2a2e;
   background:repeating-linear-gradient(45deg,transparent 0 3px,rgba(255,255,255,.018) 3px 4px),linear-gradient(90deg,#1d1d21,#161618)}
 .zx-art{position:relative;margin-right:-44px;min-height:440px;clip-path:polygon(0 0,100% 0,calc(100% - 40px) 100%,0 100%);background:linear-gradient(160deg,#5a2430,#24121a 70%)}
-.zx-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top}
+/* арт сдвинут влево: центр — по видимой части, а не под столбцом кинограммы */
+.zx-art img{position:absolute;top:0;left:-28px;width:100%;height:100%;object-fit:cover;object-position:center top}
 .zx-art::after{content:"";position:absolute;inset:auto 0 0 0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.85))}
 .zx-uid{position:absolute;right:82px;bottom:16px;z-index:1;writing-mode:vertical-rl;transform:rotate(185deg);font-weight:700;font-size:13px;letter-spacing:1px;opacity:.85}
 .zx-id{position:absolute;left:16px;bottom:14px;z-index:1}

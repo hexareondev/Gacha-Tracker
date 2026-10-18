@@ -24,6 +24,11 @@ jobs:
         run: python achievements/fetch_achievements.py --out achievements/data --lang ru
       - name: Скачать базу персонажей и оружия
         run: python items/fetch_items.py
+      - name: Найти персонажей на артах (для витрины)
+        continue-on-error: true
+        run: |
+          python -m pip install --quiet pillow
+          python items/art_focus.py
       - name: Закоммитить изменения
         run: |
           git config user.name "github-actions[bot]"

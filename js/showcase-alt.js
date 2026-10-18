@@ -105,7 +105,7 @@ function hxCard(vm){
     '<div class="hx-relics">' + vm.slots.map(d => d.empty ? '<div class="hx-rel none"><div class="hx-rh"><span>' + esc(d.label) + '</span></div><p>Пусто</p></div>' :
       '<div class="hx-rel' + (d.top ? " top" : "") + '"><div class="hx-rh"><span>' + esc(d.label) + ' <em>+' + d.lvl + '</em></span>' + hxImg(d.icon, "hx-ricon") + '</div>' +
         (d.main ? '<div class="hx-rm">' + ic(d.main[2]) + '<span>' + esc(d.main[0]) + '</span><b>' + esc(d.main[1]) + '</b></div>' : "") +
-        d.subs.map(s => '<div class="hx-rs' + (s.val ? " val" : "") + '">' + ic(s.ic) + '<span>' + esc(s.n) + (s.up ? ' <i>»' + s.up + '</i>' : "") + '</span><b>' + esc(s.v) + "</b></div>").join("") + "</div>").join("") +
+        d.subs.map(s => '<div class="hx-rs' + (s.val ? " val" : "") + '">' + ic(s.ic) + '<span><em>' + esc(s.n) + '</em>' + (s.up ? '<i>»' + s.up + '</i>' : "") + '</span><b>' + esc(s.v) + "</b></div>").join("") + "</div>").join("") +
     '</div></div></div></div>';
   return h;
 }
@@ -135,8 +135,9 @@ function zxCard(vm, uid){
   const mind = [1,2,3,4,5,6].map(i => '<i class="' + (i <= vm.cons.n ? "on" : "") + '"><span>0' + i + "</span></i>").join("") +
     '<i class="blank"></i><i class="ic" title="' + esc(vm.cls || "") + '">' + (vm.proIc ? zImg("sp_" + vm.proIc, "") : '<span>' + esc((vm.cls || "").slice(0, 3)) + "</span>") + '</i>' +
     '<i class="ic" title="' + esc(vm.el || "") + '">' + zImg(vm.elIc && "el_" + vm.elIc, "") + "</i>";
-  let h = '<div class="zx" style="--accent:' + esc(vm.color) + '">' +
-    '<div class="zx-art">' + (vm.art ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
+  const o = zxOpt();
+  let h = '<div class="zx' + (o.uid ? "" : " no-uid") + (o.bar ? "" : " no-bar") + (o.rolls ? "" : " no-rolls") + '" style="--accent:' + esc(vm.color) + '">' +
+    '<div class="zx-main"><div class="zx-art">' + (vm.art ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
       '<div class="zx-uid">' + esc(uid || "") + '</div>' +
       '<div class="zx-id"><div class="zx-lv">Уровень <b>' + vm.lvl + '</b> / ' + vm.maxLvl + '</div><div class="zx-nm">' + esc(vm.name) + '</div></div></div>' +
     '<div class="zx-mind"><div class="zx-mind-in">' + mind + '</div></div>' +
@@ -153,7 +154,7 @@ function zxCard(vm, uid){
           '<div class="zx-sqi"><div class="zx-sq1"' + (d.main ? ' data-f="' + esc(d.main[3]) + '"' : "") + '><b>' + (d.main ? esc(d.main[1]) : "") + '</b>' + (d.main ? ic(d.main[2]) : "") + '</div>' +
           '<div class="zx-sq2"><em>Lv. ' + d.lvl + '</em><s>' + esc(d.rank || "B") + '</s></div></div></div></div>' +
         '<div class="zx-ds">' + d.subs.map(s => '<span class="' + (s.val ? "val" : "") + '" data-f="' + esc(String(s.key).slice(0, 3)) + '">' + ic(s.ic) + '<b>' + esc(s.v) + '</b>' + (s.up ? '<u style="width:' + (s.up * 8 - 2) + 'px"></u>' : "") + "</span>").join("") + "</div></div>").join("") + '</div>' +
-    '<div class="zx-bar">' + Object.keys(sum).sort((a, b) => zxBarPos(a) - zxBarPos(b)).map(k => '<span' + (sum[k].val ? ' class="val"' : "") + ' title="' + esc(sum[k].name) + '" data-f="' + esc(String(k).slice(0, 3)) + '"><small>' + sum[k].n + '</small>' + ic(sum[k].ic) + '<b>' + esc(sum[k].fmt(sum[k].v)) + "</b></span>").join("") + '</div>' +
+    '</div><div class="zx-bar">' + Object.keys(sum).sort((a, b) => zxBarPos(a) - zxBarPos(b)).map(k => '<span' + (sum[k].val ? ' class="val"' : "") + ' title="' + esc(sum[k].name) + '" data-f="' + esc(String(k).slice(0, 3)) + '"><small>' + sum[k].n + '</small>' + ic(sum[k].ic) + '<b>' + esc(sum[k].fmt(sum[k].v)) + "</b></span>").join("") + '</div>' +
   '</div>';
   return h;
 }
@@ -186,8 +187,24 @@ function scLayoutSeg(game){
   });
 }
 function scRenderAlt(card, game, vm, uid){
-  card.innerHTML = game === "hk4e" ? gxCard(vm) : game === "hkrpg" ? hxCard(vm) : zxCard(vm, uid);
+  card.innerHTML = game === "hk4e" ? gxCard(vm) : game === "hkrpg" ? hxCard(vm) : zxCard(vm, uid) + zxOptsHtml();
 }
+// ZZZ: что показывать на карточке (и на картинке из неё)
+function zxOpt(){ return Object.assign({ uid:true, bar:true, rolls:true }, ui.zxOpt || {}); }
+function zxOptsHtml(){
+  const o = zxOpt();
+  const chip = (k, t) => '<button class="chip' + (o[k] ? " on" : "") + '" data-zo="' + k + '" aria-pressed="' + o[k] + '">' + t + "</button>";
+  return '<div class="chips zx-opts">' + chip("uid", "UID") + chip("bar", "Сводка сабстатов") + chip("rolls", "Отметки усилений") + "</div>";
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-zo]");
+  if(!b) return;
+  const k = b.dataset.zo, on = !zxOpt()[k];
+  ui.zxOpt = Object.assign(zxOpt(), { [k]: on }); saveUI();
+  b.classList.toggle("on", on); b.setAttribute("aria-pressed", on);
+  const z = document.querySelector("#scCard .zx");
+  if(z) z.classList.toggle("no-" + k, !on);
+});
 
 
 /* ── карточка витрины в PNG: копия разметки + стили сайта внутри SVG, все картинки и шрифты вшиты как data:URL ── */
@@ -230,6 +247,8 @@ async function scCardPng(node){
   const w = Math.ceil(node.getBoundingClientRect().width), h = Math.ceil(node.getBoundingClientRect().height);
   const clone = node.cloneNode(true);
   clone.querySelectorAll(".zx-on").forEach(x => x.classList.remove("zx-on"));
+  clone.querySelectorAll(".art-tools").forEach(x => x.remove());
+  clone.querySelectorAll(".art-edit").forEach(x => x.classList.remove("art-edit"));
   // картинки → data:URL; не отдалась (нет CORS) — убираем, чтобы холст не «испортился»
   let lost = 0;
   await Promise.all([...clone.querySelectorAll("img")].map(async im => {
@@ -298,4 +317,117 @@ document.getElementById("scCopy").addEventListener("click", async e => {
     setTimeout(() => { btn.textContent = t; }, 1500);
   } catch(err){ console.error(err); note.textContent = "Браузер не дал скопировать картинку — сохраните её кнопкой «Картинкой»."; btn.textContent = t; }
   finally { btn.disabled = false; }
+});
+
+/* ── портрет в карточке: подгонка по рамке фигуры (items/data/art_focus.json) и ручная правка ──
+   art_focus — рамка непрозрачной части арта и центр головы, считается раз в неделю на GitHub.
+   Ручная правка (сдвиг и увеличение) хранится у пользователя, общая — в items/data/art_adj.json. */
+let ART = null, ARTADJ = {}, artLoading = false, artCur = null, artEdit = false;
+function artLoad(cb){
+  if(ART){ cb && cb(); return; }
+  if(artLoading) return;
+  artLoading = true;
+  Promise.all(["art_focus", "art_adj"].map(n => fetch("items/data/" + n + ".json", { cache:"no-cache" }).then(r => r.ok ? r.json() : {}).catch(() => ({}))))
+    .then(([a, b]) => { ART = a || {}; ARTADJ = b || {}; artLoading = false; cb && cb(); });
+}
+function artKey(){ return artCur ? artCur.game + ":" + artCur.id : ""; }
+function artAdjGet(){ const k = artKey(); return (ui.artAdj || {})[k] || ARTADJ[k] || null; }
+function artBox(){ const c = document.getElementById("scCard"); return c && c.querySelector(".zx-art,.hx-art,.gx-art"); }
+function artFit(){
+  const box = artBox();
+  const pb = document.getElementById("scArt");
+  if(pb) pb.hidden = !box;
+  if(!box || !artCur) return;
+  if(artEdit) artToolbar(box);
+  const img = box.querySelector(":scope > img");
+  if(!img) return;
+  if(!img.complete || !img.naturalWidth){ img.addEventListener("load", artFit, { once:true }); return; }
+  if(!ART){ artLoad(artFit); return; }
+  const f = (ART[artCur.game] || {})[artCur.id], adj = artAdjGet();
+  const W = box.clientWidth, H = box.clientHeight, iw = img.naturalWidth, ih = img.naturalHeight;
+  if(!W || !H) return;
+  const hide = box.classList.contains("zx-art") ? 56 : 0;   // правый край арта ZZZ спрятан под столбцом кинограммы
+  const cx = (W - hide) / 2, cy = H * 0.03;
+  let s, left, top;
+  if(f && f.length === 5){
+    const [l, t, r, b, hx] = f.map(v => v / 1000);
+    // фигура по высоте занимает почти всю карточку, голова — по центру видимой части
+    s = Math.min(0.95 * H / (Math.max(0.05, b - t) * ih), Math.max(W / iw, H / ih) * 2.5);
+    left = cx - hx * iw * s; top = cy - t * ih * s;
+  } else if(adj){
+    // арт с фоном: обычное заполнение, к нему — ручная правка
+    s = Math.max(W / iw, H / ih) * (box.classList.contains("hx-art") ? 1.14 : 1);
+    left = (W - iw * s) / 2; top = -(ih * s - H) * 0.12;
+  } else { img.classList.remove("fx"); img.removeAttribute("style"); return; }
+  if(adj){
+    const z = adj.z || 1;
+    left = cx + (left - cx) * z; top = cy + (top - cy) * z; s *= z;
+    left += (adj.dx || 0) * W; top += (adj.dy || 0) * H;
+  }
+  img.classList.add("fx");
+  img.style.cssText = "left:" + left.toFixed(1) + "px;top:" + top.toFixed(1) + "px;width:" + (iw * s).toFixed(1) + "px";
+}
+let artRT = 0;
+window.addEventListener("resize", () => { clearTimeout(artRT); artRT = setTimeout(artFit, 150); });
+
+// ручная подгонка: тянуть мышкой/пальцем, колесо или кнопки — размер
+function artSet(fn){
+  const k = artKey(); if(!k) return;
+  ui.artAdj = ui.artAdj || {};
+  const a = Object.assign({ dx:0, dy:0, z:1 }, artAdjGet() || {});
+  fn(a);
+  a.z = Math.min(3, Math.max(0.4, a.z));
+  a.dx = Math.round(a.dx * 1000) / 1000; a.dy = Math.round(a.dy * 1000) / 1000; a.z = Math.round(a.z * 1000) / 1000;
+  ui.artAdj[k] = a; saveUI(); artFit();
+  document.getElementById("scArtExport").hidden = false;
+}
+function artToolbar(box){
+  box.classList.add("art-edit");
+  if(box.querySelector(".art-tools")) return;
+  const t = document.createElement("div");
+  t.className = "art-tools";
+  t.innerHTML = '<div><button data-a="out" title="Меньше">−</button><button data-a="in" title="Больше">+</button>' +
+    '<button data-a="reset" title="Вернуть как было">↺</button><button data-a="done" class="on" title="Готово">✓</button></div>' +
+    '<small>Тяните арт, колесо — размер</small>';
+  t.addEventListener("pointerdown", e => e.stopPropagation());
+  t.addEventListener("click", e => {
+    const a = e.target.closest("button"); if(!a) return;
+    if(a.dataset.a === "in") artSet(x => { x.z *= 1.06; });
+    if(a.dataset.a === "out") artSet(x => { x.z /= 1.06; });
+    if(a.dataset.a === "reset"){ if(ui.artAdj) delete ui.artAdj[artKey()]; saveUI(); artFit(); }
+    if(a.dataset.a === "done") artEditToggle(false);
+  });
+  box.appendChild(t);
+  box.addEventListener("pointerdown", e => {
+    if(!artEdit) return;
+    e.preventDefault();
+    const W = box.clientWidth, H = box.clientHeight;
+    let x0 = e.clientX, y0 = e.clientY;
+    const mv = ev => { const dx = (ev.clientX - x0) / W, dy = (ev.clientY - y0) / H; x0 = ev.clientX; y0 = ev.clientY; artSet(a => { a.dx += dx; a.dy += dy; }); };
+    const up = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); };
+    window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
+  });
+  box.addEventListener("wheel", e => { if(!artEdit) return; e.preventDefault(); artSet(a => { a.z *= Math.exp(-e.deltaY * 0.0012); }); }, { passive:false });
+}
+function artEditToggle(on){
+  artEdit = on;
+  document.getElementById("scArt").classList.toggle("on", on);
+  const box = artBox();
+  if(!box) return;
+  if(on) artToolbar(box);
+  else { box.classList.remove("art-edit"); const t = box.querySelector(".art-tools"); if(t) t.remove(); }
+}
+document.getElementById("scArt").addEventListener("click", () => artEditToggle(!artEdit));
+// экспорт ручных правок — прислать, чтобы внести в общий список
+document.getElementById("scArtExport").addEventListener("click", async () => {
+  const text = JSON.stringify(ui.artAdj || {}, null, 1);
+  const note = document.getElementById("scNote");
+  if(!Object.keys(ui.artAdj || {}).length){ note.textContent = "Ручных правок портретов пока нет."; return; }
+  try { await navigator.clipboard.writeText(text); note.textContent = "Правки портретов скопированы — пришлите их, чтобы они стали общими."; }
+  catch(e){
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type:"application/json" })); a.download = "art_adj.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    note.textContent = "Правки портретов сохранены файлом art_adj.json — пришлите его, чтобы они стали общими.";
+  }
 });

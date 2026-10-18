@@ -458,7 +458,7 @@ function renderShowcase(){
 
   const tabs = document.getElementById("scTabs"), card = document.getElementById("scCard");
   tabs.innerHTML = ""; card.innerHTML = "";
-  document.getElementById("scPng").hidden = true; document.getElementById("scCopy").hidden = true;
+  document.getElementById("scPng").hidden = true; document.getElementById("scCopy").hidden = true; document.getElementById("scArt").hidden = true;
   if(!u || !Object.keys(u.agents).length){
     card.innerHTML = '<div class="sc-empty">Здесь появятся сборки ' + G.who + ' из витрины вашего профиля: ' +
       (game === "nap" ? "амплификатор, диски" : game === "hkrpg" ? "световой конус, реликвии" : "оружие, артефакты") +
@@ -494,6 +494,9 @@ function renderShowcase(){
   document.getElementById("scPng").hidden = false; document.getElementById("scCopy").hidden = !(navigator.clipboard && window.ClipboardItem);
   if(scAltWanted(game)) scRenderAlt(card, game, vm, uid);
   else scRenderCard(card, u, cur, vm);
+  artCur = { game, id: String(cur) };
+  requestAnimationFrame(artFit);
+  document.getElementById("scArtExport").hidden = !Object.keys(ui.artAdj || {}).length;
 }
 
 function scPips(n, max){

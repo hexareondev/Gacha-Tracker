@@ -1,8 +1,8 @@
-/* Гача Трекер — офлайн-работа.
+/* PityReon — офлайн-работа.
    Свои файлы берутся из сети, если она есть (так всегда открывается свежая версия),
    и сохраняются в кеш; без сети страница открывается из кеша. Шрифты — из кеша
    с фоновым обновлением. Остальные внешние адреса (портреты, базы) не трогаем. */
-const CACHE = "gacha-tracker-v38";
+const CACHE = "gacha-tracker-v39";
 const SHELL = [
   "./", "index.html", "css/style.css",
   "js/core.js", "js/calendar.js", "js/history.js", "js/pools.js", "js/collection.js", "js/showcase-alt.js", "js/showcase.js", "js/backup.js", "js/settings.js",

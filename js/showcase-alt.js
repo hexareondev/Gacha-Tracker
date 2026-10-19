@@ -469,7 +469,13 @@ document.addEventListener("click", async e => {
   const text = JSON.stringify(ui.artAdj || {}, null, 1);
   const note = document.getElementById("scNote");
   if(!Object.keys(ui.artAdj || {}).length){ note.textContent = "Ручных правок портретов пока нет."; return; }
-  try { await navigator.clipboard.writeText(text); note.textContent = "Правки портретов скопированы — пришлите их, чтобы они стали общими."; }
+  const btn = e.target.closest("#scArtExport");
+  try {
+    await navigator.clipboard.writeText(text);
+    note.textContent = "Правки портретов скопированы — пришлите их, чтобы они стали общими.";
+    btn.textContent = "Скопировано"; btn.classList.add("on");
+    setTimeout(() => { btn.textContent = "Экспорт портретов"; btn.classList.remove("on"); }, 1800);
+  }
   catch(e){
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type:"application/json" })); a.download = "art_adj.json";

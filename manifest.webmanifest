@@ -1,6 +1,6 @@
 {
-  "name": "Гача Трекер",
-  "short_name": "Гача Трекер",
+  "name": "PityReon — трекер круток, наград и сборок",
+  "short_name": "PityReon",
   "description": "Крутки, история, достижения и ежедневные награды для Genshin Impact, Honkai: Star Rail и Zenless Zone Zero",
   "lang": "ru",
   "start_url": "./",

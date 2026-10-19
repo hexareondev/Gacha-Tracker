@@ -792,7 +792,7 @@ document.getElementById("achExport").onclick = () => {
   const ids = Object.keys(m).filter(id => db.byId[id]).map(Number).sort((x, y) => x - y);
   // формат UIAF: его понимают трекеры Genshin; для остальных игр — та же структура
   const out = {
-    info:{ export_app:"Гача Трекер", export_app_version:"1", uiaf_version:"v1.1", export_timestamp:Math.floor(Date.now() / 1000), game:g.id },
+    info:{ export_app:"PityReon", export_app_version:"1", uiaf_version:"v1.1", export_timestamp:Math.floor(Date.now() / 1000), game:g.id },
     list: ids.map(id => ({ id, current:0, status:3, timestamp: typeof m[id] === "number" ? m[id] : 0 }))
   };
   if(!achDownload("achievements-" + g.file + "-" + todayKey + ".json", JSON.stringify(out, null, 1)))

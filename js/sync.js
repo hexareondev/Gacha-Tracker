@@ -9,7 +9,7 @@ const SYNC_KEY = "zzz-sync-v1";
 const sstore = makeStore(SYNC_KEY);
 const sync = sstore.load() || {};
 const GIST_FILE = "gacha-tracker.json";
-const GIST_DESC = "Гача Трекер — резервная копия";
+const GIST_DESC = "PityReon — резервная копия";
 if(typeof sync.auto !== "boolean") sync.auto = true;
 // метка этого браузера: пишется в копию, чтобы своё же сохранение не считалось «новее»
 if(!sync.dev){ sync.dev = Date.now().toString(36) + Math.random().toString(36).slice(2, 8); sstore.save(sync); }

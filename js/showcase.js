@@ -152,7 +152,7 @@ function zzzVM(av){
     .map(s => [ZZZ_SKILL[s.Index], (s.Level || 0) + boost, s.Index]);
   skills.push(["Ядро", core ? "ABCDEF".charAt(core - 1) : "—"]);
   const el = zzzElement(info.el);
-  return { name: scItemName("nap", id) || "#" + id, art: info.img, circle: info.circle || info.img, el: el.n, color: el.c, cls: ZZZ_PRO[info.pro] || info.pro, elIc: ZZZ_EL_IC[el.k] || "", proIc: ZZZ_PRO_IC[info.pro] || "",
+  return { name: scItemName("nap", id) || "#" + id, art: info.img, circle: info.circle || info.img, el: el.n, color: el.c, cls: ZZZ_PRO[info.pro] || info.pro, elIc: ZZZ_EL_IC[el.k] || "", proIc: ZZZ_PRO_IC[info.pro] || "", rank: ((itemsDb.nap && itemsDb.nap.items[id]) || {}).r === 3 ? "A" : "S", valuable,
     lvl, maxLvl: 60, cons:{ label:"M", title:"Кинограмма", n:m }, keys, skills, stats, weapon, sets, cv, slotsTitle:"Диски", setsWord:"дисков",
     slots: [1,2,3,4,5,6].map(i => slots.find(s => s.pos === i) || { pos:i, label:String(i), empty:true }),
     foot: "Характеристики посчитаны по формулам Enka: агент, амплификатор, диски и бонусы комплектов за 2 предмета. Пассивки амплификатора, эффекты за 4 предмета и баффы в бою не учитываются, поэтому цифры могут немного отличаться от окна агента в игре." };
@@ -458,7 +458,7 @@ function renderShowcase(){
 
   const tabs = document.getElementById("scTabs"), card = document.getElementById("scCard");
   tabs.innerHTML = ""; card.innerHTML = "";
-  document.getElementById("scPng").hidden = true; document.getElementById("scCopy").hidden = true; document.getElementById("scArt").hidden = true;
+  document.getElementById("scPng").hidden = true; document.getElementById("scCopy").hidden = true;
   if(!u || !Object.keys(u.agents).length){
     card.innerHTML = '<div class="sc-empty">Здесь появятся сборки ' + G.who + ' из витрины вашего профиля: ' +
       (game === "nap" ? "амплификатор, диски" : game === "hkrpg" ? "световой конус, реликвии" : "оружие, артефакты") +
@@ -495,8 +495,8 @@ function renderShowcase(){
   if(scAltWanted(game)) scRenderAlt(card, game, vm, uid);
   else scRenderCard(card, u, cur, vm);
   artCur = { game, id: String(cur) };
-  requestAnimationFrame(artFit);
-  document.getElementById("scArtExport").hidden = !Object.keys(ui.artAdj || {}).length;
+  requestAnimationFrame(() => { scFitText(); artFit(); });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(scFitText);
 }
 
 function scPips(n, max){

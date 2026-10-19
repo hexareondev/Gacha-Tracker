@@ -180,7 +180,7 @@ function zxCard(vm, uid, nick){
       '<div class="zx-id"><div class="zx-lv">Уровень <b>' + vm.lvl + '</b> / ' + vm.maxLvl + '</div><div class="zx-nm">' + esc(vm.name) + '</div></div></div>' +
     '<div class="zx-mind"><div class="zx-mind-in">' + mind + '</div></div>' +
     '<div class="zx-mid"><div class="zx-mid-in"><div class="zx-stats"><div>' + col(vm.stats.slice(0, half)) + '</div><div>' + col(vm.stats.slice(half)) + '</div></div>' +
-      '<div class="zx-low"><div class="zx-core">' + "ABCDEF".split("").map((l, i) => '<i class="' + (i < coreN ? "on" : "") + '">' + l + "</i>").join("") + '</div>' +
+      '<div class="zx-low"><div class="zx-core">' + "abcdef".split("").map((l, i) => '<i class="' + (i < coreN ? "on" : "") + '" title="' + l.toUpperCase() + '"><span style="-webkit-mask-image:url(icons/zzz/core_' + l + '.svg);mask-image:url(icons/zzz/core_' + l + '.svg)"></span></i>').join("") + '</div>' +
         (vm.weapon ? '<div class="zx-w w' + esc(vm.weapon.badge || "B") + '"><div class="zx-wn">' + esc(vm.weapon.name) + '</div><div class="zx-wst">' + vm.weapon.stats.map(s => '<span' + (s[3] ? ' data-f="' + esc(s[3]) + '"' : "") + '>' + (s[2] ? ic(s[2]) : "") + esc(s[1]) + "</span>").join("") + '</div>' +
           xImg(vm.weapon.img, "zx-wimg") + '<em class="zx-p">' + vm.weapon.refine.label + vm.weapon.refine.n + '</em><em class="zx-wl">Lv. ' + vm.weapon.lvl + '</em></div>' : "") + '</div>' +
       '<div class="zx-low2"><div class="zx-skills">' + skills.map(s => '<span title="' + esc(s[0]) + '">' + zImg("sk_" + ZZZ_SKILL_IC[s[2]], "zx-skimg") + '<b>' + s[1] + "</b></span>").join("") + '</div>' +

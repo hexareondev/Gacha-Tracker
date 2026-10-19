@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs><mask id="m"><rect width="64" height="64" fill="#fff"/><path d="M14 47 L50 13" stroke="#000" stroke-width="1.6"/></mask></defs>
+<circle cx="32" cy="32" r="28" fill="none" stroke="#fff" stroke-width="3.2"/>
+<path fill="#fff" fill-rule="evenodd" mask="url(#m)" transform="translate(32 32) skewX(-14) scale(1.12) translate(-32.5 -32)" d="M22 20 L40 20 L43 23 L43 30 L40.5 32 L43 34 L43 41 L40 44 L22 44ZM28 25 L37 25 L37 29 L28 29ZM28 35 L37 35 L37 39 L28 39Z"/>
+</svg>

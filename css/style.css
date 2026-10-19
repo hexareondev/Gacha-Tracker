@@ -1546,3 +1546,7 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .zx-nick{font-size:13px;opacity:.85;white-space:nowrap}
 .zx.no-nick .zx-nick,.zx.no-grade .zx-grade{display:none}
 @media (max-width:520px){ .zx-bar{flex-wrap:wrap} .zx-sum{justify-content:flex-start} }
+/* задатки ZZZ: векторные буквы в кольце (белые SVG, цвет — из currentColor) */
+.zx-core i{border:none;background:#0d0d0f;color:#3c3c42;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+.zx-core i.on{background:#0d0d0f;color:var(--zr2)}
+.zx-core i span{display:block;width:100%;height:100%;background:currentColor;-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}

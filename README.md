@@ -8,7 +8,7 @@
 
 Работает прямо в браузере · без регистрации · ваши данные никуда не отправляются
 
-### [Открыть трекер →](https://hexareondev.github.io/Gacha-Tracker/)
+### [Открыть трекер →](https://hexareondev.github.io/PityReon/)
 
 ![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-сайт-0c0c10?style=flat-square&logo=github&logoColor=f0c264)
 ![Без сервера](https://img.shields.io/badge/без_сервера-без_сборки-0c0c10?style=flat-square&logo=html5&logoColor=f0c264)
@@ -68,7 +68,7 @@ PityReon собирает ответы в одном месте. Это обыч
 
 Свой выгрузчик тоже есть — для Windows и глобальных серверов. Он сам находит ссылку на историю в кэше игры, скачивает все баннеры Genshin Impact, Star Rail и ZZZ и сохраняет один файл UIGF; при повторном запуске докачивает только новые крутки.
 
-- **[gacha_export.exe](https://github.com/hexareondev/Gacha-Tracker/releases/download/exporter/gacha_export.exe)** — запускается двойным щелчком, Python не нужен. Собирается автоматически в GitHub Actions из [`exporter/gacha_export.py`](exporter/gacha_export.py), контрольная сумма — на [странице релиза](https://github.com/hexareondev/Gacha-Tracker/releases/tag/exporter). Windows может показать предупреждение SmartScreen: у программы нет платной подписи — «Подробнее» → «Выполнить в любом случае».
+- **[gacha_export.exe](https://github.com/hexareondev/PityReon/releases/download/exporter/gacha_export.exe)** — запускается двойным щелчком, Python не нужен. Собирается автоматически в GitHub Actions из [`exporter/gacha_export.py`](exporter/gacha_export.py), контрольная сумма — на [странице релиза](https://github.com/hexareondev/PityReon/releases/tag/exporter). Windows может показать предупреждение SmartScreen: у программы нет платной подписи — «Подробнее» → «Выполнить в любом случае».
 - **[gacha_export.py](exporter/gacha_export.py)** — тот же выгрузчик скриптом, если установлен Python 3.8+.
 
 - Перед загрузкой видно, что именно добавится, — ничего не перезапишется без вашего ведома.

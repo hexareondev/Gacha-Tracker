@@ -47,7 +47,7 @@ function gxCard(vm){
   const stars = "★".repeat(vm.rarity || 5);
   const consY = [0, 1, 2, 3, 4, 5].map(i => { const t = (i - 2.5) / 2.5; return Math.round(18 - 18 * t * t); });   // дуга
   let h = '<div class="gx" style="--accent:' + esc(vm.color) + '">' +
-    '<div class="gx-left"><div class="gx-art">' + (vm.art ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") + '</div>' +
+    '<div class="gx-left"><div class="gx-art">' + (vm.art ? '<img class="pre" alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") + '</div>' +
       '<div class="gx-cons">' + consY.map((x, i) => '<i class="' + (i < vm.cons.n ? "on" : "") + '" style="transform:translateX(' + x + 'px)">' + (i < vm.cons.n ? '<b>C' + (i + 1) + '</b>' : ic("lock")) + "</i>").join("") + '</div>' +
       (vm.friend ? '<div class="gx-friend">' + ic("heal") + 'Уровень дружбы: <b>' + vm.friend + '</b></div>' : "") +
       '<div class="gx-talents">' + vm.skills.map(s => '<span title="' + esc(s[0]) + '"><i>' + esc(s[0].charAt(0)) + '</i><b>' + s[1] + "</b></span>").join("") + '</div>' +
@@ -100,7 +100,7 @@ function hxCard(vm){
   const t = vm.traces || { skills:[], majors:[], minors:[], bonus:[] };
   let h = '<div class="hx" style="--accent:' + esc(vm.color) + '">' +
     '<div class="hx-left">' +
-      '<div class="hx-art" style="background-image:' + hxNebula(vm.color, vm.name) + '">' + (vm.art ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
+      '<div class="hx-art" style="background-image:' + hxNebula(vm.color, vm.name) + '">' + (vm.art ? '<img class="pre" alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
         '<div class="hx-head"><div class="hx-name"><span class="fit">' + esc(vm.name) + '</span> <em>Ур. ' + vm.lvl + '</em></div>' +
         '<div class="hx-tags"><span class="el"><i></i>' + esc(vm.el) + '</span><span>' + esc(vm.cls) + '</span></div></div>' +
         '<div class="hx-eid">' + [1,2,3,4,5,6].map(i => hxImg((vm.rankIcons || [])[i - 1], "hx-e" + (i <= vm.cons.n ? " on" : ""), i <= vm.cons.n ? "" : ic("lock", "lk"))).join("") + '</div>' +
@@ -175,7 +175,7 @@ function zxCard(vm, uid, nick){
   const o = zxOpt(), gr = zxGrade(vm);
   const bgWord = { fire:"FIRE", ice:"ICE", electric:"ELECTRIC", physical:"PHYSICAL", ether:"ETHER", wind:"WIND", lumen:"LUMEN", frost:"FROST", auric:"AURIC", honed:"HONED" }[vm.elIc] || "ZZZ";
   let h = '<div class="zx r' + (vm.rank || "S") + (o.uid ? "" : " no-uid") + (o.nick ? "" : " no-nick") + (o.bar ? "" : " no-bar") + (o.rolls ? "" : " no-rolls") + (o.grade ? "" : " no-grade") + '" style="--accent:' + esc(vm.color) + '">' +
-    '<div class="zx-main"><div class="zx-art"><div class="zx-bgw">' + bgWord + '</div>' + (vm.art ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
+    '<div class="zx-main"><div class="zx-art"><div class="zx-bgw">' + bgWord + '</div>' + (vm.art ? '<img class="pre" alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
       '<div class="zx-uid">' + esc(uid || "") + '</div>' +
       '<div class="zx-id"><div class="zx-lv">Уровень <b>' + vm.lvl + '</b> / ' + vm.maxLvl + '</div><div class="zx-nm">' + esc(vm.name) + '</div></div></div>' +
     '<div class="zx-mind"><div class="zx-mind-in">' + mind + '</div></div>' +
@@ -383,6 +383,8 @@ function artBox(){ const c = document.getElementById("scCard"); return c && c.qu
 function artFit(){
   const box = artBox();
   if(!box || !artCur) return;
+  // страховка: если подогнать не вышло (картинка не загрузилась и т.п.), арт всё равно появится
+  clearTimeout(artFit.t); artFit.t = setTimeout(() => box.querySelectorAll("img.pre").forEach(i => i.classList.add("fit")), 2500);
   if(artEdit) artToolbar(box);
   const img = box.querySelector(":scope > img");
   if(!img) return;
@@ -390,11 +392,12 @@ function artFit(){
   if(!ART){ artLoad(artFit); return; }
   const f = (ART[artCur.game] || {})[artCur.id], adj = artAdjGet();
   const W = box.clientWidth, H = box.clientHeight, iw = img.naturalWidth, ih = img.naturalHeight;
-  if(!W || !H) return;
+  if(!W || !H){ img.classList.add("fit"); return; }
   const hide = box.classList.contains("zx-art") ? 56 : 0;   // правый край арта ZZZ спрятан под столбцом кинограммы
   const cx = (W - hide) / 2, cy = H * 0.03;
   let s, left, top;
-  if(f && f.length === 5){
+  // ручная правка задаёт место сама (от обычного заполнения), автоподгонка — только если правки нет
+  if(f && f.length === 5 && !adj){
     const [l, t, r, b, hx] = f.map(v => v / 1000);
     // фигура по высоте занимает почти всю карточку, голова — по центру видимой части
     s = Math.min(0.95 * H / (Math.max(0.05, b - t) * ih), Math.max(W / iw, H / ih) * 2.5);
@@ -403,7 +406,7 @@ function artFit(){
     // арт с фоном: обычное заполнение, к нему — ручная правка
     s = Math.max(W / iw, H / ih) * (box.classList.contains("hx-art") ? 1.14 : 1);
     left = (W - iw * s) / 2; top = -(ih * s - H) * 0.12;
-  } else { img.classList.remove("fx"); img.removeAttribute("style"); return; }
+  } else { img.classList.remove("fx"); img.removeAttribute("style"); img.classList.add("fit"); return; }
   if(adj){
     const z = adj.z || 1;
     left = cx + (left - cx) * z; top = cy + (top - cy) * z; s *= z;
@@ -411,6 +414,7 @@ function artFit(){
   }
   img.classList.add("fx");
   img.style.cssText = "left:" + left.toFixed(1) + "px;top:" + top.toFixed(1) + "px;width:" + (iw * s).toFixed(1) + "px";
+  img.classList.add("fit");   // показываем арт только когда он уже на своём месте — без прыжка
 }
 let artRT = 0;
 window.addEventListener("resize", () => { clearTimeout(artRT); artRT = setTimeout(artFit, 150); });

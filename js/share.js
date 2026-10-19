@@ -233,7 +233,7 @@ function drawShare(d, imgs, hideUid){
 
   // подпись
   ctx.fillStyle = C.dim; ctx.font = "400 21px " + IF;
-  ctx.fillText("hexareondev.github.io/Gacha-Tracker", P, SHARE_H - 52);
+  ctx.fillText("hexareondev.github.io/PityReon", P, SHARE_H - 52);
   ctx.textAlign = "right";
   ctx.fillText("модель гаранта — оценка сообщества", SHARE_W - P, SHARE_H - 52);
   ctx.textAlign = "left";
@@ -305,7 +305,7 @@ function renderSharePreview(){
       '<div class="sc-nm">' + esc(x.nm || "—") + '</div><div class="sc-tg">' + recTag(x) + '</div></div>';
   });
   if(!d.recent.length) h += '<div class="sc-none">Пока ни одного.</div>';
-  h += '</div><div class="sc-foot"><span>hexareondev.github.io/Gacha-Tracker</span><span>модель гаранта — оценка сообщества</span></div>';
+  h += '</div><div class="sc-foot"><span>hexareondev.github.io/PityReon</span><span>модель гаранта — оценка сообщества</span></div>';
   const card = document.getElementById("shareCard");
   card.innerHTML = h;
   if(iconMode() !== "off") card.querySelectorAll(".sc-pic").forEach((el, i) => attachIcon(el, acc.game, d.recent[i].rec));

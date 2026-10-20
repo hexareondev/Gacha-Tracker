@@ -1552,3 +1552,13 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .zx-core i span{display:block;width:100%;height:100%;background:currentColor;-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .zx-art > img.pre,.hx-art > img.pre,.gx-art > img.pre{opacity:0}
 .zx-art > img.pre.fit,.hx-art > img.pre.fit,.gx-art > img.pre.fit{opacity:1;transition:opacity .15s}
+/* история уже загружена: блок загрузки файла компактный, в одну строку */
+.drop.compact{padding:10px 14px;margin-top:14px;text-align:left}
+.drop.compact .dropin{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px}
+.drop.compact .dropin > b,.drop.compact .dropin > span{display:none}
+.drop.compact .dropin .row{margin-top:0}
+.drop.compact .watchrow{margin-top:0;padding:6px 12px;justify-content:flex-start}
+.drop.compact .hint{flex-basis:100%;margin:0}
+.drop.compact .hint:empty{display:none}
+.drop.compact details.exporter{align-self:center;margin:0}
+.drop.compact details.exporter[open]{flex-basis:100%;max-width:none;order:9}

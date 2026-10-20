@@ -701,6 +701,8 @@ function renderHistory(){
 
   const body = document.getElementById("histBody");
   body.classList.toggle("hidden", !acc);
+  document.getElementById("dropZone").classList.toggle("compact", !!acc);   // история уже есть — блок загрузки в одну строку
+  document.getElementById("pickHist").textContent = acc ? "Загрузить новый файл" : "Выбрать файл";
   if(!acc) return;
 
   const banners = accountBanners(acc);

@@ -1598,3 +1598,24 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .gi-grade.gB b{color:#6fb4ff}.gi-grade.gB{border-color:#4fa3ff}
 .gi-grade.gC b{color:#9a9aa2}.gi-grade.gC{border-color:#5a5a62}
 .hx-art .gi-elic{position:static;inset:auto;width:18px;height:18px;margin:-3px -2px -3px -4px;object-fit:contain;transform:none;opacity:1}
+/* Genshin: сверху портрет | характеристики + оружие и таланты, снизу 5 артефактов в строку */
+.hx.gi .hx-left{display:flex}
+.hx.gi .hx-art{height:auto;flex:1;min-height:440px}
+.gi-wt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.hx.gi{grid-template-rows:auto auto auto}
+.hx.gi .hx-left{grid-row:1 / 3}
+/* артефакты — один блок буквой Г: шапка под оружием и талантами, ряд артефактов на всю ширину под портретом */
+.gi-rhead{border-bottom:none;border-radius:var(--rs) var(--rs) 0 0;margin-bottom:-14px;padding-bottom:4px}
+.gi-rhead .hx-useful{margin-bottom:0}
+.gi-rels{grid-column:1 / -1;position:relative;border-top:none;border-top-right-radius:0;padding-top:7px}
+.gi-rels::before{content:"";position:absolute;left:-1px;top:0;width:345px;height:var(--rs);border:1px solid var(--edge-soft);border-right:none;border-bottom:none;border-top-left-radius:var(--rs);pointer-events:none}
+.hx.gi .hx-relics{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:900px){
+  .hx.gi .hx-art{flex:none;height:380px;min-height:0}
+  .hx.gi .hx-left{grid-row:auto}
+  .gi-rels::before{display:none}
+  .gi-rels{border-top-left-radius:0}
+  .hx.gi .hx-relics{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:600px){ .gi-wt{grid-template-columns:1fr} }
+@media (max-width:520px){ .hx.gi .hx-relics{grid-template-columns:repeat(2,minmax(0,1fr))} }

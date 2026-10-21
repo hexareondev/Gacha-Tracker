@@ -84,6 +84,11 @@ function gxGrade(vm){
   const max = 5 * (k + 5), p = n / max;
   return { n, max, useful, g: p >= .7 ? "SS" : p >= .56 ? "S" : p >= .42 ? "A" : p >= .28 ? "B" : "C" };
 }
+// короткие подписи для узких карточек артефактов (полное название — во всплывающей подсказке)
+function gxShort(n){
+  return String(n).replace(/^Шанс крит(ического|\.) попадания$/, "Шанс крита").replace(/^Бонус (\S+) урона$/, "$1 урон")
+    .replace(/^Сила атаки$/, "Атака").replace(/^Мастерство стихий$/, "Мастерство").replace(/^Восстановление энергии$/, "Восст. энергии");
+}
 function gxCard(vm){
   const gr = gxGrade(vm), stars = "★".repeat(vm.rarity || 5);
   const uk = Object.keys(gr.useful).sort((a, b) => gr.useful[b] - gr.useful[a]);
@@ -97,6 +102,8 @@ function gxCard(vm){
         '<div class="gi-cons">' + [0,1,2,3,4,5].map(i => '<span style="margin-right:' + arc[i] + 'px">' + hxImg((vm.constIcons || [])[i], "gi-c" + (i < vm.cons.n ? " on" : ""), i < vm.cons.n ? "" : ic("lock", "lk")) + "</span>").join("") + '</div>' +
         (vm.friend ? '<div class="gi-friend">' + ic("heal") + ' Дружба <b>' + vm.friend + '</b></div>' : "") +
       '</div>';
+  h += '</div><div class="hx-right"><div class="hx-title">Характеристики</div>' +
+    '<div class="hx-box"><div class="hx-grid" style="grid-template-rows:repeat(' + Math.ceil(vm.stats.length / 2) + ',auto)">' + vm.stats.map(xStatRow).join("") + '</div></div><div class="gi-wt">';
   if(vm.weapon){
     const w = vm.weapon;
     h += '<div class="hx-box"><div class="hx-bt">Оружие</div><div class="hx-lc gi-w">' + hxImg(w.img, "hx-lcimg gi-wimg" + (w.top ? " top" : "")) +
@@ -105,18 +112,16 @@ function gxCard(vm){
   }
   h += '<div class="hx-box"><div class="hx-bt">Таланты</div><div class="hx-skills gi-tal">' +
       (vm.talents || []).map(t => '<span title="' + esc(t.n) + ': ' + t.lv + (t.boost ? " (+3 от созвездия)" : "") + '">' + hxImg(t.icon, "hx-sk") + '<b' + (t.boost ? ' class="up"' : "") + '>' + t.lv + "</b><small>" + esc(t.n) + "</small></span>").join("") +
-    '</div></div></div>';
-  h += '<div class="hx-right"><div class="hx-title">Характеристики</div>' +
-    '<div class="hx-box"><div class="hx-grid" style="grid-template-rows:repeat(' + Math.ceil(vm.stats.length / 2) + ',auto)">' + vm.stats.map(xStatRow).join("") + '</div></div>';
-  h += '<div class="hx-box hx-relbox"><div class="hx-bt">Артефакты' + (vm.sets.length ? ' <small>' + vm.sets.map(s => esc(s.name) + (s.full ? " ×4" : " ×2")).join(" · ") + '</small>' : "") + '</div>' +
+    '</div></div></div></div>';
+  h += '<div class="hx-box gi-rhead"><div class="hx-bt">Артефакты' + (vm.sets.length ? ' <small>' + vm.sets.map(s => esc(s.name) + (s.full ? " ×4" : " ×2")).join(" · ") + '</small>' : "") + '</div>' +
     '<div class="hx-useful"><div><span class="hx-ut">Полезные усиления</span>' + (uk.length ? uk.map(k => '<span class="hx-uc">' + esc(k) + ' <b>' + gr.useful[k] + "</b></span>").join("") : '<span class="hx-uc">нет</span>') +
       '<span class="hx-uc gi-cv">Крит-ценность <b>' + (Math.round((vm.cv || 0) / 10) / 10).toLocaleString("ru-RU") + '</b></span></div>' +
-      '<div class="hx-utot gi-grade g' + gr.g + '" title="' + gr.n.toLocaleString("ru-RU") + ' полезных усилений из ' + gr.max + ' возможных"><b>' + gr.g + '</b><small>' + gr.n.toLocaleString("ru-RU") + ' / ' + gr.max + '</small></div></div>' +
-    '<div class="hx-relics">' + vm.slots.map(d => d.empty ? '<div class="hx-rel none"><div class="hx-rh"><span>' + esc(d.label) + '</span></div><p>Пусто</p></div>' :
+      '<div class="hx-utot gi-grade g' + gr.g + '" title="' + gr.n.toLocaleString("ru-RU") + ' полезных усилений из ' + gr.max + ' возможных"><b>' + gr.g + '</b><small>' + gr.n.toLocaleString("ru-RU") + ' / ' + gr.max + '</small></div></div></div>' +
+    '<div class="hx-box gi-rels"><div class="hx-relics">' + vm.slots.map(d => d.empty ? '<div class="hx-rel none"><div class="hx-rh"><span>' + esc(d.label) + '</span></div><p>Пусто</p></div>' :
       '<div class="hx-rel' + (d.top ? " top" : "") + '"><div class="hx-rh"><span>' + esc(d.label) + ' <em>+' + d.lvl + '</em></span>' + hxImg(d.icon, "hx-ricon") + '</div>' +
-        (d.main ? '<div class="hx-rm">' + ic(d.main[2]) + '<span>' + esc(d.main[0]) + '</span><b>' + esc(d.main[1]) + '</b></div>' : "") +
-        d.subs.map(s => '<div class="hx-rs' + (s.val ? " val" : "") + '">' + ic(s.ic) + '<span><em>' + esc(s.n) + '</em>' + (s.up ? '<i>»' + s.up + '</i>' : "") + '</span><b>' + esc(s.v) + "</b></div>").join("") + "</div>").join("") +
-    '</div></div></div></div>';
+        (d.main ? '<div class="hx-rm">' + ic(d.main[2]) + '<span title="' + esc(d.main[0]) + '">' + esc(gxShort(d.main[0])) + '</span><b>' + esc(d.main[1]) + '</b></div>' : "") +
+        d.subs.map(s => '<div class="hx-rs' + (s.val ? " val" : "") + '">' + ic(s.ic) + '<span title="' + esc(s.n) + '"><em>' + esc(gxShort(s.n)) + '</em>' + (s.up ? '<i>»' + s.up + '</i>' : "") + '</span><b>' + esc(s.v) + "</b></div>").join("") + "</div>").join("") +
+    '</div></div></div>';
   return h;
 }
 
@@ -264,7 +269,7 @@ document.addEventListener("mouseover", e => {
 
 // переключатель вида
 // вид карточки выбирается отдельно для каждой игры; по умолчанию «как в игре» только у Star Rail
-const SC_ALT_DEFAULT = { hkrpg:1 };
+const SC_ALT_DEFAULT = { hkrpg:1, hk4e:1 };
 function scAltWanted(game){
   const v = (ui.scLayoutG || {})[game];
   return v ? v === "game" : !!SC_ALT_DEFAULT[game];

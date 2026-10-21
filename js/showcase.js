@@ -74,6 +74,8 @@ function zIc(pid){
 const ZZZ_EL_IC = { Fire:"fire", Ice:"ice", Elec:"electric", Physics:"physical", Ether:"ether", Wind:"wind", Lumen:"lumen", FireFrost:"frost", AuricEther:"auric", ZhenZhenAssault:"honed" };
 const ZZZ_PRO_IC = { Attack:"attack", Stun:"stun", Anomaly:"anomaly", Support:"support", Defense:"defense", Rupture:"rupture" };
 const ZZZ_SKILL_IC = { 0:"basic", 1:"special", 2:"dodge", 3:"chain", 6:"assist" };
+const ZZZ_SUB_HL = { "11102":"11101", "12102":"12101", "13102":"13101", "20103":"20101", "21103":"21101", "31203":"31201", "23203":"23201" };
+const ZZZ_HL_SUB = ["11101", "12101", "13101", "20101", "21101", "31201", "23101", "23201"];
 function zzzVM(av){
   const B = SCB.nap, id = String(av.Id), info = B.avatars[id] || {};
   const lvl = av.Level || 1, promo = Math.max(0, (av.PromotionLevel || 1) - 1), core = av.CoreSkillEnhancement || 0;
@@ -94,7 +96,10 @@ function zzzVM(av){
       lvl: w.Level || 1, refine:{ label:"P", n: w.UpgradeLevel || 1 },
       stats: [wi.main && [zProp(wi.main[0]), zVal(wi.main[0], main), zIc(wi.main[0]), String(wi.main[0]).slice(0, 3)], wi.sub && [zProp(wi.sub[0]), zVal(wi.sub[0], sub), zIc(wi.sub[0]), String(wi.sub[0]).slice(0, 3)]].filter(Boolean) };
   }
-  const hl = (info.hl || []).map(String);
+  const rec = recGet("nap", id);
+  let hl = (info.hl || []).map(String);
+  // свой или общий выбор полезных характеристик заменяет рекомендованные агенту (кроме тех, что в сабстатах не бывают)
+  if(rec) hl = hl.filter(p => ZZZ_HL_SUB.indexOf(p) === -1).concat(rec.map(k => ZZZ_SUB_HL[k]).filter(Boolean));
   // полезные сабстаты — только те, что рекомендованы агенту и вообще бывают в сабстатах дисков
   // (HP%, сила атаки %, защита %, крит. шанс, крит. урон, знание аномалии, пробивание);
   // контроль аномалии, импульс и т.п. в сабстатах не выпадают
@@ -109,6 +114,7 @@ function zzzVM(av){
     if(p === "23101" || p === "23201") valuable["23203"] = 1;
     if(p === "12301"){ valuable["12102"] = 1; valuable["11102"] = 1; }   // сила сквозной атаки растёт от силы атаки и HP
   });
+  if(rec){ Object.keys(valuable).forEach(k => delete valuable[k]); rec.forEach(k => { valuable[k] = 1; }); }
   const slots = [], cnt = {};
   let cv = 0;
   scList(av.EquippedList).forEach(slot => {
@@ -215,10 +221,28 @@ function hsrVM(av){
   // реликвии
   const slots = [], cnt = {};
   let cv = 0;
-  const pathVal = { Warrior:["CriticalChance","CriticalDamage","Attack%"], Rogue:["CriticalChance","CriticalDamage","Attack%"], Mage:["CriticalChance","CriticalDamage","Attack%"],
+  let pathVal = { Warrior:["CriticalChance","CriticalDamage","Attack%"], Rogue:["CriticalChance","CriticalDamage","Attack%"], Mage:["CriticalChance","CriticalDamage","Attack%"],
     Memory:["CriticalChance","CriticalDamage","MaxHP%"], Elation:["CriticalChance","CriticalDamage","Attack%"], Warlock:["StatusProbability","Attack%","BreakDamageAddedRatio"],
     Shaman:["BreakDamageAddedRatio","StatusResistance"], Priest:["MaxHP%","StatusResistance"], Knight:["Defence%","StatusResistance","StatusProbability"] }[A.path] || ["CriticalChance","CriticalDamage"];
-  const isVal = (k, pct) => k === "Speed" || pathVal.indexOf(k + (pct && /MaxHP|Attack|Defence/.test(k) ? "%" : "")) !== -1;
+  // Enka не отдаёт «рекомендуемые атрибуты» — уточняем по тому, как собран сам персонаж:
+  // канат или тело на эффект пробития — это пробивной билд (Светлячок, Бутхилл, Раппа…), криты ему не нужны;
+  // тело на шанс эффекта — добавляем его; основа HP% / защита % в теле, сфере или канате — меняем «основную» характеристику
+  const mainOf = {};
+  scList(av.relicList).forEach(r => {
+    const it = B.relics[String(r.tid)]; if(!it) return;
+    const ma = (B.main[String(it[2])] || {})[String(r.mainAffixId)]; if(!ma) return;
+    const pp = hProp(ma.Property), pos = typeof r.type === "number" ? r.type : HSR_SLOT[it[1]];
+    mainOf[pos] = pp.k + (pp.pct && /MaxHP|Attack|Defence/.test(pp.k) ? "%" : "");
+  });
+  const breakBuild = mainOf[6] === "BreakDamageAddedRatio" || mainOf[3] === "BreakDamageAddedRatio";
+  if(breakBuild) pathVal = ["BreakDamageAddedRatio", "Attack%"];
+  if(mainOf[3] === "StatusProbability" && pathVal.indexOf("StatusProbability") === -1) pathVal = pathVal.concat("StatusProbability");
+  const scaleMain = [mainOf[3], mainOf[5], mainOf[6]].find(k => k === "MaxHP%" || k === "Defence%");
+  if(scaleMain && !breakBuild && pathVal.indexOf(scaleMain) === -1) pathVal = pathVal.filter(k => k !== "Attack%").concat(scaleMain);
+  const rec = recGet("hkrpg", id);
+  if(rec) pathVal = rec.slice();
+  else if(pathVal.indexOf("Speed") === -1) pathVal = pathVal.concat("Speed");   // скорость полезна всем
+  const isVal = (k, pct) => pathVal.indexOf(k + (pct && /MaxHP|Attack|Defence/.test(k) ? "%" : "")) !== -1;
   scList(av.relicList).forEach(r => {
     const it = B.relics[String(r.tid)]; if(!it) return;
     const [rar, type, mg, sg, setId, icon] = it;
@@ -255,7 +279,11 @@ function hsrVM(av){
   const hl = { Warrior:["Attack","CriticalChance","CriticalDamage"], Rogue:["Attack","CriticalChance","CriticalDamage"], Mage:["Attack","CriticalChance","CriticalDamage"],
     Memory:["MaxHP","CriticalChance","CriticalDamage"], Elation:["Attack","CriticalChance","CriticalDamage"], Warlock:["Attack","StatusProbability"],
     Shaman:["Speed","BreakDamageAddedRatio"], Priest:["MaxHP","HealRatio"], Knight:["Defence"] }[A.path] || [];
-  const row = (k, v, pct, b) => ({ n: hLabel(k), v: hVal(pct, v), base: b && v > b + .5 ? fInt(b) : "", add: b && v > b + .5 ? fInt(v - b) : "", hl: hl.indexOf(k) !== -1 || k === "Speed", ic: hIc(k) });
+  if(breakBuild){ hl.length = 0; hl.push("Attack", "BreakDamageAddedRatio"); }
+  else if(scaleMain){ const k = scaleMain.replace("%", ""); for(let i = hl.length - 1; i >= 0; i--) if(hl[i] === "Attack") hl.splice(i, 1); if(hl.indexOf(k) === -1) hl.push(k); }
+  if(pathVal.indexOf("StatusProbability") !== -1 && hl.indexOf("StatusProbability") === -1) hl.push("StatusProbability");
+  if(rec){ hl.length = 0; rec.forEach(k => hl.push(k.replace("%", ""))); }
+  const row = (k, v, pct, b) => ({ n: hLabel(k), v: hVal(pct, v), base: b && v > b + .5 ? fInt(b) : "", add: b && v > b + .5 ? fInt(v - b) : "", hl: hl.indexOf(k) !== -1 || (!rec && k === "Speed"), ic: hIc(k) });
   // все характеристики в игровом порядке, включая нулевые
   const stats = [row("MaxHP", T.hp, 0, base.hp), row("Attack", T.atk, 0, base.atk), row("Defence", T.def, 0, base.def), row("Speed", T.spd, 0, base.spd),
     row("CriticalChance", T.cr, 1), row("CriticalDamage", T.cd, 1), row(elKey + "AddedRatio", dmg, 1), row("BreakDamageAddedRatio", T.be, 1),
@@ -289,7 +317,7 @@ function hsrVM(av){
   const useful = {};
   slots.forEach(d => d.subs.forEach(su => { if(su.val){ useful[su.n] = (useful[su.n] || 0) + su.up + 1; } }));
   const el = HSR_EL[A.el] || [A.el, "#f0c264"];
-  return { traces:{ skills: tSkills, majors, minors, bonus: treeBonus }, rankIcons: A.rankIcons || [], useful,
+  return { traces:{ skills: tSkills, majors, minors, bonus: treeBonus }, rankIcons: A.rankIcons || [], useful, valuable: Object.fromEntries(pathVal.map(k => [k, 1])),
     name: scItemName("hkrpg", id) || "#" + id, art: A.img, circle: A.circle, el: el[0], color: el[1], cls: HSR_PATH[A.path] || A.path,
     lvl, maxLvl: 80, cons:{ label:"E", title:"Эйдолон", n: rank }, keys, skills, stats, weapon, sets, cv: cv * 100, slotsTitle:"Реликвии", setsWord:"реликвий",
     slots: [1,2,3,4,5,6].map(i => slots.find(s => s.pos === i) || { pos:i, label: HSR_SLOT[i], empty:true }),
@@ -330,9 +358,17 @@ function giVM(av){
   const sands = (av.equipList || []).find(e => e.reliquary && (e.flat || {}).equipType === "EQUIP_SHOES");
   const sm = sands ? ((sands.flat || {}).reliquaryMainstat || {}).mainPropId : "";
   const scale = sm === "FIGHT_PROP_HP_PERCENT" || sm === "FIGHT_PROP_DEFENSE_PERCENT" || sm === "FIGHT_PROP_ELEMENT_MASTERY" ? sm : "FIGHT_PROP_ATTACK_PERCENT";
-  const valuable = { FIGHT_PROP_CRITICAL:1, FIGHT_PROP_CRITICAL_HURT:1, FIGHT_PROP_CHARGE_EFFICIENCY:1 };
+  // корона не на крит (лечение, HP%, мастерство у саппортов вроде Кадзухи и Беннета) — значит криты персонажу не нужны
+  const circ = (av.equipList || []).find(e => e.reliquary && (e.flat || {}).equipType === "EQUIP_DRESS");
+  const cm = circ ? ((circ.flat || {}).reliquaryMainstat || {}).mainPropId : "";
+  const critBuild = !cm || cm === "FIGHT_PROP_CRITICAL" || cm === "FIGHT_PROP_CRITICAL_HURT";
+  const valuable = critBuild ? { FIGHT_PROP_CRITICAL:1, FIGHT_PROP_CRITICAL_HURT:1, FIGHT_PROP_CHARGE_EFFICIENCY:1 } : { FIGHT_PROP_CHARGE_EFFICIENCY:1 };
   valuable[scale] = 1;
+  if(!critBuild && cm === "FIGHT_PROP_HP_PERCENT") valuable.FIGHT_PROP_HP_PERCENT = 1;
+  if(!critBuild && cm === "FIGHT_PROP_ELEMENT_MASTERY") valuable.FIGHT_PROP_ELEMENT_MASTERY = 1;
   if(F(28) >= 250) valuable.FIGHT_PROP_ELEMENT_MASTERY = 1;
+  const rec = recGet("hk4e", id);
+  if(rec){ Object.keys(valuable).forEach(k => delete valuable[k]); rec.forEach(k => { valuable[k] = 1; }); }
   let weapon = null;
   const slots = [], cnt = {};
   let cv = 0;
@@ -371,12 +407,17 @@ function giVM(av){
   if(elDmg && F(elDmg)) stats.push(row(GI_FP[elDmg], F(elDmg)));
   if(F(30) > F(elDmg || 0)) stats.push(row("FIGHT_PROP_PHYSICAL_ADD_HURT", F(30)));
   // золотом — то, от чего персонаж «растёт»: криты и основная характеристика
-  stats[4].hl = stats[5].hl = true;
+  if(critBuild) stats[4].hl = stats[5].hl = true; else stats[6].hl = true;
+  if(valuable.FIGHT_PROP_HP_PERCENT) stats[0].hl = true;
   if(scale === "FIGHT_PROP_HP_PERCENT") stats[0].hl = true;
   else if(scale === "FIGHT_PROP_DEFENSE_PERCENT") stats[2].hl = true;
   else if(scale === "FIGHT_PROP_ELEMENT_MASTERY") stats[3].hl = true;
   else stats[1].hl = true;
   if(valuable.FIGHT_PROP_ELEMENT_MASTERY) stats[3].hl = true;
+  if(rec){
+    const ix = { FIGHT_PROP_HP_PERCENT:0, FIGHT_PROP_ATTACK_PERCENT:1, FIGHT_PROP_DEFENSE_PERCENT:2, FIGHT_PROP_ELEMENT_MASTERY:3, FIGHT_PROP_CRITICAL:4, FIGHT_PROP_CRITICAL_HURT:5, FIGHT_PROP_CHARGE_EFFICIENCY:6 };
+    stats.forEach(r => { r.hl = false; }); rec.forEach(k => { if(ix[k] !== undefined) stats[ix[k]].hl = true; });
+  }
   let keys = [[gLabel("FIGHT_PROP_ATTACK"), fInt(F(2001))], [ru() ? "Шанс крита" : "CRIT Rate", fPct(F(20) * 100)], [gLabel("FIGHT_PROP_CRITICAL_HURT"), fPct(F(22) * 100)]];
   if(F(28) >= 300) keys[0] = [gLabel("FIGHT_PROP_ELEMENT_MASTERY"), fInt(F(28))];
   const extra = av.proudSkillExtraLevelMap || {}, sl = av.skillLevelMap || {};
@@ -393,6 +434,55 @@ function giVM(av){
     lvl, maxLvl: Math.max(90, lvl), cons:{ label:"C", title:"Созвездие", n: cons }, rarity: A.r || (it ? it.r : 5), friend: (av.fetterInfo || {}).expLevel || 0, keys, skills, stats, weapon, sets, cv: cv * 100, slotsTitle:"Артефакты", setsWord:"артефактов",
     slots: [1,2,3,4,5].map(i => slots.find(s => s.pos === i) || { pos:i, label: ["Цветок","Перо","Пески","Кубок","Корона"][i - 1], empty:true }),
     foot: "Характеристики — как в окне персонажа в игре: их присылает сама игра через витрину профиля." };
+}
+
+/* ════════════ полезные характеристики ════════════
+   Как «Рекомендуемые атрибуты» в HoYoLAB: свой выбор (ui.recAdj) → общий список (items/data/rec_stats.json) → угадайка по сборке */
+let REC = null, recLoading = false;
+function recLoad(cb){
+  if(REC){ cb && cb(); return; }
+  if(recLoading) return;
+  recLoading = true;
+  fetch("items/data/rec_stats.json", { cache:"no-cache" }).then(r => r.ok ? r.json() : {}).catch(() => ({}))
+    .then(j => { REC = j || {}; recLoading = false; cb && cb(); });
+}
+function recGet(game, id){ const k = game + ":" + id; return (ui.recAdj || {})[k] || (REC || {})[k] || null; }
+function recSource(game, id){ const k = game + ":" + id; return (ui.recAdj || {})[k] ? "own" : (REC || {})[k] ? "shared" : "guess"; }
+// какие характеристики можно выбрать: только те, что выпадают в дополнительных (проценты; простые числа идут следом за своим процентом)
+const REC_OPTS = {
+  hk4e: ["FIGHT_PROP_CRITICAL", "FIGHT_PROP_CRITICAL_HURT", "FIGHT_PROP_ATTACK_PERCENT", "FIGHT_PROP_HP_PERCENT", "FIGHT_PROP_DEFENSE_PERCENT", "FIGHT_PROP_ELEMENT_MASTERY", "FIGHT_PROP_CHARGE_EFFICIENCY"],
+  hkrpg: ["CriticalChance", "CriticalDamage", "Attack%", "MaxHP%", "Defence%", "Speed", "BreakDamageAddedRatio", "StatusProbability", "StatusResistance"],
+  nap: ["20103", "21103", "12102", "11102", "13102", "31203", "23203"]
+};
+function recLabel(game, k){
+  if(game === "hk4e") return gLabel(k).replace(/^(Сила атаки|HP|Защита)$/, "$1 %");
+  if(game === "hkrpg") return hLabel(k.replace("%", "")) + (/%$/.test(k) ? " %" : "");
+  return zProp(k) + (k === "11102" || k === "12102" || k === "13102" ? " %" : "");
+}
+function recIcon(game, k){ return game === "hk4e" ? gIc(k) : game === "hkrpg" ? hIc(k.replace("%", "")) : zIc(k); }
+
+/* ════════════ превью: все персонажи игры без данных — для настройки портретов и полезных характеристик ════════════ */
+function scStub(game, id){
+  if(game === "hk4e") return { avatarId: Number(id), propMap:{ "4001":{ val:"90" } }, fightPropMap:{}, equipList:[], skillLevelMap:{}, talentIdList:[] };
+  if(game === "hkrpg") return { avatarId: Number(id), level: 80, promotion: 6, skillTreeList:[], relicList:[] };
+  return { Id: Number(id), Level: 60, PromotionLevel: 6, EquippedList:[], SkillLevelList:[], TalentLevel: 0 };
+}
+function scBlank(vm, game){
+  vm.preview = true;
+  (vm.stats || []).forEach(r => { r.v = "—"; r.base = ""; r.add = ""; });
+  (vm.keys || []).forEach(k => { k[1] = "—"; });
+  vm.weapon = { title: game === "nap" ? "Амплификатор" : game === "hkrpg" ? "Световой конус" : "Оружие", name: game === "nap" ? "Амплификатор не надет" : game === "hkrpg" ? "Конус не надет" : "Оружие не надето",
+    img:"", top:false, badge:"—", lvl:"—", refine:{ label: game === "nap" ? "P" : game === "hkrpg" ? "S" : "R", n:"—" }, stats:[["Характеристики", "—"]] };
+  vm.sets = []; vm.cv = 0; vm.useful = {};
+  (vm.talents || []).forEach(t => { t.lv = "—"; t.boost = false; });
+  ((vm.traces || {}).skills || []).forEach(t => { t.lv = "—"; });
+  (vm.skills || []).forEach(t => { t[1] = "—"; });
+  return vm;
+}
+function scAllIds(game){
+  const av = (SCB[game] || {}).avatars || {}, items = (itemsDb[game] || {}).items || {};
+  return Object.keys(av).filter(id => scItemName(game, id) && (av[id].img || items[id]))
+    .sort((a, b) => ((items[b] || {}).r || 0) - ((items[a] || {}).r || 0) || scItemName(game, a).localeCompare(scItemName(game, b), "ru"));
 }
 
 /* ════════════ общее ════════════ */
@@ -482,6 +572,13 @@ function renderShowcase(){
   const u = enkaData[game + ":" + uid];
   document.getElementById("hSub").textContent = G.title + (u && u.nick ? " · " + u.nick + (u.level ? ", ур. " + u.level : "") : "");
   if(!SCB[game] || !itemsDb[game]){ ensureBuild(game, () => ensureItems(game, () => { if(scGame() === game) renderShowcase(); })); ensureItems(game); return; }
+  if(!REC){ recLoad(() => { if(scGame() === game) renderShowcase(); }); return; }
+  const prevBtn = document.getElementById("scPrev");
+  prevBtn.classList.toggle("on", !!ui.scPrev); prevBtn.setAttribute("aria-pressed", !!ui.scPrev);
+  if(ui.scPrev){ scRenderPreview(game); return; }
+  document.getElementById("scLayout").hidden = false;
+  const pq = document.getElementById("scPrevQ"); if(pq) pq.hidden = true;
+  document.getElementById("scTabs").classList.remove("prev");
 
   const tabs = document.getElementById("scTabs"), card = document.getElementById("scCard");
   tabs.innerHTML = ""; card.innerHTML = "";
@@ -519,11 +616,55 @@ function renderShowcase(){
   if(!vm){ card.innerHTML = '<div class="sc-empty">Не удалось разобрать сборку этого персонажа — возможно, он новее справочника. Справочник обновляется раз в неделю.</div>'; return; }
   scLayoutSeg(game);
   document.getElementById("scPng").hidden = false; document.getElementById("scCopy").hidden = !(navigator.clipboard && window.ClipboardItem);
-  if(scAltWanted(game)) scRenderAlt(card, game, vm, uid);
+  if(scAltWanted(game)) scRenderAlt(card, game, vm, uid, cur);
   else scRenderCard(card, u, cur, vm);
   artCur = { game, id: String(cur) };
   requestAnimationFrame(() => { scFitText(); artFit(); });
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(scFitText);
+}
+
+// превью: все персонажи игры с прочерками вместо данных, всегда в виде «как в игре»
+function scRenderPreview(game){
+  const tabs = document.getElementById("scTabs"), card = document.getElementById("scCard");
+  tabs.innerHTML = ""; card.innerHTML = "";
+  document.getElementById("scPng").hidden = true; document.getElementById("scCopy").hidden = true;
+  document.getElementById("scLayout").hidden = true;
+  document.getElementById("scNote").textContent = "Превью всех персонажей: данных тут нет — только чтобы подогнать портреты и выбрать полезные характеристики. Точкой отмечены уже настроенные. Готовое — кнопкой «Экспорт настроек» под карточкой.";
+  const all = scAllIds(game);
+  ui.scPrevG = ui.scPrevG || {};
+  // поиск по имени: персонажей больше сотни
+  let q = document.getElementById("scPrevQ");
+  if(!q){
+    q = document.createElement("input");
+    q.id = "scPrevQ"; q.className = "sc-prevq"; q.type = "search"; q.placeholder = "Найти персонажа"; q.autocomplete = "off";
+    q.addEventListener("input", () => renderShowcase());
+    tabs.parentNode.insertBefore(q, tabs);
+  }
+  q.hidden = false;
+  tabs.classList.add("prev");
+  const qs = q.value.trim().toLowerCase();
+  const ids = qs ? all.filter(id => scItemName(game, id).toLowerCase().indexOf(qs) !== -1) : all;
+  if(all.indexOf(ui.scPrevG[game]) === -1) ui.scPrevG[game] = all[0];
+  const cur = ui.scPrevG[game];
+  ids.forEach(id => {
+    const A = (SCB[game].avatars || {})[id] || {};
+    const k = game + ":" + id, done = (ui.artAdj || {})[k] || (ui.recAdj || {})[k];
+    const b = document.createElement("button");
+    b.className = "sc-tab" + (id === cur ? " on" : "") + (done ? " cfg" : "");
+    const nm = scItemName(game, id);
+    b.title = nm + (done ? " — настроено" : "");
+    const circle = A.circle || A.img;
+    b.innerHTML = '<span>' + esc(nm.charAt(0)) + '</span>' + (circle ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(scImg(circle)) + '" onerror="this.remove()">' : "");
+    b.onclick = () => { ui.scPrevG[game] = id; saveUI(); renderShowcase(); };
+    tabs.appendChild(b);
+  });
+  if(!cur){ card.innerHTML = '<div class="sc-empty">Справочник персонажей ещё не загрузился.</div>'; return; }
+  let vm = null;
+  try { vm = scBlank(SCG[game].vm(scStub(game, cur)), game); } catch(e){ console.error(e); }
+  if(!vm){ card.innerHTML = '<div class="sc-empty">Не удалось построить превью этого персонажа.</div>'; return; }
+  scRenderAlt(card, game, vm, "", cur);
+  artCur = { game, id: String(cur) };
+  requestAnimationFrame(() => { scFitText(); artFit(); });
 }
 
 function scPips(n, max){
@@ -613,3 +754,4 @@ document.getElementById("scFile").onchange = e => { const f = e.target.files[0];
     saveUI();
   });
 })();
+document.getElementById("scPrev").onclick = () => { ui.scPrev = !ui.scPrev; saveUI(); scLastGame = null; renderShowcase(); };

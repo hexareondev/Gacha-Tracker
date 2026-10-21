@@ -1623,3 +1623,15 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 }
 @media (max-width:600px){ .gi-wt{grid-template-columns:1fr} }
 @media (max-width:520px){ .hx.gi .hx-relics{grid-template-columns:repeat(2,minmax(0,1fr))} }
+/* превью всех персонажей и выбор полезных характеристик */
+#scPrev.on{border-color:var(--gold);color:var(--gold-hot);background:rgba(240,194,100,.08)}
+.sc-tab.cfg::after{content:"";position:absolute;z-index:1;right:5px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px var(--bg,#0b0b0f)}
+.sc-recp{margin-top:10px;padding:12px 14px;border-radius:var(--rs);background:rgba(240,194,100,.04);border:1px solid rgba(240,194,100,.18)}
+.sc-recp-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.sc-recp-h small{color:var(--dim);font-size:12px;flex:1}
+.sc-recp .chip{display:inline-flex;align-items:center;gap:6px}
+.sc-recp .chip .xi{width:14px;height:14px}
+.sc-prevq{display:block;width:100%;max-width:320px;margin:14px 0 0}
+.sc-tabs.prev{max-height:166px;overflow-y:auto;gap:6px;padding:4px;margin-top:10px;scrollbar-width:thin}
+.sc-tabs.prev .sc-tab{width:46px;height:46px;flex:none}
+.sc-tabs.prev .sc-tab span{font-size:16px}

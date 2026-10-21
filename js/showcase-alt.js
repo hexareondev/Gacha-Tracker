@@ -288,23 +288,50 @@ function scLayoutSeg(game){
     box.appendChild(b);
   });
 }
-function scRenderAlt(card, game, vm, uid){
+function scRenderAlt(card, game, vm, uid, id){
   const u = enkaData[game + ":" + uid] || {};
-  card.innerHTML = (game === "hk4e" ? gxCard(vm) : game === "hkrpg" ? hxCard(vm) : zxCard(vm, uid, u.nick || "")) + scOptsHtml(game);
+  card.innerHTML = (game === "hk4e" ? gxCard(vm) : game === "hkrpg" ? hxCard(vm) : zxCard(vm, uid, u.nick || "")) + scOptsHtml(game, vm, id);
   artEdit = false;
 }
 // ZZZ: что показывать на карточке (и на картинке из неё)
 function zxOpt(){ return Object.assign({ uid:true, nick:true, bar:true, rolls:true, grade:true }, ui.zxOpt || {}); }
 // строка под карточкой: что показывать (ZZZ) и подгонка портрета (все игры)
-function scOptsHtml(game){
+let recEdit = false;
+function scOptsHtml(game, vm, id){
   const o = zxOpt();
   const chip = (k, t) => '<button class="chip' + (o[k] ? " on" : "") + '" data-zo="' + k + '" aria-pressed="' + o[k] + '">' + t + "</button>";
-  const any = Object.keys(ui.artAdj || {}).length;
+  const any = Object.keys(ui.artAdj || {}).length + Object.keys(ui.recAdj || {}).length;
   return '<div class="chips sc-opts">' +
     (game === "nap" ? chip("uid", "UID") + chip("nick", "Ник") + chip("bar", "Сводка сабстатов") + chip("rolls", "Отметки усилений") + chip("grade", "Оценка") + '<i class="sc-opts-sep"></i>' : "") +
     '<button class="chip" id="scArt" title="Подвинуть и увеличить портрет персонажа">Портрет</button>' +
-    '<button class="chip" id="scArtExport"' + (any ? "" : " hidden") + ' title="Скопировать ручные правки портретов">Экспорт портретов</button></div>';
+    '<button class="chip' + (recEdit ? " on" : "") + '" id="scRec" title="Какие характеристики полезны персонажу — как «Рекомендуемые атрибуты» в HoYoLAB">Полезные характеристики</button>' +
+    '<button class="chip" id="scArtExport"' + (any ? "" : " hidden") + ' title="Скопировать свои правки портретов и полезных характеристик">Экспорт настроек</button></div>' +
+    (recEdit && id ? recPanel(game, vm, id) : "");
 }
+// выбор полезных характеристик: подсвечиваются в характеристиках и артефактах, по ним считаются «Полезные усиления» и оценка
+function recPanel(game, vm, id){
+  const cur = vm.valuable || {}, src = recSource(game, id);
+  const srcText = { own:"Свой выбор", shared:"Из общего списка", guess:"Угадано по сборке и роли — выберите сами" }[src];
+  return '<div class="sc-recp" data-g="' + game + '" data-id="' + esc(id) + '"><div class="sc-recp-h"><b>Полезные характеристики</b><small>' + srcText + '</small>' +
+    (src === "own" ? '<button class="chip" data-rr="1" title="Убрать свой выбор">↺ Сбросить</button>' : "") + '</div><div class="chips">' +
+    REC_OPTS[game].map(k => '<button class="chip' + (cur[k] ? " on" : "") + '" data-rk="' + esc(k) + '" aria-pressed="' + !!cur[k] + '">' + ic(recIcon(game, k)) + esc(recLabel(game, k)) + "</button>").join("") +
+    '</div></div>';
+}
+document.addEventListener("click", e => {
+  if(e.target.closest && e.target.closest("#scRec")){ recEdit = !recEdit; renderShowcase(); return; }
+  const b = e.target.closest && e.target.closest(".sc-recp [data-rk], .sc-recp [data-rr]");
+  if(!b) return;
+  const p = b.closest(".sc-recp"), game = p.dataset.g, id = p.dataset.id, key = game + ":" + id;
+  ui.recAdj = ui.recAdj || {};
+  if(b.dataset.rr) delete ui.recAdj[key];
+  else {
+    const cur = REC_OPTS[game].filter(k => p.querySelector('[data-rk="' + k + '"]').classList.contains("on"));
+    const k = b.dataset.rk, i = cur.indexOf(k);
+    if(i === -1) cur.push(k); else cur.splice(i, 1);
+    ui.recAdj[key] = REC_OPTS[game].filter(x => cur.indexOf(x) !== -1);
+  }
+  saveUI(); renderShowcase();
+});
 document.addEventListener("click", e => {
   const b = e.target.closest && e.target.closest("[data-zo]");
   if(!b) return;
@@ -529,24 +556,25 @@ function artEditToggle(on){
   else { box.classList.remove("art-edit"); const t = box.querySelector(".art-tools"); if(t) t.remove(); }
 }
 document.addEventListener("click", e => { if(e.target.closest && e.target.closest("#scArt")) artEditToggle(!artEdit); });
-// экспорт ручных правок — прислать, чтобы внести в общий список
+// экспорт своих правок (портреты + полезные характеристики) — прислать, чтобы внести в общие списки
 document.addEventListener("click", async e => {
   if(!(e.target.closest && e.target.closest("#scArtExport"))) return;
-  const text = JSON.stringify(ui.artAdj || {}, null, 1);
+  const art = ui.artAdj || {}, rec = ui.recAdj || {};
   const note = document.getElementById("scNote");
-  if(!Object.keys(ui.artAdj || {}).length){ note.textContent = "Ручных правок портретов пока нет."; return; }
+  if(!Object.keys(art).length && !Object.keys(rec).length){ note.textContent = "Своих правок портретов и характеристик пока нет."; return; }
+  const text = JSON.stringify({ art_adj: art, rec_stats: rec }, null, 1);
   const btn = e.target.closest("#scArtExport");
   try {
     await navigator.clipboard.writeText(text);
-    note.textContent = "Правки портретов скопированы — пришлите их, чтобы они стали общими.";
+    note.textContent = "Настройки скопированы: портретов " + Object.keys(art).length + ", характеристик " + Object.keys(rec).length + " — пришлите их, чтобы они стали общими.";
     btn.textContent = "Скопировано"; btn.classList.add("on");
-    setTimeout(() => { btn.textContent = "Экспорт портретов"; btn.classList.remove("on"); }, 1800);
+    setTimeout(() => { btn.textContent = "Экспорт настроек"; btn.classList.remove("on"); }, 1800);
   }
   catch(e){
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([text], { type:"application/json" })); a.download = "art_adj.json";
+    a.href = URL.createObjectURL(new Blob([text], { type:"application/json" })); a.download = "pityreon_settings.json";
     document.body.appendChild(a); a.click(); a.remove();
-    note.textContent = "Правки портретов сохранены файлом art_adj.json — пришлите его, чтобы они стали общими.";
+    note.textContent = "Настройки сохранены файлом pityreon_settings.json — пришлите его, чтобы они стали общими.";
   }
 });
 

@@ -104,15 +104,17 @@ function gxCard(vm){
       '</div>';
   h += '</div><div class="hx-right"><div class="hx-title">Характеристики</div>' +
     '<div class="hx-box"><div class="hx-grid" style="grid-template-rows:repeat(' + Math.ceil(vm.stats.length / 2) + ',auto)">' + vm.stats.map(xStatRow).join("") + '</div></div><div class="gi-wt">';
+  h += '<div class="hx-box"><div class="hx-bt">Таланты</div><div class="hx-skills gi-tal">' +
+      (vm.talents || []).map(t => '<span title="' + esc(t.n) + ': ' + t.lv + (t.boost ? " (+3 от созвездия)" : "") + '">' + hxImg(t.icon, "hx-sk") + '<b' + (t.boost ? ' class="up"' : "") + '>' + t.lv + "</b><small>" + esc(t.n) + "</small></span>").join("") +
+    '</div></div>';
   if(vm.weapon){
     const w = vm.weapon;
     h += '<div class="hx-box"><div class="hx-bt">Оружие</div><div class="hx-lc gi-w">' + hxImg(w.img, "hx-lcimg gi-wimg" + (w.top ? " top" : "")) +
       '<div><div class="hx-lcname' + (w.top ? " top" : "") + '">' + esc(w.name) + '</div><div class="hx-lcmeta">Ур. ' + w.lvl + ' · <em>R' + w.refine.n + '</em></div>' +
       w.stats.map(s => '<div class="hx-lcst">' + esc(s[0]) + ' <b>' + esc(s[1]) + "</b></div>").join("") + '</div></div></div>';
   }
-  h += '<div class="hx-box"><div class="hx-bt">Таланты</div><div class="hx-skills gi-tal">' +
-      (vm.talents || []).map(t => '<span title="' + esc(t.n) + ': ' + t.lv + (t.boost ? " (+3 от созвездия)" : "") + '">' + hxImg(t.icon, "hx-sk") + '<b' + (t.boost ? ' class="up"' : "") + '>' + t.lv + "</b><small>" + esc(t.n) + "</small></span>").join("") +
-    '</div></div></div></div>';
+  h += '</div></div>';
+
   h += '<div class="hx-box gi-rhead"><div class="hx-bt">Артефакты' + (vm.sets.length ? ' <small>' + vm.sets.map(s => esc(s.name) + (s.full ? " ×4" : " ×2")).join(" · ") + '</small>' : "") + '</div>' +
     '<div class="hx-useful"><div><span class="hx-ut">Полезные усиления</span>' + (uk.length ? uk.map(k => '<span class="hx-uc">' + esc(k) + ' <b>' + gr.useful[k] + "</b></span>").join("") : '<span class="hx-uc">нет</span>') +
       '<span class="hx-uc gi-cv">Крит-ценность <b>' + (Math.round((vm.cv || 0) / 10) / 10).toLocaleString("ru-RU") + '</b></span></div>' +

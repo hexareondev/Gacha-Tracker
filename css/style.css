@@ -1601,19 +1601,23 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 /* Genshin: сверху портрет | характеристики + оружие и таланты, снизу 5 артефактов в строку */
 .hx.gi .hx-left{display:flex}
 .hx.gi .hx-art{height:auto;flex:1;min-height:440px}
-.gi-wt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.gi-wt{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
 .hx.gi{grid-template-rows:auto auto auto}
 .hx.gi .hx-left{grid-row:1 / 3}
 /* артефакты — один блок буквой Г: шапка под оружием и талантами, ряд артефактов на всю ширину под портретом */
-.gi-rhead{border-bottom:none;border-radius:var(--rs) var(--rs) 0 0;margin-bottom:-14px;padding-bottom:4px}
+.gi-rhead{position:relative;border-bottom:none;border-radius:var(--rs) var(--rs) 0 0;margin:-4px 0 -14px;padding-bottom:4px}
+/* скруглённый внутренний угол буквы Г — у правого нижнего угла портрета */
+.gi-rhead::after{content:"";position:absolute;left:calc(-1px - var(--rs));bottom:0;width:calc(var(--rs) + 1px);height:var(--rs);pointer-events:none;
+  background:radial-gradient(circle at 0 0,#131218 calc(var(--rs) - 1px),#1e1e24 calc(var(--rs) - 1px),#1e1e24 var(--rs),#17171d var(--rs))}
 .gi-rhead .hx-useful{margin-bottom:0}
 .gi-rels{grid-column:1 / -1;position:relative;border-top:none;border-top-right-radius:0;padding-top:7px}
-.gi-rels::before{content:"";position:absolute;left:-1px;top:0;width:345px;height:var(--rs);border:1px solid var(--edge-soft);border-right:none;border-bottom:none;border-top-left-radius:var(--rs);pointer-events:none}
+.gi-rels::before{content:"";position:absolute;left:-1px;top:0;width:calc(344px - var(--rs));height:var(--rs);border:1px solid var(--edge-soft);border-right:none;border-bottom:none;border-top-left-radius:var(--rs);pointer-events:none}
 .hx.gi .hx-relics{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media (max-width:900px){
   .hx.gi .hx-art{flex:none;height:380px;min-height:0}
   .hx.gi .hx-left{grid-row:auto}
-  .gi-rels::before{display:none}
+  .gi-rels::before,.gi-rhead::after{display:none}
+  .gi-rhead{margin-top:0}
   .gi-rels{border-top-left-radius:0}
   .hx.gi .hx-relics{grid-template-columns:repeat(3,minmax(0,1fr))}
 }

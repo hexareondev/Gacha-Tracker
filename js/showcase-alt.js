@@ -30,6 +30,7 @@ const SC_ICON = {
 function ic(k, cls){
   // картинка-маска: цвет берётся из currentColor, как у SVG
   if(typeof k === "string" && k.indexOf("hsr:") === 0) return '<i class="xi xim' + (cls ? " " + cls : "") + '" style="-webkit-mask-image:url(icons/hsr/' + k.slice(4) + '.webp);mask-image:url(icons/hsr/' + k.slice(4) + '.webp)" aria-hidden="true"></i>';
+  if(typeof k === "string" && k.indexOf("gi:") === 0) return '<i class="xi xim' + (cls ? " " + cls : "") + '" style="-webkit-mask-image:url(icons/gi/' + k.slice(3) + '.webp);mask-image:url(icons/gi/' + k.slice(3) + '.webp)" aria-hidden="true"></i>';
   if(typeof k === "string" && k.indexOf("zzz:") === 0) return '<i class="xi xim' + (cls ? " " + cls : "") + '" style="-webkit-mask-image:url(icons/zzz/' + k.slice(4) + '.webp);mask-image:url(icons/zzz/' + k.slice(4) + '.webp)" aria-hidden="true"></i>';
   if(typeof k === "string" && k.indexOf("zimg:") === 0) return '<img class="xi xig' + (cls ? " " + cls : "") + '" src="icons/zzz/' + k.slice(5) + '.webp" alt="" aria-hidden="true">';
   return '<svg class="xi' + (cls ? " " + cls : "") + '" viewBox="0 0 16 16" aria-hidden="true">' + (SC_ICON[k] || SC_ICON.dot) + "</svg>"; }
@@ -43,28 +44,78 @@ function xStatRow(r){
 }
 
 /* ── Genshin: окно персонажа HoYoLAB ── */
+/* фон Genshin: ночное небо в цвете стихии и созвездие из звёзд и линий; у каждого персонажа своё */
+function gxSky(color, seedText){
+  let seed = 7; for(const ch of String(seedText || "")) seed = (seed * 33 + ch.charCodeAt(0)) >>> 0;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const hex = /^#?([0-9a-f]{6})$/i.exec(color || "") ? color.replace("#", "") : "f0c264";
+  const rgb = [0, 2, 4].map(i => parseInt(hex.substr(i, 2), 16)).join(",");
+  let stars = "";
+  for(let i = 0; i < 80; i++){
+    const r = rnd() < .92 ? .35 + rnd() * .6 : 1 + rnd();
+    stars += '<circle cx="' + (rnd() * 400).toFixed(1) + '" cy="' + (rnd() * 600).toFixed(1) + '" r="' + r.toFixed(2) + '" fill="#fff" opacity="' + (.2 + rnd() * .7).toFixed(2) + '"/>';
+  }
+  // созвездие: 7 звёзд в верхней половине, соединённых линиями
+  const pts = [];
+  for(let i = 0; i < 7; i++) pts.push([40 + rnd() * 320, 40 + rnd() * 260]);
+  pts.sort((a, b) => a[0] - b[0]);
+  const line = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const cstars = pts.map(p => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.4" fill="#fff"/><circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="7" fill="rgb(' + rgb + ')" opacity=".35"/>').join("");
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid slice">' +
+    '<radialGradient id="g" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="rgb(' + rgb + ')" stop-opacity=".45"/><stop offset=".55" stop-color="rgb(' + rgb + ')" stop-opacity=".12"/><stop offset="1" stop-color="#05070d" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="h" cx="50%" cy="100%" r="60%"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+    '<rect width="400" height="600" fill="#060810"/><rect width="400" height="600" fill="url(#g)"/><rect width="400" height="600" fill="url(#h)"/>' +
+    '<circle cx="200" cy="250" r="150" fill="none" stroke="rgb(' + rgb + ')" stroke-opacity=".18" stroke-width="1"/><circle cx="200" cy="250" r="185" fill="none" stroke="rgb(' + rgb + ')" stroke-opacity=".1" stroke-width="1" stroke-dasharray="2 6"/>' +
+    stars + '<path d="' + line + '" fill="none" stroke="rgb(' + rgb + ')" stroke-opacity=".55" stroke-width="1.2"/>' + cstars + '</svg>';
+  return 'url(&quot;data:image/svg+xml,' + encodeURIComponent(svg).replace(/'/g, "%27").replace(/\(/g, "%28").replace(/\)/g, "%29") + '&quot;)';
+}
+// оценка артефактов: полезные усиления (как у ZZZ) и крит-ценность (CV = 2 × крит. шанс + крит. урон)
+const GX_FLAT = { FIGHT_PROP_ATTACK:"FIGHT_PROP_ATTACK_PERCENT", FIGHT_PROP_HP:"FIGHT_PROP_HP_PERCENT", FIGHT_PROP_DEFENSE:"FIGHT_PROP_DEFENSE_PERCENT" };
+function gxGrade(vm){
+  const val = vm.valuable || {}, useful = {};
+  let n = 0;
+  vm.slots.forEach(d => (d.subs || []).forEach(s => {
+    const r = (s.up || 0) + 1;
+    if(val[s.key]){ n += r; useful[s.n] = (useful[s.n] || 0) + r; }
+    else if(GX_FLAT[s.key] && val[GX_FLAT[s.key]]) n += r / 3;
+  }));
+  n = Math.round(n * 10) / 10;
+  const k = Math.min(4, Object.keys(val).filter(x => val[x]).length);
+  const max = 5 * (k + 5), p = n / max;
+  return { n, max, useful, g: p >= .7 ? "SS" : p >= .56 ? "S" : p >= .42 ? "A" : p >= .28 ? "B" : "C" };
+}
 function gxCard(vm){
-  const stars = "★".repeat(vm.rarity || 5);
-  const consY = [0, 1, 2, 3, 4, 5].map(i => { const t = (i - 2.5) / 2.5; return Math.round(18 - 18 * t * t); });   // дуга
-  let h = '<div class="gx" style="--accent:' + esc(vm.color) + '">' +
-    '<div class="gx-left"><div class="gx-art">' + (vm.art ? '<img class="pre" alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") + '</div>' +
-      '<div class="gx-cons">' + consY.map((x, i) => '<i class="' + (i < vm.cons.n ? "on" : "") + '" style="transform:translateX(' + x + 'px)">' + (i < vm.cons.n ? '<b>C' + (i + 1) + '</b>' : ic("lock")) + "</i>").join("") + '</div>' +
-      (vm.friend ? '<div class="gx-friend">' + ic("heal") + 'Уровень дружбы: <b>' + vm.friend + '</b></div>' : "") +
-      '<div class="gx-talents">' + vm.skills.map(s => '<span title="' + esc(s[0]) + '"><i>' + esc(s[0].charAt(0)) + '</i><b>' + s[1] + "</b></span>").join("") + '</div>' +
-    '</div>' +
-    '<div class="gx-right">' +
-      '<div class="gx-head"><span class="gx-el">' + ic("dmg") + '</span><div><div class="gx-name">' + esc(vm.name) + ' <em>Ур. ' + vm.lvl + '</em></div><div class="gx-stars">' + stars + ' <small>' + esc(vm.el + " · " + vm.cls) + '</small></div></div></div>' +
-      '<div class="gx-panel"><div class="gx-pt">Характеристики персонажа</div><div class="gx-grid">' + vm.stats.map(xStatRow).join("") + '</div></div>';
+  const gr = gxGrade(vm), stars = "★".repeat(vm.rarity || 5);
+  const uk = Object.keys(gr.useful).sort((a, b) => gr.useful[b] - gr.useful[a]);
+  // созвездия — дугой по правому краю арта, как в окне персонажа
+  const arc = [0, 1, 2, 3, 4, 5].map(i => { const t = (i - 2.5) / 2.5; return Math.round(22 * t * t); });
+  let h = '<div class="hx gi r' + (vm.rarity || 5) + '" style="--accent:' + esc(vm.color) + '">' +
+    '<div class="hx-left">' +
+      '<div class="hx-art" style="background-image:' + gxSky(vm.color, vm.name) + '">' + (vm.art ? '<img class="pre" alt="" referrerpolicy="no-referrer" src="' + esc(scImg(vm.art)) + '" onerror="this.remove()">' : "") +
+        '<div class="hx-head"><div class="hx-name"><span class="fit">' + esc(vm.name) + '</span> <em>Ур. ' + vm.lvl + '</em></div>' +
+        '<div class="hx-tags"><span class="el">' + (GI_EL_IC[vm.elKey] ? '<img class="gi-elic" src="icons/gi/el_' + GI_EL_IC[vm.elKey] + '.webp" alt="">' : "<i></i>") + esc(vm.el) + '</span><span>' + esc(vm.cls) + '</span><span class="gi-stars">' + stars + '</span></div></div>' +
+        '<div class="gi-cons">' + [0,1,2,3,4,5].map(i => '<span style="margin-right:' + arc[i] + 'px">' + hxImg((vm.constIcons || [])[i], "gi-c" + (i < vm.cons.n ? " on" : ""), i < vm.cons.n ? "" : ic("lock", "lk")) + "</span>").join("") + '</div>' +
+        (vm.friend ? '<div class="gi-friend">' + ic("heal") + ' Дружба <b>' + vm.friend + '</b></div>' : "") +
+      '</div>';
   if(vm.weapon){
     const w = vm.weapon;
-    h += '<div class="gx-panel"><div class="gx-pt">Оружие</div><div class="gx-weapon">' + xImg(w.img, "gx-wimg r" + (w.top ? 5 : 4)) + '<em class="gx-ref">' + w.refine.n + '</em>' +
-      '<div><div class="gx-wname">' + esc(w.name) + ' <em>Ур. ' + w.lvl + '</em></div>' + w.stats.map(s => '<div class="gx-ws">' + esc(s[0]) + ': ' + esc(s[1]) + "</div>").join("") + '</div></div></div>';
+    h += '<div class="hx-box"><div class="hx-bt">Оружие</div><div class="hx-lc gi-w">' + hxImg(w.img, "hx-lcimg gi-wimg" + (w.top ? " top" : "")) +
+      '<div><div class="hx-lcname' + (w.top ? " top" : "") + '">' + esc(w.name) + '</div><div class="hx-lcmeta">Ур. ' + w.lvl + ' · <em>R' + w.refine.n + '</em></div>' +
+      w.stats.map(s => '<div class="hx-lcst">' + esc(s[0]) + ' <b>' + esc(s[1]) + "</b></div>").join("") + '</div></div></div>';
   }
-  h += '<div class="gx-panel"><div class="gx-pt">Артефакты' + (vm.sets.length ? ' <small>' + vm.sets.map(s => esc(s.name) + (s.full ? " ×4" : " ×2")).join(" · ") + '</small>' : "") + '</div><div class="gx-arts">' +
-    vm.slots.map(d => d.empty ? '<div class="gx-art-i none">' + esc(d.label) + '</div>' :
-      '<div class="gx-art-i">' + xImg(d.icon, "gx-aimg") + '<em>+' + d.lvl + '</em>' +
-        (d.main ? '<div class="gx-am">' + ic(d.main[2]) + '<b>' + esc(d.main[1]) + '</b></div>' : "") +
-        d.subs.map(s => '<div class="gx-as' + (s.val ? " val" : "") + '">' + ic(s.ic) + '<span>' + esc(s.v) + '</span>' + (s.up ? '<i>' + "·".repeat(s.up) + "</i>" : "") + "</div>").join("") + "</div>").join("") +
+  h += '<div class="hx-box"><div class="hx-bt">Таланты</div><div class="hx-skills gi-tal">' +
+      (vm.talents || []).map(t => '<span title="' + esc(t.n) + ': ' + t.lv + (t.boost ? " (+3 от созвездия)" : "") + '">' + hxImg(t.icon, "hx-sk") + '<b' + (t.boost ? ' class="up"' : "") + '>' + t.lv + "</b><small>" + esc(t.n) + "</small></span>").join("") +
+    '</div></div></div>';
+  h += '<div class="hx-right"><div class="hx-title">Характеристики</div>' +
+    '<div class="hx-box"><div class="hx-grid" style="grid-template-rows:repeat(' + Math.ceil(vm.stats.length / 2) + ',auto)">' + vm.stats.map(xStatRow).join("") + '</div></div>';
+  h += '<div class="hx-box hx-relbox"><div class="hx-bt">Артефакты' + (vm.sets.length ? ' <small>' + vm.sets.map(s => esc(s.name) + (s.full ? " ×4" : " ×2")).join(" · ") + '</small>' : "") + '</div>' +
+    '<div class="hx-useful"><div><span class="hx-ut">Полезные усиления</span>' + (uk.length ? uk.map(k => '<span class="hx-uc">' + esc(k) + ' <b>' + gr.useful[k] + "</b></span>").join("") : '<span class="hx-uc">нет</span>') +
+      '<span class="hx-uc gi-cv">Крит-ценность <b>' + (Math.round((vm.cv || 0) / 10) / 10).toLocaleString("ru-RU") + '</b></span></div>' +
+      '<div class="hx-utot gi-grade g' + gr.g + '" title="' + gr.n.toLocaleString("ru-RU") + ' полезных усилений из ' + gr.max + ' возможных"><b>' + gr.g + '</b><small>' + gr.n.toLocaleString("ru-RU") + ' / ' + gr.max + '</small></div></div>' +
+    '<div class="hx-relics">' + vm.slots.map(d => d.empty ? '<div class="hx-rel none"><div class="hx-rh"><span>' + esc(d.label) + '</span></div><p>Пусто</p></div>' :
+      '<div class="hx-rel' + (d.top ? " top" : "") + '"><div class="hx-rh"><span>' + esc(d.label) + ' <em>+' + d.lvl + '</em></span>' + hxImg(d.icon, "hx-ricon") + '</div>' +
+        (d.main ? '<div class="hx-rm">' + ic(d.main[2]) + '<span>' + esc(d.main[0]) + '</span><b>' + esc(d.main[1]) + '</b></div>' : "") +
+        d.subs.map(s => '<div class="hx-rs' + (s.val ? " val" : "") + '">' + ic(s.ic) + '<span><em>' + esc(s.n) + '</em>' + (s.up ? '<i>»' + s.up + '</i>' : "") + '</span><b>' + esc(s.v) + "</b></div>").join("") + "</div>").join("") +
     '</div></div></div></div>';
   return h;
 }

@@ -1562,3 +1562,39 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .drop.compact .hint:empty{display:none}
 .drop.compact details.exporter{align-self:center;margin:0}
 .drop.compact details.exporter[open]{flex-basis:100%;max-width:none;order:9}
+/* ── Genshin «как в игре»: тот же каркас, что у HSR, со своими деталями ── */
+.hx.gi .hx-art{background-color:#060810}
+.hx.gi .hx-art > img:not(.fx){object-fit:cover;object-position:50% 25%;transform:scale(1.25);transform-origin:50% 30%}
+.hx.gi.r5 .hx-art{border-color:rgba(240,194,100,.4);box-shadow:0 0 22px rgba(240,194,100,.12)}
+.hx.gi.r4 .hx-art{border-color:rgba(180,108,255,.4);box-shadow:0 0 22px rgba(180,108,255,.12)}
+.gi-stars{color:var(--gold-hot) !important;letter-spacing:1px}
+.hx.gi.r4 .gi-stars{color:#c18cff !important}
+/* созвездия дугой у правого края */
+.gi-cons{position:absolute;z-index:1;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.gi-c{width:40px;height:40px;border-radius:50%;background:rgba(8,10,16,.8);border:1.5px solid rgba(255,255,255,.18);color:var(--dim)}
+.gi-c img{opacity:.28;filter:grayscale(1)}
+.gi-c .lk{position:relative;z-index:1;width:13px;height:13px}
+.gi-c.on{border-color:var(--accent);box-shadow:0 0 12px color-mix(in srgb,var(--accent) 55%,transparent)}
+.gi-c.on img{opacity:1;filter:none}
+.gi-friend{position:absolute;z-index:1;left:12px;bottom:12px;display:flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.55);color:var(--muted)}
+.gi-friend b{color:var(--text)}
+/* оружие — квадратная иконка с рамкой по редкости */
+.gi-wimg{width:72px;height:72px;border-radius:10px;background:linear-gradient(160deg,#5a4a7a,#2a2238);border-color:rgba(180,108,255,.45)}
+.gi-wimg.top{background:linear-gradient(160deg,#8a6a3a,#3a2a14);border-color:rgba(240,194,100,.55)}
+.gi-w .hx-lcmeta em{background:var(--gold);color:#1a1305}
+/* таланты: подпись под иконкой, усиленные созвездием — голубым */
+.gi-tal{gap:16px}
+.gi-tal > span{display:flex;flex-direction:column;align-items:center;gap:4px;width:72px}
+.gi-tal small{font-size:10.5px;color:var(--dim);text-align:center;line-height:1.2}
+.gi-tal b{right:12px;bottom:auto;top:30px}
+.gi-tal b.up{background:#6fd3ff;color:#062030}
+/* оценка артефактов */
+.gi-cv b{color:#ff9b7a}
+.gi-grade{border-color:var(--gold)}
+.gi-grade small{font-size:9px}
+.gi-grade.gSS b{background:linear-gradient(90deg,#ffd36b,#ff8a5c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gi-grade.gS b{color:#f5a524}
+.gi-grade.gA b{color:#c18cff}.gi-grade.gA{border-color:#b46cff}
+.gi-grade.gB b{color:#6fb4ff}.gi-grade.gB{border-color:#4fa3ff}
+.gi-grade.gC b{color:#9a9aa2}.gi-grade.gC{border-color:#5a5a62}
+.hx-art .gi-elic{position:static;inset:auto;width:18px;height:18px;margin:-3px -2px -3px -4px;object-fit:contain;transform:none;opacity:1}

@@ -204,6 +204,10 @@ def genshin_build(store):
             "el": a.get("Element", ""), "wt": a.get("WeaponType", ""),
             "img": side.replace("UI_AvatarIcon_Side_", "UI_Gacha_AvatarImg_"), "circle": side.replace("UI_AvatarIcon_Side_", "UI_AvatarIcon_"),
             "skills": a.get("SkillOrder", []), "proud": a.get("ProudMap", {}),
+            # иконки для карточки «как в игре»: таланты по порядку и шесть созвездий
+            "sicons": [gi_icon(a.get("Skills", {}).get(str(x), "")) for x in a.get("SkillOrder", [])],
+            "consts": [gi_icon(c) for c in a.get("Consts", [])],
+            "r": 5 if a.get("QualityType") in ("QUALITY_ORANGE", "QUALITY_ORANGE_SP") else 4,
         }
     affix = {iid: a.get("PropType") for iid, a in load(store, "gi/affixes.json").items()}
     rel = load(store, "gi/relics.json")

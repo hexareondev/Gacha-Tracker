@@ -310,17 +310,29 @@ const GI_ELDMG = { Fire:40, Electric:41, Water:42, Grass:43, Wind:44, Rock:45, I
 function gLabel(fp){ return scLoc(SCB.hk4e.props[fp]) || fp.replace("FIGHT_PROP_", ""); }
 function gPct(fp){ return /PERCENT|CRITICAL|CHARGE|HURT|HEAL_ADD/.test(fp); }
 function gVal(fp, v){ return gPct(fp) ? fPct(v) : fInt(v); }
+// иконки характеристик Genshin из HoYoLAB (icons/gi), для крит. урона и прочего — свои векторные
 function gIc(fp){
   const k = String(fp).replace("FIGHT_PROP_", "").replace(/^BASE_/, "");
-  return { HP:"hp", HP_PERCENT:"hp", ATTACK:"atk", ATTACK_PERCENT:"atk", DEFENSE:"def", DEFENSE_PERCENT:"def", ELEMENT_MASTERY:"em",
-    CRITICAL:"cr", CRITICAL_HURT:"cd", CHARGE_EFFICIENCY:"er", HEAL_ADD:"heal" }[k] || (/ADD_HURT$/.test(k) ? "dmg" : "dot");
+  const img = { HP:"hp", HP_PERCENT:"hp", ATTACK:"atk", ATTACK_PERCENT:"atk", DEFENSE:"def", DEFENSE_PERCENT:"def", ELEMENT_MASTERY:"em",
+    CRITICAL:"cr", CRITICAL_HURT:"cd", CHARGE_EFFICIENCY:"er", HEAL_ADD:"heal", FIRE_ADD_HURT:"dmg_fire", ELEC_ADD_HURT:"dmg_elec", WATER_ADD_HURT:"dmg_water",
+    GRASS_ADD_HURT:"dmg_grass", WIND_ADD_HURT:"dmg_wind", ROCK_ADD_HURT:"dmg_rock", ICE_ADD_HURT:"dmg_ice" }[k];
+  if(img) return "gi:" + img;
+  return { HEALED_ADD:"heal" }[k] || (/ADD_HURT$/.test(k) ? "dmg" : "dot");
 }
+const GI_EL_IC = { Fire:"fire", Electric:"elec", Water:"water", Grass:"grass", Wind:"wind", Rock:"rock", Ice:"ice" };
 function giVM(av){
   const B = SCB.hk4e, id = String(av.avatarId), A = B.avatars[id] || {};
   const pm = av.propMap || {}, f = av.fightPropMap || {};
   const lvl = Number((pm["4001"] || {}).val || (pm["4001"] || {}).ival || 1);
   const F = k => Number(f[k] || 0);
-  const valuable = { FIGHT_PROP_CRITICAL:1, FIGHT_PROP_CRITICAL_HURT:1, FIGHT_PROP_ATTACK_PERCENT:1, FIGHT_PROP_CHARGE_EFFICIENCY:1, FIGHT_PROP_ELEMENT_MASTERY: F(28) >= 250 ? 1 : 0 };
+  // полезные сабстаты: криты, восстановление энергии и «основная» характеристика персонажа.
+  // Её угадываем по часам (Пески): HP% / защита % / мастерство — иначе сила атаки %
+  const sands = (av.equipList || []).find(e => e.reliquary && (e.flat || {}).equipType === "EQUIP_SHOES");
+  const sm = sands ? ((sands.flat || {}).reliquaryMainstat || {}).mainPropId : "";
+  const scale = sm === "FIGHT_PROP_HP_PERCENT" || sm === "FIGHT_PROP_DEFENSE_PERCENT" || sm === "FIGHT_PROP_ELEMENT_MASTERY" ? sm : "FIGHT_PROP_ATTACK_PERCENT";
+  const valuable = { FIGHT_PROP_CRITICAL:1, FIGHT_PROP_CRITICAL_HURT:1, FIGHT_PROP_CHARGE_EFFICIENCY:1 };
+  valuable[scale] = 1;
+  if(F(28) >= 250) valuable.FIGHT_PROP_ELEMENT_MASTERY = 1;
   let weapon = null;
   const slots = [], cnt = {};
   let cv = 0;
@@ -358,17 +370,27 @@ function giVM(av){
   if(F(26)) stats.push(row("FIGHT_PROP_HEAL_ADD", F(26)));
   if(elDmg && F(elDmg)) stats.push(row(GI_FP[elDmg], F(elDmg)));
   if(F(30) > F(elDmg || 0)) stats.push(row("FIGHT_PROP_PHYSICAL_ADD_HURT", F(30)));
-  stats[1].hl = stats[4].hl = stats[5].hl = true;
+  // золотом — то, от чего персонаж «растёт»: криты и основная характеристика
+  stats[4].hl = stats[5].hl = true;
+  if(scale === "FIGHT_PROP_HP_PERCENT") stats[0].hl = true;
+  else if(scale === "FIGHT_PROP_DEFENSE_PERCENT") stats[2].hl = true;
+  else if(scale === "FIGHT_PROP_ELEMENT_MASTERY") stats[3].hl = true;
+  else stats[1].hl = true;
+  if(valuable.FIGHT_PROP_ELEMENT_MASTERY) stats[3].hl = true;
   let keys = [[gLabel("FIGHT_PROP_ATTACK"), fInt(F(2001))], [ru() ? "Шанс крита" : "CRIT Rate", fPct(F(20) * 100)], [gLabel("FIGHT_PROP_CRITICAL_HURT"), fPct(F(22) * 100)]];
   if(F(28) >= 300) keys[0] = [gLabel("FIGHT_PROP_ELEMENT_MASTERY"), fInt(F(28))];
   const extra = av.proudSkillExtraLevelMap || {}, sl = av.skillLevelMap || {};
   const sn = ["Обычная атака", "Элементальный навык", "Взрыв стихии"];
   const skills = (A.skills || []).map((s, i) => [sn[i] || "Навык", (sl[String(s)] || 1) + (extra[String((A.proud || {})[String(s)])] || 0)]);
+  // для карточки «как в игре»: иконки талантов, усиление от созвездий — золотом
+  const talents = (A.skills || []).map((s, i) => ({ n: sn[i] || "Навык", lv: skills[i][1], icon: (A.sicons || [])[i] || "",
+    boost: !!extra[String((A.proud || {})[String(s)])] }));
   const el = GI_EL[A.el] || [A.el, "#f0c264"];
   const cons = (av.talentIdList || []).length;
   const it = itemsDb.hk4e && itemsDb.hk4e.items[id];
-  return { name: scItemName("hk4e", id) || "#" + id, art: A.img, circle: A.circle, el: el[0], color: el[1], cls: GI_WT[A.wt] || "",
-    lvl, maxLvl: Math.max(90, lvl), cons:{ label:"C", title:"Созвездие", n: cons }, rarity: it ? it.r : 5, friend: (av.fetterInfo || {}).expLevel || 0, keys, skills, stats, weapon, sets, cv: cv * 100, slotsTitle:"Артефакты", setsWord:"артефактов",
+  return { name: scItemName("hk4e", id) || "#" + id, art: A.img, circle: A.circle, el: el[0], color: el[1], cls: GI_WT[A.wt] || "", elKey: A.el || "",
+    talents, constIcons: A.consts || [], valuable,
+    lvl, maxLvl: Math.max(90, lvl), cons:{ label:"C", title:"Созвездие", n: cons }, rarity: A.r || (it ? it.r : 5), friend: (av.fetterInfo || {}).expLevel || 0, keys, skills, stats, weapon, sets, cv: cv * 100, slotsTitle:"Артефакты", setsWord:"артефактов",
     slots: [1,2,3,4,5].map(i => slots.find(s => s.pos === i) || { pos:i, label: ["Цветок","Перо","Пески","Кубок","Корона"][i - 1], empty:true }),
     foot: "Характеристики — как в окне персонажа в игре: их присылает сама игра через витрину профиля." };
 }

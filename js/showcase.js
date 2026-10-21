@@ -95,12 +95,17 @@ function zzzVM(av){
       stats: [wi.main && [zProp(wi.main[0]), zVal(wi.main[0], main), zIc(wi.main[0]), String(wi.main[0]).slice(0, 3)], wi.sub && [zProp(wi.sub[0]), zVal(wi.sub[0], sub), zIc(wi.sub[0]), String(wi.sub[0]).slice(0, 3)]].filter(Boolean) };
   }
   const hl = (info.hl || []).map(String);
-  const valuable = { "20103":1, "21103":1 };
+  // полезные сабстаты — только те, что рекомендованы агенту и вообще бывают в сабстатах дисков
+  // (HP%, сила атаки %, защита %, крит. шанс, крит. урон, знание аномалии, пробивание);
+  // контроль аномалии, импульс и т.п. в сабстатах не выпадают
+  const valuable = {};
   hl.forEach(p => {
+    if(p === "20101") valuable["20103"] = 1;
+    if(p === "21101") valuable["21103"] = 1;
     if(p === "12101" || p === "12201") valuable["12102"] = 1;
     if(p === "11101") valuable["11102"] = 1;
     if(p === "13101") valuable["13102"] = 1;
-    if(p === "31201" || p === "31401") valuable["31203"] = 1;
+    if(p === "31201") valuable["31203"] = 1;
     if(p === "23101" || p === "23201") valuable["23203"] = 1;
     if(p === "12301"){ valuable["12102"] = 1; valuable["11102"] = 1; }   // сила сквозной атаки растёт от силы атаки и HP
   });

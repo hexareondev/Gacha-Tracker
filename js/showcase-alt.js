@@ -138,8 +138,10 @@ function toRoman(n){ return ["", "I", "II", "III", "IV", "V", "VI"][n] || n; }
 // порядок нижней сводки: HP%, HP, сила атаки %, сила атаки, защита %, защита, крит. шанс, крит. урон, знание аномалии, пробивание
 const ZX_BAR = ["11102", "11103", "12102", "12103", "13102", "13103", "20103", "21103", "31203", "23203"];
 function zxBarPos(k){ const i = ZX_BAR.indexOf(String(k)); return i === -1 ? 99 : i; }
-// оценка сборки ZZZ: полезные усиления сабстатов (начальные + прокачка) из максимума 48
-// (6 дисков × до 3 полезных сабстатов + 5 усилений); плоские атака/HP/защита считаются за треть
+// оценка сборки ZZZ: полезные усиления сабстатов (начальные + прокачка) из максимума для этого агента:
+// 6 дисков × (сколько полезных сабстатов может стоять на диске, не больше 4, + 5 усилений).
+// У дамагера с крит. шансом, крит. уроном и силой атаки % — 6 × (3 + 5) = 48, у аномалии
+// (сила атаки %, знание аномалии) — 6 × (2 + 5) = 42. Плоские атака/HP/защита считаются за треть.
 const ZX_FLAT = { "12103":"12102", "11103":"11102", "13103":"13102" };
 function zxGrade(vm){
   const val = vm.valuable || {};
@@ -149,8 +151,10 @@ function zxGrade(vm){
     if(val[k]) n += r; else if(ZX_FLAT[k] && val[ZX_FLAT[k]]) n += r / 3;
   }));
   n = Math.round(n * 10) / 10;
-  const p = n / 48;
-  return { n, g: p >= .7 ? "SS" : p >= .56 ? "S" : p >= .42 ? "A" : p >= .28 ? "B" : "C" };
+  const k = Math.min(4, Object.keys(val).filter(x => val[x]).length);
+  const max = k ? 6 * (k + 5) : 48;
+  const p = n / max;
+  return { n, max, g: p >= .7 ? "SS" : p >= .56 ? "S" : p >= .42 ? "A" : p >= .28 ? "B" : "C" };
 }
 function zxCard(vm, uid, nick){
   const half = 6;   // первый столбец — от HP до крит. урона, остальное во втором
@@ -193,7 +197,7 @@ function zxCard(vm, uid, nick){
           '<div class="zx-sq2"><em>Lv. ' + d.lvl + '</em><s>' + esc(d.rank || "B") + '</s></div></div></div></div>' +
         '<div class="zx-ds">' + d.subs.map(s => '<span class="' + (s.val ? "val" : "") + '" data-f="' + esc(String(s.key).slice(0, 3)) + '">' + ic(s.ic) + '<b>' + esc(s.v) + '</b>' + (s.up ? '<u style="width:' + (s.up * 8 - 2) + 'px"></u>' : "") + "</span>").join("") + "</div></div>").join("") + '</div>' +
     '</div><div class="zx-bar"><div class="zx-who">' +
-      '<span class="zx-grade g' + gr.g + '" title="Оценка сборки: ' + gr.n.toLocaleString("ru-RU") + ' полезных усилений из 48"><b>' + gr.g + '</b><small>' + gr.n.toLocaleString("ru-RU") + ' / 48</small></span>' +
+      '<span class="zx-grade g' + gr.g + '" title="Оценка сборки: ' + gr.n.toLocaleString("ru-RU") + ' полезных усилений из ' + gr.max + ' возможных для этого агента"><b>' + gr.g + '</b><small>' + gr.n.toLocaleString("ru-RU") + ' / ' + gr.max + '</small></span>' +
       (nick ? '<span class="zx-nick">' + esc(nick) + '</span>' : "") + '</div><div class="zx-sum">' + Object.keys(sum).sort((a, b) => zxBarPos(a) - zxBarPos(b)).map(k => '<span' + (sum[k].val ? ' class="val"' : "") + ' title="' + esc(sum[k].name) + '" data-f="' + esc(String(k).slice(0, 3)) + '"><small>' + sum[k].n + '</small>' + ic(sum[k].ic) + '<b>' + esc(sum[k].fmt(sum[k].v)) + "</b></span>").join("") + '</div></div>' +
   '</div>';
   return h;

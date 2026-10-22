@@ -1,1 +1,115 @@
-{}
+{
+ "hkrpg:1006": [
+  "CriticalChance",
+  "CriticalDamage",
+  "Attack%",
+  "Speed",
+  "StatusProbability"
+ ],
+ "hkrpg:1101": [
+  "CriticalDamage",
+  "Speed",
+  "StatusResistance"
+ ],
+ "hkrpg:1104": [
+  "Defence%",
+  "Speed",
+  "StatusProbability",
+  "StatusResistance"
+ ],
+ "hkrpg:1205": [
+  "CriticalChance",
+  "CriticalDamage",
+  "MaxHP%",
+  "Speed"
+ ],
+ "hkrpg:1211": [
+  "MaxHP%",
+  "Speed",
+  "StatusResistance"
+ ],
+ "hkrpg:1217": [
+  "MaxHP%",
+  "Speed",
+  "StatusResistance"
+ ],
+ "hkrpg:1222": [
+  "Attack%",
+  "Speed",
+  "BreakDamageAddedRatio"
+ ],
+ "hkrpg:1225": [
+  "Speed",
+  "BreakDamageAddedRatio",
+  "StatusProbability"
+ ],
+ "hkrpg:1306": [
+  "CriticalDamage",
+  "Speed",
+  "StatusResistance"
+ ],
+ "hkrpg:1308": [
+  "CriticalChance",
+  "CriticalDamage",
+  "Attack%",
+  "Speed"
+ ],
+ "hkrpg:1310": [
+  "Attack%",
+  "Speed",
+  "BreakDamageAddedRatio"
+ ],
+ "hkrpg:1313": [
+  "CriticalDamage",
+  "Speed",
+  "StatusResistance"
+ ],
+ "hkrpg:1317": [
+  "Attack%",
+  "Speed",
+  "BreakDamageAddedRatio"
+ ],
+ "hkrpg:1321": [
+  "Speed",
+  "BreakDamageAddedRatio"
+ ],
+ "hkrpg:1407": [
+  "CriticalChance",
+  "CriticalDamage",
+  "MaxHP%"
+ ],
+ "hkrpg:1408": [
+  "CriticalChance",
+  "CriticalDamage",
+  "Attack%"
+ ],
+ "hkrpg:1409": [
+  "CriticalDamage",
+  "MaxHP%",
+  "Speed"
+ ],
+ "hkrpg:1414": [
+  "Attack%",
+  "Speed"
+ ],
+ "hkrpg:1501": [
+  "CriticalChance",
+  "CriticalDamage",
+  "Attack%"
+ ],
+ "hkrpg:1502": [
+  "CriticalChance",
+  "CriticalDamage",
+  "Speed"
+ ],
+ "hkrpg:1506": [
+  "CriticalChance",
+  "CriticalDamage",
+  "Speed"
+ ],
+ "hkrpg:1513": [
+  "CriticalChance",
+  "CriticalDamage",
+  "Speed"
+ ]
+}

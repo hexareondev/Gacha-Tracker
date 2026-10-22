@@ -1049,7 +1049,7 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 .sc-help b{color:var(--text);font-weight:600}
 .sc-help ol{margin:8px 0 0;padding-left:20px}
 .sc-help a{color:var(--gold)}
-.sc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 12px}
+.sc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 12px}
 .sc-tab{position:relative;width:54px;height:54px;padding:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--raise);border:2px solid var(--edge-soft)}
 .sc-tab span{font-family:var(--display);font-weight:600;font-size:20px;color:var(--gold)}
 .sc-tab img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -1185,9 +1185,10 @@ button.am:hover{color:var(--text);border-color:var(--edge)}
 
 
 /* ══ витрина: вид «как в игре» (тестовый) ══ */
-.sc-layout{margin-left:auto}
 .sc-layout:empty{display:none}
-@media (max-width:640px){.sc-layout{margin-left:0}}
+/* строка над персонажами: вид карточки и превью слева, картинка и копирование справа */
+.sc-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 0}
+.sc-bar-gap{flex:1}
 .xi{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
 .ximg{position:relative;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
 .ximg b{font-family:var(--display);color:rgba(255,255,255,.35)}
